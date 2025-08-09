@@ -1,0 +1,55 @@
+name: Deploy Frontend (Nuxt SSR - Build on Server)
+
+on:
+  push:
+    branches:
+      - blog-nuxt
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy and Build on Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            APP_DIR="/var/www/blog-nuxt"
+
+            echo "📂 创建项目目录"
+            mkdir -p $APP_DIR
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "⬇️ 克隆仓库"
+              git clone -b blog-nuxt git@github.com:${{ github.repository }} $APP_DIR
+            else
+              echo "🔄 更新代码"
+              cd $APP_DIR
+              git reset --hard
+              git fetch origin blog-nuxt
+              git checkout blog-nuxt
+              git pull origin blog-nuxt
+            fi
+
+            cd $APP_DIR
+
+            echo "📦 安装依赖"
+            pnpm install --frozen-lockfile
+
+            echo "🏗️ 构建 Nuxt SSR"
+            pnpm build
+
+            echo "🚀 重启服务"
+            pm2 start .output/server/index.mjs --name blog-ssr --update-env || pm2 restart blog-ssr
+            pm2 save
+
+            echo "✅ 部署完成"
