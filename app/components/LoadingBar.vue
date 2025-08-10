@@ -3,9 +3,11 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
 </script>
 
 <template>
-  <div v-if="isVisible" class="loading">
-    <span class="bar" />
-  </div>
+  <Transition name="loading-bar">
+    <div v-if="isVisible" class="loading">
+      <span class="bar" />
+    </div>
+  </Transition>
 </template>
 
 <style lang="less" scoped>
@@ -38,6 +40,15 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
       animation: moving-bar 0.75s infinite;
     }
   }
+}
+
+.loading-bar-enter-active,
+.loading-bar-leave-active {
+  transition: all 0.4s;
+}
+.loading-bar-enter-from,
+.loading-bar-leave-to {
+  opacity: 0;
 }
 
 @keyframes change-bar {
