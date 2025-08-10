@@ -4,7 +4,7 @@ const { t } = useI18n();
 
 const { data } = await useFetch<{
   data: FriendLink[];
-}>("/api/links", {
+}>("/api/v1/links", {
   method: "get",
 });
 
@@ -23,7 +23,7 @@ const links = computed(() => data.value?.data);
                 <img :src="link.avatar" />
               </div>
               <div class="description-container">
-                <p class="name">{{ link.name }}</p>
+                <p class="name">{{ link.name.trim() }}</p>
                 <p class="description">{{ link.description }}</p>
               </div>
             </a>
