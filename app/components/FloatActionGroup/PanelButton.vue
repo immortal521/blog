@@ -57,8 +57,6 @@ onClickOutside(panelContent, (event) => {
 
 .panel-content {
   position: absolute;
-  width: calc(100vw - 85px);
-  min-height: 40px;
   max-width: 300px;
   right: 120%;
   bottom: 0;
@@ -128,6 +126,11 @@ onClickOutside(panelContent, (event) => {
 .scale-leave-to {
   opacity: 0;
   transform: scale(0.3);
+}
+
+.none-enter-active,
+.none-leave-active {
+  transition: opacity 0.5s ease-in-out;
 }
 
 .none-enter-from,

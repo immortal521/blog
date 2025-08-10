@@ -41,7 +41,6 @@ const contectItems = computed<ContectItem[]>(() => [
   gap: 8px; /* 设置格子之间的空隙 */
   justify-content: end; /* 整个grid水平居中 */
   flex-wrap: wrap;
-  animation: fade-in-right 0.5s ease-in-out both;
 }
 
 .contect-item {

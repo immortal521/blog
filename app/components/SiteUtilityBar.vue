@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ActionButton, PanelButton } from "@/components/FloatActionGroup";
 const backTop = () => {
-	window.scrollTo({
-		top: 0,
-		behavior: "smooth",
-	});
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
 };
 </script>
 
@@ -15,7 +15,7 @@ const backTop = () => {
       :title="$t('tooltip.backToTop')"
       @click="backTop"
     />
-    <PanelButton :title="$t('tooltip.contect')" icon="ion:mail">
+    <PanelButton animation="right" :title="$t('tooltip.contect')" icon="ion:mail">
       <ContectGroup />
     </PanelButton>
     <PanelButton
