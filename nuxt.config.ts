@@ -19,6 +19,7 @@ export default defineNuxtConfig({
 			viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 			link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
 		},
+		pageTransition: { name: "page", mode: "out-in" },
 	},
 
 	// 站点基本信息
@@ -45,10 +46,6 @@ export default defineNuxtConfig({
 			"/": { prerender: true }, // 首页预渲染
 			"/api/v1/**": { proxy: "http://localhost:8000/api/v1/**" }, // API 代理转发
 		},
-		// prerender: {
-		//   crawlLinks: true,
-		//   routes: ["/"],
-		// },
 	},
 
 	fonts: {
@@ -100,4 +97,3 @@ export default defineNuxtConfig({
 		"@nuxtjs/sitemap",
 	],
 });
-
