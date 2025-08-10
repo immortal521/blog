@@ -90,7 +90,7 @@ onMounted(() => {
 
 .title {
   font-size: 12px;
-  font-family: "MapleMono";
+  font-family: "Maple Mono";
   font-weight: 500;
   color: var(--text-color-muted);
 }

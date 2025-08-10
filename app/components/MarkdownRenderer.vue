@@ -97,7 +97,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 :deep(code:not(.hljs)) {
   display: inline-block;
   padding: 0.2em 0.4em;
-  font-family: "MapleMono", "Noto Sans SC", monospace;
+  font-family: "Maple Mono", "Noto Sans SC", monospace;
   font-size: 0.92em;
   color: var(--color-primary-base); /* 可自定义颜色变量 */
   background-color: var(--bg-code);
@@ -261,7 +261,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   position: relative;
   background: var(--bg-code);
   color: var(--text-color-base);
-  font-family: "MapleMono", monospace;
+  font-family: "Maple Mono", monospace;
   font-size: 1.5rem;
   line-height: 1.5;
   padding: 3rem 1.6rem 1.5rem 1.6rem;

@@ -51,6 +51,10 @@ export default defineNuxtConfig({
 		// },
 	},
 
+	fonts: {
+		families: [{ name: "Maple Mono", provider: "local" }],
+	},
+
 	// Vite 配置
 	vite: {
 		css: {
@@ -79,7 +83,7 @@ export default defineNuxtConfig({
 
 	// 使用的模块
 	modules: [
-		// "@nuxt/fonts",
+		"@nuxt/fonts",
 		"@nuxt/eslint",
 		"@nuxt/icon",
 		"@nuxt/image",
