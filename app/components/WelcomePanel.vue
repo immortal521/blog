@@ -19,7 +19,7 @@ const handleDownArrowClick = () => {
 
 <template>
   <div class="welcome">
-    <Spacer height="60" />
+    <BaseSpacer height="60" />
     <div class="content">
       <div class="introduction">
         <div class="avatar">
