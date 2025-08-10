@@ -52,7 +52,7 @@ export default defineNuxtConfig({
 	},
 
 	fonts: {
-		families: [{ name: "Maple Mono", provider: "local" }],
+		families: [],
 	},
 
 	// Vite 配置
