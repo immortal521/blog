@@ -52,7 +52,14 @@ export default defineNuxtConfig({
 	},
 
 	fonts: {
-		families: [],
+		families: [
+			{ name: "Open Sans", provider: "google" },
+			{
+				name: "Noto Sans SC",
+				provider: "google",
+			},
+			{ name: "Caveat", provider: "google" },
+		],
 	},
 
 	// Vite 配置
