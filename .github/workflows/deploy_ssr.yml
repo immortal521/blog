@@ -3,7 +3,7 @@ name: Deploy Nuxt SSR
 on:
   push:
     branches:
-      - blog-nuxt
+      - master
   workflow_dispatch:
 
 jobs:
