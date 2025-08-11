@@ -32,14 +32,14 @@ jobs:
 
             if [ ! -d "$APP_DIR/.git" ]; then
               echo "⬇️ 克隆仓库"
-              git clone -b blog-nuxt git@github.com:${{ github.repository }} "$APP_DIR"
+              git clone -b master git@github.com:${{ github.repository }} "$APP_DIR"
             else
               echo "🔄 更新代码"
               cd "$APP_DIR"
               git reset --hard
-              git fetch origin blog-nuxt
-              git checkout blog-nuxt
-              git pull origin blog-nuxt
+              git fetch origin master
+              git checkout master
+              git pull origin master
             fi
 
             cd "$APP_DIR"
