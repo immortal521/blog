@@ -43,7 +43,6 @@ export default defineNuxtConfig({
 	// Nitro 配置
 	nitro: {
 		routeRules: {
-			"/": { prerender: true }, // 首页预渲染
 			"/api/v1/**": { proxy: "http://localhost:8000/api/v1/**" }, // API 代理转发
 		},
 	},
