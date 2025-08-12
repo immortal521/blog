@@ -4,6 +4,8 @@ import { onClickOutside, useMediaQuery } from "@vueuse/core";
 const { t } = useI18n();
 const localePath = useLocalePath();
 
+const deviceStore = useState<{ isMobile: boolean; width: number }>("device");
+
 const navbarItems = computed<MenuItem[]>(() => {
   return [
     {
@@ -38,7 +40,8 @@ const handleLogoClicked = () => {
 
 const dropdownOpen = ref(false);
 
-const isMobile = useMediaQuery("(max-width: 768px)");
+console.log(deviceStore.value.width);
+const isMobile = useMediaQuery("(max-width: 768px)", { ssrWidth: deviceStore.value.width });
 
 onMounted(() => {
   watch(
