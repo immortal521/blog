@@ -4,8 +4,6 @@ import { onClickOutside, useMediaQuery } from "@vueuse/core";
 const { t } = useI18n();
 const localePath = useLocalePath();
 
-const deviceStore = useState<{ isMobile: boolean; width: number }>("device");
-
 const navbarItems = computed<MenuItem[]>(() => {
   return [
     {
@@ -33,15 +31,13 @@ const handleLogoClicked = () => {
   const targetPath = "/"; // 您要导航到的目标路径
 
   if (targetPath !== currentPath) {
-    console.log(localePath(targetPath));
     navigateTo(localePath(targetPath));
   }
 };
 
 const dropdownOpen = ref(false);
 
-console.log(deviceStore.value.width);
-const isMobile = useMediaQuery("(max-width: 768px)", { ssrWidth: deviceStore.value.width });
+const isMobile = useMediaQuery("(max-width: 768px)", { ssrWidth: 1080 });
 
 onMounted(() => {
   watch(
