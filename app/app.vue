@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { isVisible } = useLoadingBar();
 
+useWindowWidthCookie();
 onMounted(() => {
   useThemeStore();
 });

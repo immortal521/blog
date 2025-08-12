@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { BaseNavbar } from "#components";
-
 const isSticky = ref(false);
 
 const header = useTemplateRef("header");
@@ -28,7 +26,7 @@ onUnmounted(() => {
 
 <template>
   <header ref="header" :class="{ header, sticky: isSticky }">
-    <BaseNavbar />
+    <NavbarWrapper />
   </header>
 </template>
 
