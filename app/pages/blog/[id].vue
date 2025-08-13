@@ -1,23 +1,36 @@
 <script setup lang="ts">
 const markdown = ref(`
 # 一级标题
+
 ## 二级标题
+
 ### 三级
+
 #### 四级
+
 ##### 五级
+
 ###### 六级
+
 **加粗**
+
 *倾斜*
+
 ***斜体加粗***
+
 ~~删除线~~
+
 M^上标^
+
 M~下标~
+
 ==高亮==
+
 123123
+
 \`行内代码\`
 
 代码块
-
 \`\`\`java
 public class App {
     public static void main(String[] args) {

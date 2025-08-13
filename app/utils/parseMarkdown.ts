@@ -1,107 +1,124 @@
-interface CoreMarkdownModules {
-  unified: typeof import("unified").unified;
-  remarkParse: typeof import("remark-parse").default;
-  remarkGfm: typeof import("remark-gfm").default;
-  remarkRehype: typeof import("remark-rehype").default;
-  rehypeSanitize: typeof import("rehype-sanitize");
-  rehypeRaw: typeof import("rehype-raw").default;
-  rehypeMark: typeof import("@/utils/rehypeMark").default;
-  astNodeToVNode: typeof import("@/utils/astToVNode").default;
+import MarkdownIt from "markdown-it";
+import { mark } from "@mdit/plugin-mark";
+import { sub } from "@mdit/plugin-sub";
+import { sup } from "@mdit/plugin-sup";
+import hljs from "highlight.js";
+import type { VNodeChild } from "vue";
+import type Token from "markdown-it/lib/token.mjs";
+
+const md = MarkdownIt({ html: true, linkify: true })
+	.use(mark)
+	.use(sup)
+	.use(sub);
+
+export function parseMarkdownToVNode(markdown: string): VNodeChild[] {
+	const tokens = md.parse(markdown, {});
+	return tokensToVNode(tokens);
 }
 
-let coreModulesPromise: Promise<CoreMarkdownModules> | null = null;
+function tokensToVNode(tokens: Token[]): VNodeChild[] {
+	interface Stack {
+		tag: string;
+		children: VNodeChild[];
+	}
+	const stack: Stack[] = [];
+	const result: VNodeChild[] = [];
 
-const loadCoreMarkdownModules = async (): Promise<CoreMarkdownModules> => {
-  if (!coreModulesPromise) {
-    coreModulesPromise = Promise.all([
-      import("unified"),
-      import("remark-parse"),
-      import("remark-gfm"),
-      import("remark-rehype"),
-      import("rehype-sanitize"),
-      import("rehype-raw"),
-      import("@/utils/rehypeMark"),
-      import("@/utils/astToVNode"),
-    ]).then(
-      ([
-        unifiedModule,
-        remarkParseModule,
-        remarkGfmModule,
-        remarkRehypeModule,
-        rehypeSanitizeModule,
-        rehypeRawModule,
-        rehypeMarkModule,
-        astNodeToVNodeModule,
-      ]) => ({
-        unified: unifiedModule.unified,
-        remarkParse: remarkParseModule.default,
-        remarkGfm: remarkGfmModule.default,
-        remarkRehype: remarkRehypeModule.default,
-        rehypeSanitize: rehypeSanitizeModule,
-        rehypeRaw: rehypeRawModule.default,
-        rehypeMark: rehypeMarkModule.default,
-        astNodeToVNode: astNodeToVNodeModule.default,
-      }),
-    );
-  }
-  return coreModulesPromise;
-};
+	const pushToParent = (node: VNodeChild) => {
+		if (stack.length > 0) {
+			(stack[stack.length - 1] as Stack).children.push(node);
+		} else {
+			result.push(node);
+		}
+	};
 
-const detectOptions = (md: string) => ({
-  highlight: /(```[\s\S]*?```|`[^`\n]*?`)/.test(md),
-  math: /\$\$[^$]*\$\$|[^$]\$[^$\n]*\$/.test(md),
-});
+	for (const token of tokens) {
+		switch (true) {
+			case token.type.endsWith("_open"): {
+				// 将开放标签推入栈中
+				if (token.tag) {
+					stack.push({ tag: token.tag, children: [] });
+				}
+				break;
+			}
 
-export const generateMdAst = async (markdown: string) => {
-  if (!markdown) return;
+			case token.type.endsWith("_close"): {
+				// 封闭标签，从栈中弹出并创建 VNode
+				const { tag, children } = stack.pop()!;
+				const vnode = h(tag, {}, children);
+				pushToParent(vnode);
+				break;
+			}
 
-  const { highlight, math } = detectOptions(markdown);
-  const {
-    unified,
-    remarkParse,
-    remarkGfm,
-    remarkRehype,
-    rehypeSanitize,
-    rehypeRaw,
-    rehypeMark,
-    astNodeToVNode,
-  } = await loadCoreMarkdownModules();
+			case token.type === "inline": {
+				// 递归处理内联内容，并将其结果直接添加到当前父节点的 children 中
+				if (token.children) {
+					const inlineVNodes = tokensToVNode(token.children);
+					for (const node of inlineVNodes) {
+						pushToParent(node);
+					}
+				}
+				break;
+			}
 
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw)
-    .use(rehypeSanitize.default, {
-      ...rehypeSanitize.defaultSchema,
-      tagNames: [
-        ...(rehypeSanitize.defaultSchema.tagNames || []),
-        "u", // 自定义标签扩展
-      ],
-    })
-    .use(rehypeMark);
+			case token.type === "text": {
+				if (token.content) {
+					pushToParent(token.content);
+				}
+				break;
+			}
 
-  if (highlight) {
-    const [{ default: highlight }, { default: codeLines }] = await Promise.all([
-      import("rehype-highlight"),
-      import("rehype-highlight-code-lines"),
-    ]);
-    processor.use(highlight).use(codeLines, { showLineNumbers: true });
-  }
+			case token.type === "code_inline": {
+				if (token.content) {
+					pushToParent(h("code", {}, token.content));
+				}
+				break;
+			}
 
-  if (math) {
-    const [{ default: katex }, { default: math }] = await Promise.all([
-      import("rehype-katex"),
-      import("remark-math"),
-    ]);
-    processor.use(math).use(katex);
-  }
+			case token.type === "hr": {
+				break;
+			}
 
-  try {
-    const ast = await processor.run(processor.parse(markdown));
-    return astNodeToVNode(ast);
-  } catch (err) {
-    console.warn("Markdown 解析失败：", err);
-    return h("span", {}, "Markdown 解析失败");
-  }
-};
+			case token.type === "image": {
+				if (token.attrs) {
+					const attrs = Object.fromEntries(token.attrs);
+					pushToParent(h("img", { src: attrs.src, alt: attrs.alt }));
+				}
+				break;
+			}
+
+			case token.type === "fence": {
+				const lang = token.info.trim() || "plaintext";
+				if (lang === "mermaid") break;
+				const highlighted = hljs.highlight(token.content, {
+					language: lang,
+				}).value;
+				console.log(highlighted.trim().split("\n"));
+				let lineCount = 1;
+				const code = highlighted
+					.trim()
+					.split("\n")
+					.map((item) => {
+						return `<span class="code-line numbered-code-line" data-line-number="${lineCount++}">${item}</span>`;
+					})
+					.join("\n");
+
+				pushToParent(
+					h("pre", { class: "hljs" }, [
+						h("code", { class: `language-${lang}`, innerHTML: code }),
+					]),
+				);
+				break;
+			}
+
+			// 可以根据需要添加更多 token 类型
+			default: {
+				console.warn(`未处理的 token 类型: ${token.type}`);
+				console.warn(token);
+				break;
+			}
+		}
+	}
+
+	return result;
+}

@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { generateMdAst } from "@/utils/parseMarkdown";
+import { parseMarkdownToVNode } from "@/utils/parseMarkdown";
+import type { VNodeChild } from "vue";
 
 const props = defineProps({
   markdown: {
     type: String,
     required: true,
   },
-  // enableCodeHighlight prop 已移除
 });
 
-const renderedVNode = shallowRef<VNode | VNode[] | null>(null);
+const renderedVNode = shallowRef<VNodeChild>([]);
 
-const renderMarkdown = async () => {
-  renderedVNode.value = (await generateMdAst(props.markdown)) as VNode;
+const renderMarkdown = () => {
+  renderedVNode.value = parseMarkdownToVNode(props.markdown);
 };
 
 watch(() => props.markdown, renderMarkdown, { immediate: true });
@@ -94,7 +94,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   overflow-wrap: break-word;
 }
 
-:deep(code:not(.hljs)) {
+:deep(:not(.hljs) code) {
   display: inline-block;
   padding: 0.2em 0.4em;
   font-family: "Maple Mono", "Noto Sans SC", monospace;
@@ -264,7 +264,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   font-family: "Maple Mono", monospace;
   font-size: 1.5rem;
   line-height: 1.5;
-  padding: 3rem 1.6rem 1.5rem 1.6rem;
+  padding: 3rem 0 1.5rem;
   border-radius: var(--radius-card, 0.5rem);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   overflow-x: auto;
@@ -273,8 +273,10 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 }
 
 .code-line {
+  display: inline-block;
   height: 1.5rem;
   letter-spacing: 0.05rem;
+  cursor: text;
 }
 
 .hljs-comment,
@@ -339,17 +341,18 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 .code-line.numbered-code-line {
   position: relative;
   width: 100%;
-  margin-left: 3rem;
-  padding-left: 0.25rem;
+  margin-right: 2rem;
 }
 
 .code-line.numbered-code-line::before {
   content: attr(data-line-number);
-  position: absolute;
+  position: sticky;
   display: inline-block;
-  left: -3.25rem;
+  left: 0;
   padding-right: 0.5rem;
+  margin-right: 1rem;
   width: 3rem;
+  background-color: var(--bg-code);
   text-align: right;
   color: var(--text-color-muted);
   font-size: 1.5rem;
