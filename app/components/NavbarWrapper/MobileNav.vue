@@ -125,7 +125,7 @@ onClickOutside(dropdown, (event) => {
   transform: translateY(-10px);
 }
 
-.nav-menu {
+.nav-menu-mobile {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -134,6 +134,7 @@ onClickOutside(dropdown, (event) => {
   height: 100%;
   align-items: center;
   list-style: none;
+  margin: 0 auto;
 
   .nav-item {
     width: 100%;
