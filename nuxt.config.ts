@@ -89,7 +89,6 @@ export default defineNuxtConfig({
 		"@nuxt/fonts",
 		"@nuxt/eslint",
 		"@nuxt/icon",
-		"@nuxt/image",
 		"@nuxt/scripts",
 		"@pinia/nuxt",
 		"@nuxtjs/i18n",
