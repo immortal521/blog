@@ -271,11 +271,38 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   margin-top: 20px;
 }
 
+.hljs .code-header {
+  position: absolute;
+  height: 3rem;
+  width: 100%;
+  top: 0;
+  padding: 0 2rem;
+  display: flex;
+  line-height: 3rem;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  font-family: "Maple Mono", "Noto Sans SC", monospace;
+
+  .code-language {
+    font-size: 1.2rem;
+  }
+
+  .copy-btn {
+    margin-left: auto;
+    margin-top: 0.4rem;
+    margin-bottom: 0.4rem;
+  }
+}
+
+.hljs:hover .code-header {
+  opacity: 1;
+}
+
 .hljs code {
   display: block;
   cursor: text;
   position: relative;
-  font-family: "Maple Mono", monospace;
+  font-family: "Maple Mono", "Noto Sans SC", monospace;
 }
 
 .hljs-comment,
@@ -354,7 +381,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   user-select: none;
   counter-reset: line-number 0;
   z-index: 1;
-  font-family: "Maple Mono", monospace;
+  font-family: "Maple Mono", "Noto Sans SC", monospace;
 }
 
 .line-number::before {

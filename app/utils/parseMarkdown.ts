@@ -3,8 +3,9 @@ import { mark } from "@mdit/plugin-mark";
 import { sub } from "@mdit/plugin-sub";
 import { sup } from "@mdit/plugin-sup";
 import hljs from "highlight.js";
-import type { VNodeChild } from "vue";
+import { isVNode, type VNodeChild } from "vue";
 import type Token from "markdown-it/lib/token.mjs";
+import { BaseImage, CopyButton } from "#components";
 
 const md = MarkdownIt({ html: false, linkify: true })
 	.use(mark)
@@ -16,11 +17,32 @@ export function parseMarkdownToVNode(markdown: string): VNodeChild[] {
 	return tokensToVNode(tokens);
 }
 
+function hasComponent(vnodes: VNodeChild[], component: Component): boolean {
+	if (!vnodes) {
+		return false;
+	}
+
+	const nodes = Array.isArray(vnodes) ? vnodes : [vnodes];
+
+	for (const node of nodes) {
+		if (!isVNode(node)) {
+			continue;
+		}
+
+		if (node.type === component) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 function tokensToVNode(tokens: Token[]): VNodeChild[] {
 	interface Stack {
 		tag: string;
 		children: VNodeChild[];
 		attrs: { [k: string]: string };
+		key: string;
 	}
 	const stack: Stack[] = [];
 	const result: VNodeChild[] = [];
@@ -33,21 +55,48 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 		}
 	};
 
+	const keyCounters = new Map<string, number>();
+
+	const getNextKey = (type: string): string => {
+		const currentCount = keyCounters.get(type) ?? 0;
+		keyCounters.set(type, currentCount + 1);
+		return `${type}-${currentCount}`;
+	};
+
 	for (const token of tokens) {
 		switch (true) {
+			case token.type === "paragraph_open": {
+				const attrs = Object.fromEntries(token.attrs ?? []);
+				if (token.tag) {
+					stack.push({ tag: token.tag, children: [], attrs, key: "" });
+				}
+				break;
+			}
+			case token.type === "paragraph_close": {
+				const { children, attrs } = stack.pop()!;
+				if (hasComponent(children, BaseImage)) {
+					const key = getNextKey("img");
+					pushToParent(h("div", { ...attrs, key }, children));
+				} else {
+					const key = getNextKey("p");
+					pushToParent(h("p", { ...attrs, key }, children));
+				}
+				break;
+			}
 			case token.type.endsWith("_open"): {
 				const attrs = Object.fromEntries(token.attrs ?? []);
 				// 将开放标签推入栈中
 				if (token.tag) {
-					stack.push({ tag: token.tag, children: [], attrs });
+					const key = getNextKey(token.tag);
+					stack.push({ tag: token.tag, children: [], attrs, key: key });
 				}
 				break;
 			}
 
 			case token.type.endsWith("_close"): {
 				// 封闭标签，从栈中弹出并创建 VNode
-				const { tag, children, attrs } = stack.pop()!;
-				const vnode = h(tag, { ...attrs }, children);
+				const { tag, children, attrs, key: stackKey } = stack.pop()!;
+				const vnode = h(tag, { ...attrs, key: stackKey }, children);
 				pushToParent(vnode);
 				break;
 			}
@@ -72,19 +121,25 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 
 			case token.type === "code_inline": {
 				if (token.content) {
-					pushToParent(h("code", {}, token.content));
+					const key = getNextKey("code");
+					pushToParent(h("code", { key: key }, token.content));
 				}
 				break;
 			}
 
 			case token.type === "hr": {
+				const key = getNextKey("hr");
+				pushToParent(h("hr", { key: key }));
 				break;
 			}
 
 			case token.type === "image": {
 				if (token.attrs) {
+					const key = getNextKey("img");
 					const attrs = Object.fromEntries(token.attrs);
-					pushToParent(h("img", { src: attrs.src, alt: attrs.alt }));
+					pushToParent(
+						h(BaseImage, { src: attrs.src ?? "", alt: attrs.alt, key: key }),
+					);
 				}
 				break;
 			}
@@ -102,8 +157,14 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 						return `<div class="line-number"></div>`;
 					});
 
+				const key = getNextKey("pre");
+
 				pushToParent(
-					h("pre", { class: "hljs" }, [
+					h("pre", { class: "hljs", key: key }, [
+						h("div", { class: "code-header" }, [
+							h("span", { class: "code-language" }, lang),
+							h(CopyButton, { text: token.content, class: "copy-btn" }),
+						]),
 						h("div", { class: "line-numbers", innerHTML: lineNumbers }),
 						h("code", {
 							class: `language-${lang}`,
@@ -111,16 +172,6 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 						}),
 					]),
 				);
-				break;
-			}
-
-			case token.type === "html_block": {
-				pushToParent(h("div", { innerHTML: token.content }));
-				break;
-			}
-
-			case token.type === "html_inline": {
-				pushToParent(h("span", { innerHTML: token.content }));
 				break;
 			}
 
