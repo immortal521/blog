@@ -86,11 +86,15 @@ const closeFullImage = () => {
       @click="handleClick"
     />
     <Teleport to="body">
-      <div v-if="isModalOpen" class="img-modal-overlay" @click.self="closeFullImage">
-        <div class="modal-content">
-          <img :src="src" :alt="alt" />
+      <Transition name="img-modal">
+        <div v-if="isModalOpen" class="img-modal-overlay" @click="closeFullImage">
+          <div class="modal-content">
+            <div class="modal-img-container">
+              <img :src="src" :alt="alt" />
+            </div>
+          </div>
         </div>
-      </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
@@ -136,5 +140,46 @@ const closeFullImage = () => {
   height: 100vh;
   background: #00000020;
   backdrop-filter: blur(5px);
+  z-index: 9999;
+}
+
+.modal-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-img-container {
+  width: 100%;
+  max-height: 80%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  img {
+    width: 80%;
+    height: 80%;
+    object-fit: cover;
+  }
+}
+
+.img-modal-enter-active,
+.img-modal-leave-active {
+  .modal-img-container {
+    transition: all 0.4s;
+  }
+  transition: all 0.4s;
+}
+.img-modal-enter-from,
+.img-modal-leave-to {
+  .modal-img-container {
+    opacity: 0;
+    scale: 0.5;
+  }
+  opacity: 0;
 }
 </style>
