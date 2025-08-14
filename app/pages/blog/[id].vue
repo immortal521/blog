@@ -83,16 +83,9 @@ $ a \\times b = c 公式$
 
 <!-- 注释 -->
 
-<img src="https://gitee.com/Immortal112/image/raw/master/background/11.webp"></img>
+![demo](https://gitee.com/Immortal112/image/raw/master/background/11.webp)
 
-
-[<u>百度</u>](https://baidu.com/)超链接 [名字]+(链接)
-
-- [x] 勾选框
-- [ ] 123
-- [ ] 123
-- [ ] 123
-- [ ] 41353
+[百度](https://baidu.com/)超链接 [名字]+(链接)
 
 \`\`\`mermaid
 graph LR

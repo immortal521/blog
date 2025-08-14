@@ -257,14 +257,13 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 
 <style lang="less">
 .hljs {
-  display: block;
+  display: flex;
   position: relative;
   background: var(--bg-code);
   color: var(--text-color-base);
-  font-family: "Maple Mono", monospace;
   font-size: 1.5rem;
   line-height: 1.5;
-  padding: 3rem 0 1.5rem;
+  padding: 3rem 3rem 1.5rem 0rem;
   border-radius: var(--radius-card, 0.5rem);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   overflow-x: auto;
@@ -272,11 +271,11 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   margin-top: 20px;
 }
 
-.code-line {
-  display: inline-block;
-  height: 1.5rem;
-  letter-spacing: 0.05rem;
+.hljs code {
+  display: block;
   cursor: text;
+  position: relative;
+  font-family: "Maple Mono", monospace;
 }
 
 .hljs-comment,
@@ -338,25 +337,28 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   font-weight: bold;
 }
 
-.code-line.numbered-code-line {
-  position: relative;
-  width: 100%;
-  margin-right: 2rem;
-}
-
-.code-line.numbered-code-line::before {
-  content: attr(data-line-number);
+.line-numbers {
   position: sticky;
-  display: inline-block;
   left: 0;
+  flex-shrink: 0;
   padding-right: 0.5rem;
-  margin-right: 1rem;
-  width: 3rem;
+  width: 3.5rem;
+  margin-right: 0.5rem;
   background-color: var(--bg-code);
   text-align: right;
   color: var(--text-color-muted);
   font-size: 1.5rem;
   line-height: 1.5;
   border-right: 1px solid var(--border-color-disabled);
+  cursor: default;
+  user-select: none;
+  counter-reset: line-number 0;
+  z-index: 1;
+  font-family: "Maple Mono", monospace;
+}
+
+.line-number::before {
+  content: counter(line-number);
+  counter-increment: line-number;
 }
 </style>

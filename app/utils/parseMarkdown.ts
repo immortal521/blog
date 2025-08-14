@@ -6,7 +6,7 @@ import hljs from "highlight.js";
 import type { VNodeChild } from "vue";
 import type Token from "markdown-it/lib/token.mjs";
 
-const md = MarkdownIt({ html: true, linkify: true })
+const md = MarkdownIt({ html: false, linkify: true })
 	.use(mark)
 	.use(sup)
 	.use(sub);
@@ -20,6 +20,7 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 	interface Stack {
 		tag: string;
 		children: VNodeChild[];
+		attrs: { [k: string]: string };
 	}
 	const stack: Stack[] = [];
 	const result: VNodeChild[] = [];
@@ -35,17 +36,18 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 	for (const token of tokens) {
 		switch (true) {
 			case token.type.endsWith("_open"): {
+				const attrs = Object.fromEntries(token.attrs ?? []);
 				// 将开放标签推入栈中
 				if (token.tag) {
-					stack.push({ tag: token.tag, children: [] });
+					stack.push({ tag: token.tag, children: [], attrs });
 				}
 				break;
 			}
 
 			case token.type.endsWith("_close"): {
 				// 封闭标签，从栈中弹出并创建 VNode
-				const { tag, children } = stack.pop()!;
-				const vnode = h(tag, {}, children);
+				const { tag, children, attrs } = stack.pop()!;
+				const vnode = h(tag, { ...attrs }, children);
 				pushToParent(vnode);
 				break;
 			}
@@ -93,21 +95,32 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 				const highlighted = hljs.highlight(token.content, {
 					language: lang,
 				}).value;
-				console.log(highlighted.trim().split("\n"));
-				let lineCount = 1;
-				const code = highlighted
+				const lineNumbers = highlighted
 					.trim()
 					.split("\n")
-					.map((item) => {
-						return `<span class="code-line numbered-code-line" data-line-number="${lineCount++}">${item}</span>`;
-					})
-					.join("\n");
+					.map(() => {
+						return `<div class="line-number"></div>`;
+					});
 
 				pushToParent(
 					h("pre", { class: "hljs" }, [
-						h("code", { class: `language-${lang}`, innerHTML: code }),
+						h("div", { class: "line-numbers", innerHTML: lineNumbers }),
+						h("code", {
+							class: `language-${lang}`,
+							innerHTML: highlighted.trim(),
+						}),
 					]),
 				);
+				break;
+			}
+
+			case token.type === "html_block": {
+				pushToParent(h("div", { innerHTML: token.content }));
+				break;
+			}
+
+			case token.type === "html_inline": {
+				pushToParent(h("span", { innerHTML: token.content }));
 				break;
 			}
 
