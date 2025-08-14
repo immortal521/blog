@@ -1,19 +1,23 @@
 <script setup lang="ts">
-import BaseImage from "~/components/BaseImage.vue";
+const localePath = useLocalePath();
 </script>
 
 <template>
   <div>
     <WelcomePanel />
-    <main>
-      <BaseImage src="https://gitee.com/Immortal112/image/raw/master/background/28.webp" lazy class="img"/>
+    <main class="main">
+      <NuxtLink :to="localePath('/blog/1')"> 前往 Markdown 渲染示例 </NuxtLink>
     </main>
   </div>
 </template>
 
 <style lang="less" scoped>
-.img {
-  width: 200px;
-  border-radius: 20px;
+.main {
+  background-color: var(--bg-content);
+  width: 100%;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

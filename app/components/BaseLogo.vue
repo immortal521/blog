@@ -12,7 +12,7 @@ const handleLogoClicked = () => {
 
 <template>
   <div class="logo" @click="handleLogoClicked">
-    <img src="http://q1.qlogo.cn/g?b=qq&nk=188191770&s=100" alt="logo" />
+    <BaseImage src="http://q1.qlogo.cn/g?b=qq&nk=188191770&s=100" alt="logo" class="avatar-image" />
   </div>
 </template>
 
@@ -29,7 +29,7 @@ const handleLogoClicked = () => {
   border-radius: 50%;
   overflow: hidden;
 
-  img {
+  .avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;

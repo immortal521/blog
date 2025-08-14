@@ -25,7 +25,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 </template>
 
 <style lang="less" scoped>
-.container:deep(img) {
+.container:deep(.image-container) {
   max-width: 100%;
   height: auto;
   margin: 0 auto;

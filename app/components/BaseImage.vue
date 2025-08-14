@@ -3,12 +3,10 @@ interface Props {
   src: string;
   alt?: string;
   lazy?: boolean; // 是否懒加载
+  preview?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  alt: "",
-  lazy: true,
-});
+const { src, alt = "", lazy = true, preview = false} = defineProps<Props>();
 
 type Status = "loading" | "loaded" | "error";
 const status = ref<Status>("loading");
@@ -26,11 +24,11 @@ const errorPlaceholder =
 
 const loadImage = () => {
   if (!imgRef.value) return;
-  imgRef.value.src = props.src;
+  imgRef.value.src = src;
 };
 
 onMounted(() => {
-  if (props.lazy && imgRef.value) {
+  if (lazy && imgRef.value) {
     observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -61,6 +59,7 @@ const handleError = () => {
 };
 
 const handleClick = () => {
+  if (!preview) return;
   document.body.style.overflow = "hidden";
   isModalOpen.value = true;
 };

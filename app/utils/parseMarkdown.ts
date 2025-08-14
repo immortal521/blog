@@ -135,10 +135,13 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 
 			case token.type === "image": {
 				if (token.attrs) {
-					const key = getNextKey("img");
 					const attrs = Object.fromEntries(token.attrs);
 					pushToParent(
-						h(BaseImage, { src: attrs.src ?? "", alt: attrs.alt, key: key }),
+						h(BaseImage, {
+							src: attrs.src ?? "",
+							alt: attrs.alt,
+							preview: true,
+						}),
 					);
 				}
 				break;
@@ -155,7 +158,8 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 					.split("\n")
 					.map(() => {
 						return `<div class="line-number"></div>`;
-					});
+					})
+					.join("");
 
 				const key = getNextKey("pre");
 
