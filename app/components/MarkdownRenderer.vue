@@ -25,11 +25,12 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 </template>
 
 <style lang="less" scoped>
-.container:deep(.image-container) {
+.container:deep(.img-container) {
   max-width: 100%;
-  height: auto;
+  min-height: 1px;
   margin: 0 auto;
   border-radius: 5px;
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
 
@@ -266,7 +267,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   padding: 3rem 3rem 1.5rem 0rem;
   border-radius: var(--radius-card, 0.5rem);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  overflow-x: auto;
+  overflow: hidden;
   transition: var(--transition-base, 0.3s);
   margin-top: 20px;
 }
@@ -276,6 +277,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   height: 3rem;
   width: 100%;
   top: 0;
+  left: 0;
   padding: 0 2rem;
   display: flex;
   line-height: 3rem;
@@ -298,11 +300,25 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   opacity: 1;
 }
 
+.hljs {
+  & code::-webkit-scrollbar-thumb {
+    height: 2px;
+    width: 2px;
+    background-color: #00000000;
+    transition: background 0.4s ease-in-out;
+  }
+
+  &:hover code::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-base);
+  }
+}
+
 .hljs code {
   display: block;
   cursor: text;
   position: relative;
   font-family: "Maple Mono", "Noto Sans SC", monospace;
+  overflow-x: auto;
 }
 
 .hljs-comment,

@@ -6,7 +6,7 @@ interface Props {
   preview?: boolean;
 }
 
-const { src, alt = "", lazy = true, preview = false} = defineProps<Props>();
+const { src, alt = "", lazy = true, preview = false } = defineProps<Props>();
 
 type Status = "loading" | "loaded" | "error";
 const status = ref<Status>("loading");
@@ -135,6 +135,8 @@ const closeFullImage = () => {
 
 .img-modal-overlay {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   background: #00000020;
@@ -177,7 +179,7 @@ const closeFullImage = () => {
 .img-modal-leave-to {
   .modal-img-container {
     opacity: 0;
-    scale: 0.5;
+    transform: scale(0.3);
   }
   opacity: 0;
 }
