@@ -2,10 +2,10 @@ import MarkdownIt from "markdown-it";
 import { mark } from "@mdit/plugin-mark";
 import { sub } from "@mdit/plugin-sub";
 import { sup } from "@mdit/plugin-sup";
-import hljs from "highlight.js";
 import { isVNode, type VNodeChild } from "vue";
 import type Token from "markdown-it/lib/token.mjs";
-import { BaseImage, CopyButton } from "#components";
+import { BaseImage, CodeWrapper } from "#components";
+import type { BundledLanguage, SpecialLanguage } from "shiki";
 
 const md = MarkdownIt({ html: false, linkify: true }).use(mark).use(sup).use(sub);
 
@@ -145,34 +145,10 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
       }
 
       case token.type === "fence": {
-        const lang = token.info.trim() || "plaintext";
-        if (lang === "mermaid") break;
-        const highlighted = hljs.highlight(token.content, {
-          language: lang,
-        }).value;
-        const lineNumbers = highlighted
-          .trim()
-          .split("\n")
-          .map(() => {
-            return `<div class="line-number"></div>`;
-          })
-          .join("");
-
+        const lang = token.info.trim() as BundledLanguage | SpecialLanguage;
+        const code = token.content.trim();
         const key = getNextKey("pre");
-
-        pushToParent(
-          h("pre", { class: "hljs", key: key }, [
-            h("div", { class: "code-header" }, [
-              h("span", { class: "code-language" }, lang),
-              h(CopyButton, { text: token.content, class: "copy-btn" }),
-            ]),
-            h("div", { class: "line-numbers", innerHTML: lineNumbers }),
-            h("code", {
-              class: `language-${lang}`,
-              innerHTML: highlighted.trim(),
-            }),
-          ]),
-        );
+        pushToParent(h(CodeWrapper, { lang, code, key }));
         break;
       }
 
