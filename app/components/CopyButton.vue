@@ -33,5 +33,10 @@ const copy = async () => {
   font-size: 1.2rem;
   font-family: var(--font-family-base);
   border: 1px solid var(--color-primary-base);
+
+  &:hover {
+    border: 1px solid var(--color-primary-hover);
+    background-color: var(--color-primary-hover);
+  }
 }
 </style>
