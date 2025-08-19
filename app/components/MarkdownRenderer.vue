@@ -404,4 +404,10 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   content: counter(line-number);
   counter-increment: line-number;
 }
+
+@media (max-width: 768px) {
+  .hljs .code-header {
+    opacity: 1;
+  }
+}
 </style>
