@@ -59,7 +59,7 @@ jobs:
             rm -f build.tar.gz
 
             echo "📦 安装生产依赖"
-            pnpm install --prod --frozen-lockfile
+            pnpm install --prod --frozen-lockfile --ignore-scripts
 
             echo "🚀 重启服务"
             pm2 start .output/server/index.mjs --name blog-ssr --update-env || pm2 restart blog-ssr
