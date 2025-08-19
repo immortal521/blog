@@ -48,7 +48,7 @@ jobs:
             pnpm install --frozen-lockfile
 
             echo "🏗️ 构建 Nuxt SSR"
-            pnpm build
+            NODE_OPTIONS="--max-old-space-size=1024" pnpm build
 
             echo "🚀 重启服务"
             pm2 start .output/server/index.mjs --name blog-ssr --update-env || pm2 restart blog-ssr
