@@ -93,12 +93,18 @@ A-->b
 C-->A
 \`\`\`
 `);
+
+const src = ref("https://gitee.com/Immortal112/image/raw/master/background/11.webp");
+const title = ref("Markdown 渲染示例");
 </script>
 
 <template>
-  <ContentPanel>
+  <ContentPanel :spacer="false">
     <article class="article">
-      <MarkdownRenderer :markdown></MarkdownRenderer>
+      <ArticleCover :src="src" :title="title" />
+      <main class="content">
+        <MarkdownRenderer :markdown></MarkdownRenderer>
+      </main>
     </article>
   </ContentPanel>
 </template>
@@ -106,8 +112,22 @@ C-->A
 <style lang="less" scoped>
 .article {
   width: 100%;
+}
+
+.content {
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  animation: article-show 1s ease-in-out;
+}
+
+@keyframes article-show {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>

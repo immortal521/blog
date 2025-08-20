@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { BundledLanguage, SpecialLanguage } from "shiki";
 import type { Element, ElementContent } from "hast";
-import { defineProps } from "vue";
 import CodeHeader from "./CodeHeader.vue";
 
 interface Props {

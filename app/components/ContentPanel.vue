@@ -1,8 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const { spacer = true } = defineProps<{ spacer?: boolean }>();
+</script>
 
 <template>
   <div class="container">
-    <BaseSpacer height="80" />
+    <BaseSpacer v-if="spacer" height="80" />
     <slot />
   </div>
 </template>
