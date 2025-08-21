@@ -30,6 +30,6 @@ onUnmounted(() => {
   width: 0;
   height: 2px;
   background-color: var(--color-primary-base);
-  z-index: 9999;
+  z-index: 9998;
 }
 </style>

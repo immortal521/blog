@@ -12,7 +12,7 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
 
 <style lang="less" scoped>
 .loading {
-  position: absolute;
+  position: fixed;
   top: 0;
   z-index: 10000;
   height: 3px;
