@@ -2,6 +2,7 @@
 
 <template>
   <div>
+    <ReadProgress />
     <SiteUtilityBar />
     <BaseHeader />
     <main class="main">
