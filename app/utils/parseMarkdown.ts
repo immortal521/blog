@@ -101,6 +101,8 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
               key,
               src: attrs.src ?? "",
               alt: attrs.alt,
+              class: "img",
+              loading: "lazy",
             }),
           );
         }

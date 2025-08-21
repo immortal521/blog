@@ -25,12 +25,11 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
 </template>
 
 <style lang="less" scoped>
-.container:deep(.img-container) {
+.container:deep(.img) {
   max-width: 100%;
-  min-height: 1px;
   margin: 0 auto;
   border-radius: 5px;
-  overflow: hidden;
+  cursor: pointer;
   box-shadow: var(--shadow-sm);
 }
 
