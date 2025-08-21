@@ -12,7 +12,7 @@ const handleLogoClicked = () => {
 
 <template>
   <div class="logo" @click="handleLogoClicked">
-    <BaseImage src="http://q1.qlogo.cn/g?b=qq&nk=188191770&s=100" alt="logo" class="avatar-image" />
+    <NuxtImg src="http://q1.qlogo.cn/g?b=qq&nk=188191770&s=100" alt="logo" class="avatar-image" />
   </div>
 </template>
 

@@ -2,9 +2,9 @@ import MarkdownIt from "markdown-it";
 import { mark } from "@mdit/plugin-mark";
 import { sub } from "@mdit/plugin-sub";
 import { sup } from "@mdit/plugin-sup";
-import { isVNode, type VNodeChild } from "vue";
+import type { VNodeChild } from "vue";
 import type Token from "markdown-it/lib/token.mjs";
-import { BaseImage, CodeWrapper } from "#components";
+import { CodeWrapper, NuxtImg } from "#components";
 import type { BundledLanguage, SpecialLanguage } from "shiki";
 
 const md = MarkdownIt({ html: false, linkify: true }).use(mark).use(sup).use(sub);
@@ -12,26 +12,6 @@ const md = MarkdownIt({ html: false, linkify: true }).use(mark).use(sup).use(sub
 export function parseMarkdownToVNode(markdown: string): VNodeChild[] {
   const tokens = md.parse(markdown, {});
   return tokensToVNode(tokens);
-}
-
-function hasComponent(vnodes: VNodeChild[], component: Component): boolean {
-  if (!vnodes) {
-    return false;
-  }
-
-  const nodes = Array.isArray(vnodes) ? vnodes : [vnodes];
-
-  for (const node of nodes) {
-    if (!isVNode(node)) {
-      continue;
-    }
-
-    if (node.type === component) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 function tokensToVNode(tokens: Token[]): VNodeChild[] {
@@ -62,38 +42,20 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
 
   for (const token of tokens) {
     switch (true) {
-      case token.type === "paragraph_open": {
-        const attrs = Object.fromEntries(token.attrs ?? []);
-        if (token.tag) {
-          stack.push({ tag: token.tag, children: [], attrs, key: "" });
-        }
-        break;
-      }
-      case token.type === "paragraph_close": {
-        const { children, attrs } = stack.pop()!;
-        if (hasComponent(children, BaseImage)) {
-          const key = getNextKey("img");
-          pushToParent(h("div", { ...attrs, class: "img-container", key }, children));
-        } else {
-          const key = getNextKey("p");
-          pushToParent(h("p", { ...attrs, key }, children));
-        }
-        break;
-      }
       case token.type.endsWith("_open"): {
         const attrs = Object.fromEntries(token.attrs ?? []);
         // 将开放标签推入栈中
         if (token.tag) {
           const key = getNextKey(token.tag);
-          stack.push({ tag: token.tag, children: [], attrs, key: key });
+          stack.push({ tag: token.tag, children: [], attrs, key });
         }
         break;
       }
 
       case token.type.endsWith("_close"): {
         // 封闭标签，从栈中弹出并创建 VNode
-        const { tag, children, attrs, key: stackKey } = stack.pop()!;
-        const vnode = h(tag, { ...attrs, key: stackKey }, children);
+        const { tag, children, attrs, key } = stack.pop()!;
+        const vnode = h(tag, { ...attrs, key }, children);
         pushToParent(vnode);
         break;
       }
@@ -119,25 +81,26 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
       case token.type === "code_inline": {
         if (token.content) {
           const key = getNextKey("code");
-          pushToParent(h("code", { key: key }, token.content));
+          pushToParent(h("code", { key }, token.content));
         }
         break;
       }
 
       case token.type === "hr": {
         const key = getNextKey("hr");
-        pushToParent(h("hr", { key: key }));
+        pushToParent(h("hr", { key }));
         break;
       }
 
       case token.type === "image": {
+        const key = getNextKey("img");
         if (token.attrs) {
           const attrs = Object.fromEntries(token.attrs);
           pushToParent(
-            h(BaseImage, {
+            h(NuxtImg, {
+              key,
               src: attrs.src ?? "",
               alt: attrs.alt,
-              preview: true,
             }),
           );
         }

@@ -100,7 +100,7 @@ const title = ref("Markdown 渲染示例");
 
 <template>
   <ContentPanel :spacer="false">
-    <article class="article">
+    <article v-viewer class="article">
       <ArticleCover :src="src" :title="title" />
       <main class="content">
         <MarkdownRenderer :markdown></MarkdownRenderer>

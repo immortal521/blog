@@ -9,7 +9,7 @@ const { src = "", title = "" } = defineProps<Props>();
 
 <template>
   <header class="article-cover">
-    <BaseImage v-if="src" :src class="cover" :preview="false" />
+    <NuxtImg v-if="src" :src />
     <div class="cover-content">
       <h1 class="title">{{ title }}</h1>
     </div>
@@ -29,6 +29,11 @@ const { src = "", title = "" } = defineProps<Props>();
   align-items: center;
 }
 
+.cover {
+  width: 100%;
+  height: 100%;
+}
+
 .cover-content {
   width: 100%;
   height: 100%;
@@ -45,14 +50,5 @@ const { src = "", title = "" } = defineProps<Props>();
 
 .title {
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-.wave {
-  width: 100%;
-  height: 15%;
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  transform: translateY(100%);
 }
 </style>

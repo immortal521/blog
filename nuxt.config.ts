@@ -93,5 +93,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxtjs/i18n",
     "@nuxtjs/sitemap",
+    "@nuxt/image",
   ],
 });
+

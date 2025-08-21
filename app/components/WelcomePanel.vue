@@ -23,7 +23,7 @@ const handleDownArrowClick = () => {
     <div class="content">
       <div class="introduction">
         <div class="avatar">
-          <BaseImage
+          <NuxtImg
             src="http://q1.qlogo.cn/g?b=qq&nk=188191770&s=100"
             alt="avatar"
             class="avatar-image"
