@@ -1,4 +1,7 @@
 <script setup lang="ts">
+useHead({
+  title: "markdown 渲染示例",
+});
 const markdown = ref(`
 # 一级标题
 
@@ -119,6 +122,12 @@ const title = ref("Markdown 渲染示例");
   max-width: 800px;
   margin: 0 auto;
   animation: article-show 1s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 0 20px;
+  }
 }
 
 @keyframes article-show {

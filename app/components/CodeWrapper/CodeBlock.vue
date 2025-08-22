@@ -144,11 +144,6 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
 }
 
 @media (max-width: 768px) {
-  .shiki {
-    & code::-webkit-scrollbar-thumb {
-      background-color: var(--color-primary-base);
-    }
-  }
   .code-header {
     opacity: 1;
   }
