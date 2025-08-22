@@ -17,6 +17,9 @@ importers:
       '@mdit/plugin-sup':
         specifier: ^0.22.1
         version: 0.22.1(markdown-it@14.1.0)
+      '@mdit/plugin-tasklist':
+        specifier: ^0.22.1
+        version: 0.22.1(markdown-it@14.1.0)
       '@nuxt/eslint':
         specifier: 1.8.0
         version: 1.8.0(@typescript-eslint/utils@8.39.0(eslint@9.32.0(jiti@2.5.1))(typescript@5.9.2))(@vue/compiler-sfc@3.5.18)(eslint@9.32.0(jiti@2.5.1))(magicast@0.3.5)(typescript@5.9.2)(vite@7.1.1(@types/node@22.17.1)(jiti@2.5.1)(less@4.4.0)(terser@5.43.1)(yaml@2.8.1))
@@ -992,6 +995,15 @@ packages:
 
   '@mdit/plugin-sup@0.22.1':
     resolution: {integrity: sha512-B0ez+dt1tjX2gxcS6ShF+ddXU6X7wDwVnz1rB4aXo5PhvCRkBWpuXbFJT2gy5TIAG7/B4AHQww2KeEYhd56NUw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      markdown-it: ^14.1.0
+    peerDependenciesMeta:
+      markdown-it:
+        optional: true
+
+  '@mdit/plugin-tasklist@0.22.1':
+    resolution: {integrity: sha512-mn09Sm0fMV6ql3wb6TuoAai4gmnybvq09KeHa2ckBKKO/fwqVqCvOUI2yvZc3IrYMR+4B2WlBtyCBk5v11H9Uw==}
     engines: {node: '>= 18'}
     peerDependencies:
       markdown-it: ^14.1.0
@@ -6884,6 +6896,12 @@ snapshots:
   '@mdit/plugin-sup@0.22.1(markdown-it@14.1.0)':
     dependencies:
       '@mdit/helper': 0.22.1(markdown-it@14.1.0)
+      '@types/markdown-it': 14.1.2
+    optionalDependencies:
+      markdown-it: 14.1.0
+
+  '@mdit/plugin-tasklist@0.22.1(markdown-it@14.1.0)':
+    dependencies:
       '@types/markdown-it': 14.1.2
     optionalDependencies:
       markdown-it: 14.1.0

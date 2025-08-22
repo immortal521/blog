@@ -6,8 +6,9 @@ import type { VNodeChild } from "vue";
 import type Token from "markdown-it/lib/token.mjs";
 import { CodeWrapper, NuxtImg } from "#components";
 import type { BundledLanguage, SpecialLanguage } from "shiki";
+import { tasklist } from "@mdit/plugin-tasklist";
 
-const md = MarkdownIt({ html: false, linkify: true }).use(mark).use(sup).use(sub);
+const md = MarkdownIt({ html: false, linkify: true }).use(mark).use(sup).use(sub).use(tasklist);
 
 export function parseMarkdownToVNode(markdown: string): VNodeChild[] {
   const tokens = md.parse(markdown, {});
@@ -86,6 +87,14 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
         break;
       }
 
+      case token.type === "checkbox_input": {
+        if (token.attrs) {
+          const attrs = Object.fromEntries(token.attrs);
+          pushToParent(h("input", { ...attrs }));
+        }
+        break;
+      }
+
       case token.type === "hr": {
         const key = getNextKey("hr");
         pushToParent(h("hr", { key }));
@@ -110,7 +119,10 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
       }
 
       case token.type === "fence": {
-        const lang = token.info.trim() as BundledLanguage | SpecialLanguage;
+        let lang = token.info.trim() as BundledLanguage | SpecialLanguage;
+        if (!highlighter.getLoadedLanguages().includes(lang)) {
+          lang = "plaintext";
+        }
         const code = token.content.trim();
         const key = getNextKey("pre");
         pushToParent(h(CodeWrapper, { lang, code, key }));
