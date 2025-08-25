@@ -1,0 +1,27 @@
+{
+	"navbar": {
+		"home": "ホーム",
+		"about": "紹介",
+		"links": "リンク集"
+	},
+	"themeControl": {
+		"themeMode": "テーマモード",
+		"light": "ライト",
+		"dark": "ダーク",
+		"primaryColor": "テーマカラー",
+		"language": "言語"
+	},
+	"tooltip": {
+		"github": "GitHub を表示",
+		"backToTop": "トップへ戻る",
+		"addQQFriend": "QQ 友だちを追加する",
+		"themeOption": "テーマ設定",
+		"contect": "お問い合わせ"
+	},
+	"friendLink": {
+		"title": "フレンドリンク",
+		"requestLink": "リンクを送信"
+	},
+	"copy": "コピーする",
+	"copied": "コピーしました"
+}

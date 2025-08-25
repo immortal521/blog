@@ -1,0 +1,85 @@
+@import "./fonts.less";
+@import "./base.less";
+@import "./keyframes.less";
+
+*,
+*::before,
+*::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    border-color 0.3s ease-in-out;
+}
+
+body {
+  display: block;
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-base);
+  line-height: var(--line-height-base);
+  font-size: 1.6rem;
+
+  font-synthesis: var(--font-synthesis);
+  text-rendering: var(--text-rendering);
+  -webkit-font-smoothing: var(--font-smoothing-webkit);
+  -moz-osx-font-smoothing: var(--font-smoothing-moz);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-color: var(--color-surface-muted);
+  background-image: url("http://www.98qy.com/sjbz/api.php");
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-primary-base);
+
+  &:hover {
+    color: var(--color-primary-hover);
+  }
+
+  &:active {
+    color: var(--color-primary-active);
+  }
+
+  &:disabled {
+    color: var(--color-primary-disabled);
+  }
+}
+
+button {
+  border: none;
+  outline: none;
+  font-family: var(--font-family-base);
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-base);
+  width: 4px;
+  height: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-primary-active);
+}
+
+::selection {
+  background-color: var(--color-primary-base);
+  color: var(--color-on-primary);
+}

@@ -1,0 +1,195 @@
+:root {
+  font-size: 10px;
+
+  /* === 字体与基础排版 === */
+  --font-family-base: "Open Sans", "Noto Sans SC", "Microsoft YaHei", "微软雅黑", monospace;
+  --font-family-caveat: "Caveat";
+  --font-weight-base: 400;
+  --line-height-base: 1.5;
+  --font-synthesis: none;
+  --text-rendering: optimizeLegibility;
+  --font-smoothing-webkit: antialiased;
+  --font-smoothing-moz: grayscale;
+
+  /* === 色彩系统 === */
+  --color-primary-base: #99a2ff;
+  --color-primary-hover: #7c85ff;
+  --color-primary-active: #636dff;
+  --color-primary-disabled: #d3d7ff;
+  --color-primary-border: #7c85ff;
+  --color-primary-bg: rgba(153, 162, 255, 0.1);
+  --color-on-primary: #ffffff;
+
+  --article-title-color: #fbfbfb;
+
+  --color-header: #2c3e50;
+
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-secondary: #67e8f9;
+  --color-info: #3b82f6;
+
+  /* === 文本颜色 === */
+  --text-color-base: #1f2937;
+  --text-color-muted: #6b7280;
+  --text-color-inverse: #ffffff;
+
+  /* === 背景颜色 === */
+  --bg-app: #f9fafb;
+  --bg-surface: #ffffff;
+  --bg-surface-muted: #f1f5f9;
+  --bg-content: rgba(255, 255, 255, 0.8);
+  --bg-article-cover: rgba(255, 255, 255, 0.3);
+  --bg-disabled: #f3f4f6;
+
+  /* === 边框与分隔线 === */
+  --border-color-base: #e5e7eb;
+  --border-color-divider: #d1d5db;
+  --border-color-disabled: #9ca3af;
+
+  /* === 卡片组件 === */
+  --bg-card-base: rgba(255, 255, 255, 0.5);
+  --bg-card-hover: rgba(255, 255, 255, 0.8);
+  --border-color-card: #ffffff;
+  --radius-card: 10px;
+  --shadow-card-base: var(--shadow-md);
+  --shadow-card-hover: var(--shadow-lg);
+
+  --border-table: rgba(0, 0, 0, 0.1);
+  --table-row-even-bg: rgba(0, 0, 0, 0.04); /* 更明显的浅色斑马线 */
+  --table-row-hover-bg: rgba(0, 0, 0, 0.08); /* Hover背景加深 */
+  --table-head-bg: rgba(255, 255, 255, 0.05);
+  --table-head-border: var(--border-color-base);
+  --font-size-table-header: 1.5rem;
+  --font-size-table-row: 1.5rem;
+
+  --bg-code: #f0f0f0;
+
+  /* === 导航栏 === */
+  --bg-nav-base: rgba(255, 255, 255, 0.6);
+  --bg-nav-hover: rgba(255, 255, 255, 0.85);
+  --bg-nav-active: rgba(255, 255, 255, 0.95);
+  --border-color-nav: rgba(255, 255, 255, 0.4);
+  --radius-nav: var(--radius-card);
+  --shadow-nav: var(--shadow-md);
+  --blur-nav: var(--filter-blur-md);
+  --transition-nav: background 0.3s ease, box-shadow 0.3s ease;
+
+  /* === 主题按钮开关 === */
+  --bg-button-toggle-track: rgba(255, 255, 255, 0.4);
+  --bg-button-toggle-thumb: rgba(255, 255, 255, 0.8);
+  --border-color-button-toggle: rgba(0, 0, 0, 0.1);
+
+  /* === 选择框 === */
+  --bg-select: rgba(255, 255, 255, 0.4);
+  --border-color-select: rgba(0, 0, 0, 0.1);
+
+  /* === 动效 === */
+  --transition-base: all 0.3s ease;
+
+  /* === 阴影层级 === */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 6px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  /* === 滤镜 === */
+  --filter-blur-sm: blur(4px);
+  --filter-blur-md: blur(10px);
+  --filter-blur-lg: blur(20px);
+  --filter-brightness-dim: brightness(0.9);
+  --filter-brightness-strong: brightness(1.2);
+  --filter-shadow-md: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.2));
+}
+
+[data-theme="dark"] {
+  --bg-app: #0f1117;
+  --bg-surface: #1a1d24;
+  --bg-surface-muted: #2a2e38;
+  --bg-content: rgba(26, 29, 36, 0.8);
+  --bg-article-cover: rgba(26, 29, 36, 0.3);
+  --bg-disabled: #2f3240;
+
+  --bg-nav-base: rgba(26, 29, 36, 0.6);
+  --bg-nav-hover: rgba(26, 29, 36, 0.85);
+  --bg-nav-active: rgba(26, 29, 36, 0.85);
+  --border-color-nav: rgba(255, 255, 255, 0.05);
+
+  --bg-card-base: rgba(26, 29, 36, 0.5);
+  --bg-card-hover: rgba(26, 29, 36, 0.8);
+  --border-color-card: rgba(255, 255, 255, 0.05);
+
+  --bg-code: #262b35;
+
+  --text-color-base: #f3f4f6;
+  --text-color-muted: #9ca3af;
+  --text-color-inverse: #1f2937;
+
+  --color-primary-hover: #b2b9ff;
+  --color-primary-active: #7c85ff;
+  --color-primary-disabled: #3c416c;
+  --color-primary-border: #99a2ff;
+  --color-on-primary: #1f2937;
+
+  --color-header: #ecf0f1;
+
+  --color-success: #22c55e;
+  --color-warning: #facc15;
+  --color-danger: #ef4444;
+
+  --border-color-base: #3a3f4b;
+  --border-color-divider: #2c2f38;
+  --border-color-disabled: #6b7280;
+
+  --border-table: rgba(255, 255, 255, 0.1);
+  --table-row-even-bg: rgba(255, 255, 255, 0.03);
+  --table-row-hover-bg: rgba(255, 255, 255, 0.08);
+  --table-head-bg: rgba(255, 255, 255, 0.05);
+
+  --bg-button-toggle-track: rgba(26, 29, 36, 0.4);
+  --bg-button-toggle-thumb: rgba(46, 50, 60, 0.85);
+  --border-color-button-toggle: rgba(255, 255, 255, 0.08);
+
+  --bg-select: rgba(26, 29, 36, 0.4);
+  --border-color-select: rgba(46, 50, 60, 0.85);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 6px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 10px 40px rgba(0, 0, 0, 0.6);
+
+  --filter-blur-sm: blur(4px);
+  --filter-blur-md: blur(10px);
+  --filter-blur-lg: blur(20px);
+  --filter-brightness-dim: brightness(0.9);
+  --filter-brightness-strong: brightness(1.2);
+  --filter-shadow-md: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.4));
+
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+[data-theme="dark"]::view-transition-old(root) {
+  z-index: 2147483646;
+}
+
+[data-theme="dark"]::view-transition-new(root) {
+  z-index: 1;
+}
