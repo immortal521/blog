@@ -9,7 +9,6 @@ import (
 	"blog-server/internal/router"
 	"blog-server/internal/service"
 	"blog-server/pkg/logger"
-	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -35,8 +34,6 @@ func main() {
 		panic(err)
 	}
 
-	log.Info(fmt.Sprintf("%v", cfg))
-
 	linkRepo := repo.NewLinkRepo()
 	linkService := service.NewLinkService(db, linkRepo)
 	linkHandler := handler.NewLinkHandler(linkService)
@@ -53,6 +50,8 @@ func main() {
 		panic(err)
 	}
 	authService := service.NewAuthService(mailService)
+	authHandler := handler.NewAuthHandler(authService)
+	router.RegisterAuthRoutes(app, authHandler)
 
 	log.Fatal(app.Listen(cfg.Server.GetAddr()).Error())
 }

@@ -22,28 +22,28 @@ const (
 )
 
 type IAuthService interface {
-	SendCaptchaMail(to, captcha string, captchaType CaptchaType) error
+	SendCaptchaMail(ctx context.Context, to string, captcha string, captchaType CaptchaType) error
 }
 
 type AuthService struct {
 	mailService IMailService
 }
 
-func NewAuthService(mailService IMailService) *AuthService {
+func NewAuthService(mailService IMailService) IAuthService {
 	return &AuthService{
 		mailService: mailService,
 	}
 }
 
-func (s *AuthService) SendCaptchaMail(ctx *context.Context, to, captcha string, captchaType CaptchaType) error {
+func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captcha string, captchaType CaptchaType) error {
 	templateName := "captcha.html" // 指定要使用的模板文件
 
-	// 准备模板所需的数据
 	data, err := getCaptchaEmailMeta(captchaType)
 	if err != nil {
 		return err
 	}
 	data.Captcha = captcha
+
 	return s.mailService.Send(to, data.Subject, templateName, data)
 }
 

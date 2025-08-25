@@ -2,28 +2,31 @@ package middleware
 
 import (
 	"blog-server/pkg/logger"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"time"
 )
 
 const ContextLoggerKey = "logger"
 
-func RequestLogger(logger *zap.Logger) fiber.Handler {
+func RequestLogger(log *zap.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// 为每个请求生成一个唯一 ID
 		reqID := uuid.New().String()
 
 		// 基于全局 logger 创建一个带请求上下文的 logger
-		reqLogger := logger.With(
+		reqLogger := log.With(
 			zap.String("request_id", reqID),
 			zap.String("method", c.Method()),
 			zap.String("remote_ip", c.IP()),
 			zap.String("path", c.Path()),
 		)
 
-		// 将 logger 保存到请求上下文
+		ctx := logger.ToContext(c.UserContext(), reqLogger)
+		c.SetUserContext(ctx)
+
 		c.Locals(ContextLoggerKey, reqLogger)
 
 		start := time.Now()
@@ -41,13 +44,4 @@ func RequestLogger(logger *zap.Logger) fiber.Handler {
 
 		return err
 	}
-}
-
-func GetLogger(c *fiber.Ctx) *zap.Logger {
-	if l := c.Locals(ContextLoggerKey); l != nil {
-		if zapLogger, ok := l.(*zap.Logger); ok {
-			return zapLogger
-		}
-	}
-	return logger.Get()
 }

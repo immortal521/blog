@@ -4,6 +4,7 @@ import (
 	"blog-server/internal/dto"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -20,13 +21,13 @@ func NewLinkHandler(svc service.ILinkService) ILinkHandler {
 }
 
 func (l *LinkHandler) GetLinks(c *fiber.Ctx) error {
-	links, err := l.svc.GetLinks(c.Context())
+	links, err := l.svc.GetLinks(c.UserContext())
 	if err != nil {
 		return err
 	}
-	linkDTOs := make([]dto.LinkResponseDTO, len(links))
+	linkDTOs := make([]dto.LinkRes, len(links))
 	for i, link := range links {
-		linkDTOs[i] = dto.LinkResponseDTO{
+		linkDTOs[i] = dto.LinkRes{
 			ID:          link.ID,
 			Name:        link.Name,
 			Url:         link.URL,
@@ -40,7 +41,7 @@ func (l *LinkHandler) GetLinks(c *fiber.Ctx) error {
 }
 
 func (l *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
-	request := new(dto.LinkCreateDTO)
+	request := new(dto.LinkCreateReq)
 	if err := c.BodyParser(request); err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (l *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
 		return errs.BadRequest("url or name is empty")
 	}
 
-	err := l.svc.CreateLink(c.Context(), request)
+	err := l.svc.CreateLink(c.UserContext(), request)
 	if err != nil {
 		return err
 	}

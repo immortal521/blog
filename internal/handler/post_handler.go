@@ -3,8 +3,9 @@ package handler
 import (
 	"blog-server/internal/dto"
 	"blog-server/internal/service"
-	"github.com/gofiber/fiber/v2"
 	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type IPostHandler interface {
@@ -21,13 +22,13 @@ func NewPostHandler(svc service.IPostService) *PostHandler {
 }
 
 func (p PostHandler) GetPosts(c *fiber.Ctx) error {
-	posts, err := p.svc.GetPosts(c.Context())
+	posts, err := p.svc.GetPosts(c.UserContext())
 	if err != nil {
 		return err
 	}
-	postDTOs := make([]dto.PostShortResponseDTO, len(posts))
+	postDTOs := make([]dto.PostShortRes, len(posts))
 	for i, post := range posts {
-		postDTOs[i] = dto.PostShortResponseDTO{
+		postDTOs[i] = dto.PostShortRes{
 			ID:    post.ID,
 			Title: post.Title,
 			Cover: post.Cover,
@@ -42,11 +43,11 @@ func (p PostHandler) GetPost(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	post, err := p.svc.GetPostByID(c.Context(), uint(id))
+	post, err := p.svc.GetPostByID(c.UserContext(), uint(id))
 	if err != nil {
 		return err
 	}
-	result := dto.Success(dto.PostResponseDTO{
+	result := dto.Success(dto.PostRes{
 		ID:              post.ID,
 		Title:           post.Title,
 		Summary:         post.Summary,

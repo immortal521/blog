@@ -9,13 +9,21 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/spf13/viper v1.20.1
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.33.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.1
 )
 
-require gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+require (
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

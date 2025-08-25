@@ -2,13 +2,13 @@ package dto
 
 import "time"
 
-type PostShortResponseDTO struct {
+type PostShortRes struct {
 	ID    uint    `json:"id"`
 	Title string  `json:"title"`
 	Cover *string `json:"cover"`
 }
 
-type PostResponseDTO struct {
+type PostRes struct {
 	ID              uint       `json:"id"`
 	Title           string     `json:"title"`
 	Summary         *string    `json:"summary"`

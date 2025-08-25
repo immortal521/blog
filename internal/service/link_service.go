@@ -10,7 +10,7 @@ import (
 
 type ILinkService interface {
 	GetLinks(ctx context.Context) ([]entity.Link, error)
-	CreateLink(ctx context.Context, dto *dto.LinkCreateDTO) error
+	CreateLink(ctx context.Context, dto *dto.LinkCreateReq) error
 }
 
 type linkService struct {
@@ -30,7 +30,7 @@ func (s *linkService) GetLinks(ctx context.Context) ([]entity.Link, error) {
 	return links, nil
 }
 
-func (s *linkService) CreateLink(ctx context.Context, dto *dto.LinkCreateDTO) error {
+func (s *linkService) CreateLink(ctx context.Context, dto *dto.LinkCreateReq) error {
 	link := entity.Link{
 		Name:        dto.Name,
 		Description: dto.Description,

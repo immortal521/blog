@@ -1,13 +1,13 @@
 package dto
 
-type LinkCreateDTO struct {
-	Name        string `json:"name"`
-	Url         string `json:"url"`
+type LinkCreateReq struct {
+	Name        string `json:"name" validate:"required"`
+	Url         string `json:"url" validate:"required,url"`
 	Description string `json:"description"`
 	Avatar      string `json:"avatar"`
 }
 
-type LinkResponseDTO struct {
+type LinkRes struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
 	Url         string `json:"url"`
