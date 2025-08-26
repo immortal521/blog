@@ -1,0 +1,77 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "backend/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 设置 Go 环境
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.25.0" # 设置 Go 版本
+
+      # 安装依赖
+      - name: Install dependencies
+        run: |
+          cd backend
+          go mod tidy
+
+      # 构建 Go 应用
+      - name: Build Go application
+        run: |
+          cd backend
+          go build -o blog-server ./cmd
+
+      # 上传构建好的文件
+      - name: Archive build artifacts
+        run: |
+          cd backend
+          tar -czf backend.tar.gz myapp
+
+      # 上传到服务器
+      - name: Upload to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "backend/backend.tar.gz"
+          target: "/var/www/blog-nuxt"
+
+      # 通过 SSH 在服务器上部署
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            bash -lc '
+            set -e
+            APP_DIR="/var/www/blog-nuxt/backend"
+            cd "$APP_DIR"
+
+            echo "📦 解压产物"
+            rm -f blog-server
+            tar -xzf backend.tar.gz
+            rm -f backend.tar.gz
+
+            echo "🚀 启动 Go 应用"
+            pm2 start blog-server --name blog-server || pm2 restart blog-server
+            pm2 save
+
+            echo "✅ 部署完成"
+            '
