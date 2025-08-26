@@ -12,6 +12,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      APP_NAME: ${{ secrets.APP_NAME }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+
     steps:
       # Checkout code
       - name: Checkout code
