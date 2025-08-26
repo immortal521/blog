@@ -23,6 +23,12 @@ jobs:
         with:
           go-version: "1.25.0" # 设置 Go 版本
 
+      - name: Fill secrets into config.yml
+        run: |
+          cd backend
+          # 使用 envsubst 替换占位符
+          envsubst < ../config/backend_config.yml > config.yml
+
       # 安装依赖
       - name: Install dependencies
         run: |
@@ -39,7 +45,7 @@ jobs:
       - name: Archive build artifacts
         run: |
           cd backend
-          tar -czf backend.tar.gz myapp
+          tar -czf backend.tar.gz blog-server
 
       # 上传到服务器
       - name: Upload to server

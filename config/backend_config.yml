@@ -1,5 +1,5 @@
 app:
-  name: my-app
+  name: "${APP_NAME}"
   version: 1.0.0
   environment: production
   debug: false
@@ -15,10 +15,10 @@ server:
   maxheaderbytes: 1048576
   gracefulshutdown: 10s
 database:
-  host: mysql
-  port: 3306
-  user: root
-  password: password # 自行修改密码
+  host: "${DB_HOST}"
+  port: "${DB_PORT}"
+  user: "${DB_USER}"
+  password: "${DB_PASSWORD}"
   name: blog
   sslmode: disable
   maxopenconns: 25
@@ -40,10 +40,10 @@ redis:
   idletimeout: 0s
   idlecheckfrequency: 0s
 jwt:
-  secret: your-default-jwt-secret-change-in-production # 自行修改
+  secret: "${JWT_SECRET}" # 自行修改
   accessexpiration: 15m0s
   refreshexpiration: 168h0m0s
-  issuer: my-app
+  issuer: "${APP_NAME}"
 log:
   level: info
   format: json
@@ -53,8 +53,8 @@ log:
   maxage: 30
   compress: true
 email:
-  host: 
-  port: 
-  username: 
-  password: 
-  from: 
+  host: "${EMAIL_HOST}"
+  port: "${EMAIL_PORT}"
+  username: "${EMAIL_USERNAME}"
+  password: "${EMAIL_PASSWORD}"
+  from: "${EMAIL_FROM}"
