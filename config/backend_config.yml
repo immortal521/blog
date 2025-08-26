@@ -1,0 +1,60 @@
+app:
+  name: my-app
+  version: 1.0.0
+  environment: production
+  debug: false
+  domain: localhost:8000 # domain
+  corsorigins:
+    - "localhost:8000"
+server:
+  host: 0.0.0.0
+  port: 8000
+  readtimeout: 30s
+  writetimeout: 30s
+  idletimeout: 1m0s
+  maxheaderbytes: 1048576
+  gracefulshutdown: 10s
+database:
+  host: mysql
+  port: 3306
+  user: root
+  password: password # 自行修改密码
+  name: blog
+  sslmode: disable
+  maxopenconns: 25
+  maxidleconns: 5
+  connmaxlifetime: 1h0m0s
+  connmaxidletime: 30m0s
+  timeout: 5s
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  poolsize: 10
+  minidleconns: 2
+  dialtimeout: 5s
+  readtimeout: 3s
+  writetimeout: 3s
+  pooltimeout: 0s
+  idletimeout: 0s
+  idlecheckfrequency: 0s
+jwt:
+  secret: your-default-jwt-secret-change-in-production # 自行修改
+  accessexpiration: 15m0s
+  refreshexpiration: 168h0m0s
+  issuer: my-app
+log:
+  level: info
+  format: json
+  filepath: ""
+  maxsize: 100
+  maxbackups: 3
+  maxage: 30
+  compress: true
+email:
+  host: 
+  port: 
+  username: 
+  password: 
+  from: 

@@ -7,7 +7,7 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: blog
     ports:
-      - "3306:3306" # 宿主机访问端口改为 3307
+      - "3307:3306" # 宿主机访问端口改为 3307
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -32,9 +32,21 @@ services:
       interval: 5s
       retries: 5
 
-  blog-server:
-    build: ./backend
-    container_name: blog-server
+  frontend:
+    image: blog-frontend:latest
+    container_name: blog-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - blog-net
+    depends_on:
+      - backend
+
+  backend:
+    image: blog-backend:latest
+    container_name: blog-backend
     ports:
       - "8000:8000"
     depends_on:

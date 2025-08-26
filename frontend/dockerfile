@@ -1,0 +1,22 @@
+# 构建阶段
+FROM node:24 AS builder
+WORKDIR /app
+RUN npm install -g pnpm
+ENV PNPM_STORE_PATH=/tmp/.pnpm-store
+COPY package*.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN chmod +x /app/node_modules/.bin/*
+RUN pnpm run build
+
+# 运行阶段
+FROM node:24-alpine
+WORKDIR /app
+COPY --from=builder /app/.output /app/.output
+COPY --from=builder /app/package.json /app/
+COPY --from=builder /app/pnpm-lock.yaml /app/
+RUN npm install -g pnpm
+ENV PNPM_STORE_PATH=/tmp/.pnpm-store
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
+EXPOSE 3000
+CMD ["node", ".output/server/index.mjs"]
