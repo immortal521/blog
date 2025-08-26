@@ -45,7 +45,7 @@ jobs:
       - name: Archive build artifacts
         run: |
           cd backend
-          tar -czf backend.tar.gz blog-server
+          tar -czf backend.tar.gz blog-server config.yml
 
       # 上传到服务器
       - name: Upload to server
@@ -66,6 +66,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             bash -lc '
+            \. "$HOME/.nvm/nvm.sh"
+
             set -e
             APP_DIR="/var/www/blog-nuxt/backend"
             cd "$APP_DIR"
