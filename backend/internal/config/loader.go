@@ -86,8 +86,11 @@ func setDefaults() {
 	v.SetDefault("server.max_header_bytes", 1048576)
 	v.SetDefault("server.graceful_shutdown", "10s")
 
-	v.SetDefault("database.host", "localhost")
+	v.SetDefault("database.host", "mysql")
 	v.SetDefault("database.port", 3306)
+	v.SetDefault("database.user", "root")
+	v.SetDefault("database.name", "blog")
+	v.SetDefault("database.password", "123456")
 	v.SetDefault("database.ssl_mode", "disable")
 	v.SetDefault("database.max_open_conns", 25)
 	v.SetDefault("database.max_idle_conns", 5)

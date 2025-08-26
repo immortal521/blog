@@ -1,22 +1,4 @@
 services:
-  blog-server:
-    build: .
-    container_name: blog-server
-    ports:
-      - "8000:8000"
-    depends_on:
-      - mysql
-      - redis
-    environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_PASSWORD=123456
-      - DB_NAME=blog
-      - REDIS_ADDR=redis:6379
-    networks:
-      - app-network
-
   mysql:
     image: mysql:9.4.0
     container_name: mysql
@@ -25,11 +7,11 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: blog
     ports:
-      - "3307:3306"   # 宿主机访问端口改为 3307
+      - "3306:3306" # 宿主机访问端口改为 3307
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - app-network
+      - blog-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -40,22 +22,40 @@ services:
     container_name: redis
     restart: always
     ports:
-      - "6380:6379"   # 宿主机访问端口改为 6380
+      - "6379:6379" # 宿主机访问端口改为 6380
     volumes:
       - redis_data:/data
     networks:
-      - app-network
+      - blog-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       retries: 5
+
+  blog-server:
+    build: ./backend
+    container_name: blog-server
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=123456
+      - DB_NAME=blog
+      - REDIS_ADDR=redis:6379
+    networks:
+      - blog-net
 
 volumes:
   mysql_data:
   redis_data:
 
 networks:
-  app-network:
+  blog-net:
     driver: bridge
-
-
