@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "viewerjs/dist/viewer.css";
 import { parseMarkdownToVNode } from "@/utils/parseMarkdown";
 import type { VNodeChild } from "vue";
 
@@ -10,6 +11,9 @@ const props = defineProps({
 });
 
 const renderedVNode = shallowRef<VNodeChild>([]);
+const containerRef = useTemplateRef("container");
+
+useViewer(containerRef);
 
 const renderMarkdown = () => {
   renderedVNode.value = parseMarkdownToVNode(props.markdown);
