@@ -21,9 +21,13 @@
   },
   "packageManager": "pnpm@10.15.0",
   "devDependencies": {
-    "husky": "^9.1.7",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7",
     "lint-staged": "^16.1.2"
+  },
+  "dependencies": {
+    "eslint": "^9.34.0",
+    "prettier": "^3.6.2"
   }
 }

@@ -71,9 +71,6 @@ importers:
       tinycolor2:
         specifier: ^1.6.0
         version: 1.6.0
-      v-viewer:
-        specifier: ^3.0.22
-        version: 3.0.22(viewerjs@1.11.7)(vue@3.5.20(typescript@5.9.2))
       viewerjs:
         specifier: ^1.11.7
         version: 1.11.7
@@ -5751,12 +5748,6 @@ packages:
   uuid@11.1.0:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
-
-  v-viewer@3.0.22:
-    resolution: {integrity: sha512-uYyP5FPT4K/Sd5D1mhB2HMVV8jnf6zYy2HD1PHCNAO6s2Iway+Wls60pwh7y4F3e2Nlc9549Pvy2HXaq8PKrAg==}
-    peerDependencies:
-      viewerjs: ^1.11.0
-      vue: ^3.0.0
 
   valibot@1.1.0:
     resolution: {integrity: sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw==}
@@ -12446,12 +12437,6 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uuid@11.1.0: {}
-
-  v-viewer@3.0.22(viewerjs@1.11.7)(vue@3.5.20(typescript@5.9.2)):
-    dependencies:
-      lodash-es: 4.17.21
-      viewerjs: 1.11.7
-      vue: 3.5.20(typescript@5.9.2)
 
   valibot@1.1.0(typescript@5.9.2):
     optionalDependencies:
