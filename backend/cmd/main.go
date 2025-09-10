@@ -49,6 +49,7 @@ func main() {
 		log.Fatal(err.Error())
 		panic(err)
 	}
+
 	authService := service.NewAuthService(mailService)
 	authHandler := handler.NewAuthHandler(authService)
 	router.RegisterAuthRoutes(app, authHandler)

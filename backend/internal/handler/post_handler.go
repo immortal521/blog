@@ -11,6 +11,7 @@ import (
 type IPostHandler interface {
 	GetPosts(c *fiber.Ctx) error
 	GetPost(c *fiber.Ctx) error
+	GetPostIds(c *fiber.Ctx) error
 }
 
 type PostHandler struct {
@@ -35,6 +36,13 @@ func (p PostHandler) GetPosts(c *fiber.Ctx) error {
 		}
 	}
 	result := dto.Success(postDTOs)
+	return c.JSON(result)
+}
+
+func (p PostHandler) GetPostIds(c *fiber.Ctx) error {
+	ids := p.svc.GetPostIDs(c.UserContext())
+	idsDTO := &dto.PostIdsRes{IDs: ids}
+	result := dto.Success(idsDTO)
 	return c.JSON(result)
 }
 

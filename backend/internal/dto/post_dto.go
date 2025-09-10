@@ -8,6 +8,10 @@ type PostShortRes struct {
 	Cover *string `json:"cover"`
 }
 
+type PostIdsRes struct {
+	IDs []uint `json:"ids"`
+}
+
 type PostRes struct {
 	ID              uint       `json:"id"`
 	Title           string     `json:"title"`
