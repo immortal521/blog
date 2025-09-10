@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "fmt:go": "cd backend && go fmt ./... && golint"
   },
   "type": "module",
   "keywords": [],
@@ -15,8 +16,7 @@
       "prettier --write"
     ],
     "backend/**/*.go": [
-      "go fmt",
-      "golint"
+      "pnpm fmt:go"
     ]
   },
   "packageManager": "pnpm@10.15.0",
