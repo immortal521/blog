@@ -5,8 +5,6 @@ useHead({
 
 const route = useRoute();
 
-console.log(route);
-
 const params = computed(() => route.params);
 
 const { data } = await useFetch<{

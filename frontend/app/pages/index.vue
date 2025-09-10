@@ -13,27 +13,28 @@ const posts = computed(() => data.value?.data);
 <template>
   <div>
     <WelcomePanel />
-    <main class="main">
-      <h1 style="color: var(--text-color-base)">以下内容为测试文章列表所用</h1>
-      <NuxtLink
-        v-for="item in posts"
-        :key="item.id"
-        :to="localePath({ name: 'blog-id', params: { id: item.id } })"
-      >
-        {{ item.title }}
-      </NuxtLink>
-    </main>
+    <ContentPanel :spacer="false">
+      <div class="post-list">
+        <PostCard
+          v-for="(post, index) in posts"
+          :index="index"
+          :key="post.id"
+          :cover="post.cover"
+          :url="localePath('/blog/' + post.id)"
+          :title="post.title"
+        />
+      </div>
+    </ContentPanel>
   </div>
 </template>
 
 <style lang="less" scoped>
-.main {
-  background-color: var(--bg-content);
-  width: 100%;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.post-list {
+  max-width: 800px;
+  margin: 0 auto;
+  display: grid;
+  gap: 10px;
+  padding: 10px 20px;
+  grid-template-columns: 1fr;
 }
 </style>

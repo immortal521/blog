@@ -11,7 +11,6 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
 
 <style lang="less" scoped>
 .container {
-  min-height: 100vh;
   background-color: var(--bg-content);
   backdrop-filter: blur(10px);
   animation: opacity 0.5s ease;

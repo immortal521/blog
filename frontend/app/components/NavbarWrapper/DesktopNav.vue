@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { navLinks } from "./navLinks";
 const { t } = useI18n();
-const localePath = useLocalePath();
 
 const items = computed<MenuItem[]>(() => {
   return navLinks.map((item) => {
     return {
       icon: item.icon,
       label: t(item.labelKey),
-      to: localePath(item.to),
+      to: item.to,
     };
   });
 });
@@ -19,14 +18,14 @@ const items = computed<MenuItem[]>(() => {
     <BaseLogo />
     <ul :class="{ 'nav-menu': true }">
       <li v-for="item in items" :key="item.to" class="nav-item">
-        <NuxtLink :to="item.to">
+        <NuxtLinkLocale :to="item.to">
           <div class="icon">
             <Icon :name="item.icon" size="18" />
           </div>
           <span>
             {{ item.label }}
           </span>
-        </NuxtLink>
+        </NuxtLinkLocale>
       </li>
     </ul>
   </nav>

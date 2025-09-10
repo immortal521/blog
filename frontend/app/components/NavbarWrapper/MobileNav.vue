@@ -3,14 +3,13 @@ import { onClickOutside } from "@vueuse/core";
 import { navLinks } from "./navLinks";
 
 const { t } = useI18n();
-const localePath = useLocalePath();
 
 const items = computed<MenuItem[]>(() => {
   return navLinks.map((item) => {
     return {
       icon: item.icon,
       label: t(item.labelKey),
-      to: localePath(item.to),
+      to: item.to,
     };
   });
 });
@@ -59,14 +58,14 @@ onClickOutside(dropdown, (event) => {
         <div v-if="dropdownOpen" id="dropdown" ref="dropdown" class="dropdown">
           <ul :class="{ 'nav-menu-mobile': true }">
             <li v-for="item in items" :key="item.to" class="nav-item" @click="dropdownOpen = false">
-              <NuxtLink :to="item.to">
+              <NuxtLinkLocale :to="item.to">
                 <div class="icon">
                   <Icon :name="item.icon" size="18" />
                 </div>
                 <span>
                   {{ item.label }}
                 </span>
-              </NuxtLink>
+              </NuxtLinkLocale>
             </li>
           </ul>
         </div>

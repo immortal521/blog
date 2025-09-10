@@ -12,7 +12,7 @@ const links = computed(() => data.value?.data);
 </script>
 
 <template>
-  <ContentPanel>
+  <ContentPanel style="min-height: 100vh">
     <article class="content">
       <h1 class="title">{{ t("friendLink.title") }}</h1>
       <li class="links">
