@@ -3,9 +3,10 @@ package dto
 import "time"
 
 type PostShortRes struct {
-	ID    uint    `json:"id"`
-	Title string  `json:"title"`
-	Cover *string `json:"cover"`
+	ID      uint    `json:"id"`
+	Title   string  `json:"title"`
+	Cover   *string `json:"cover"`
+	Summary *string `json:"summary"`
 }
 
 type PostMetaRes struct {

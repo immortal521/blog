@@ -2,6 +2,7 @@ package repo
 
 import (
 	"blog-server/internal/entity"
+
 	"gorm.io/gorm"
 )
 
@@ -19,7 +20,7 @@ func NewPostRepo() PostRepo {
 
 func (r *postRepo) GetAllPostsShort(db *gorm.DB) ([]entity.Post, error) {
 	var posts []entity.Post
-	err := db.Select("id", "title", "cover").Find(&posts).Error
+	err := db.Select("id", "title", "cover", "summary").Find(&posts).Error
 	if err != nil {
 		return nil, err
 	}
