@@ -1,13 +1,15 @@
 export default defineSitemapEventHandler(async () => {
   try {
     // 调用后端 API 获取 posts 的 ids
-    const { data } = await $fetch<{ data: { ids: number[] } }>("/api/v1/posts/ids");
-    const ids = data?.ids ?? [];
+    const { data } = await $fetch<{ data: { id: number; updatedAt: Date }[] }>(
+      "/api/v1/posts/meta",
+    );
+    const metas = data ?? [];
 
-    const routeList = ids.map((id) => ({
-      loc: `/blog/${id}`,
+    const routeList = metas.map((meta) => ({
+      loc: `/blog/${meta.id}`,
       _i18nTransform: true,
-      lastmod: new Date().toISOString().split("T")[0], // 当前日期，或可自定义
+      lastmod: new Date(meta.updatedAt).toISOString(), // 当前日期，或可自定义
     }));
 
     return routeList;
