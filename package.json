@@ -1,10 +1,12 @@
 {
   "name": "blog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "scripts": {
     "prepare": "husky",
-    "fmt:go": "cd backend && go fmt ./... && golint"
+    "fmt:go": "cd backend && go fmt ./... && golint",
+    "dev:frontend": "cd frontend && pnpm dev",
+    "dev:backend": "cd backend && go run ./cmd"
   },
   "type": "module",
   "keywords": [],
