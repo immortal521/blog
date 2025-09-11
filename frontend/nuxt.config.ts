@@ -2,6 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
 
+  devServer: {
+    host: "0.0.0.0",
+    port: 3000,
+  },
   // 启用开发工具和时间线调试
   devtools: {
     enabled: true,
@@ -84,9 +88,7 @@ export default defineNuxtConfig({
     },
   },
 
-  image: {
-
-  },
+  image: {},
 
   // 使用的模块
   modules: [
@@ -100,4 +102,3 @@ export default defineNuxtConfig({
     "@nuxt/image",
   ],
 });
-

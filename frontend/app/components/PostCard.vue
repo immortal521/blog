@@ -26,11 +26,13 @@ console.log(index, title, summary, cover, date, author, variant);
 <template>
   <div class="post-card">
     <NuxtLinkLocale :to="url" class="post-card-link">
-      <div class="post-cover" :style="{ backgroundImage: `url(${cover})` }"></div>
+      <div class="cover">
+        <NuxtImg :src="cover" />
+      </div>
 
       <!-- 文本部分 -->
       <div class="content">
-        <h2>{{ title }}</h2>
+        <h2 class="title">{{ title }}</h2>
         <p>{{ summary }}</p>
       </div>
     </NuxtLinkLocale>
@@ -39,17 +41,59 @@ console.log(index, title, summary, cover, date, author, variant);
 
 <style lang="less" scoped>
 .post-card {
-  height: 200px;
+  height: 260px;
   width: 100%;
-  background: var(--bg-card-base);
-  border-radius: 10px;
-  box-shadow: var(--shadow-card-base);
   margin: 10px 0;
 }
 
 .post-card-link {
   display: block;
+  position: relative;
   height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
   width: 100%;
+  background: var(--bg-card-base);
+  box-shadow: var(--shadow-card-base);
+
+  .cover {
+    height: 180px;
+    width: 100%;
+    overflow: hidden;
+
+    img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .content {
+    position: relative;
+    .title {
+      position: relative;
+      top: -30px;
+      left: 20px;
+      width: max-content;
+      background: var(--bg-card-title);
+      border: 1px solid var(--border-color-base);
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 2rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .post-card-link {
+    .content {
+      .title {
+        font-size: 1.5rem;
+        top: -20px;
+        left: 10px;
+        padding: 5px 10px;
+      }
+    }
+  }
 }
 </style>

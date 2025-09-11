@@ -7,7 +7,8 @@ const { data } = await useFetch<{
   method: "get",
 });
 
-const posts = computed(() => data.value?.data);
+const posts = computed(() => data.value?.data ?? []);
+console.log(posts);
 </script>
 
 <template>
