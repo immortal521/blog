@@ -7,7 +7,7 @@ import (
 
 type PostRepo interface {
 	GetAllPostsShort(db *gorm.DB) ([]entity.Post, error)
-	GetPostIDs(db *gorm.DB) ([]uint, error)
+	GetPostsMeta(db *gorm.DB) ([]entity.Post, error)
 	GetPostById(db *gorm.DB, id uint) (entity.Post, error)
 }
 
@@ -26,17 +26,13 @@ func (r *postRepo) GetAllPostsShort(db *gorm.DB) ([]entity.Post, error) {
 	return posts, nil
 }
 
-func (r *postRepo) GetPostIDs(db *gorm.DB) ([]uint, error) {
+func (r *postRepo) GetPostsMeta(db *gorm.DB) ([]entity.Post, error) {
 	var posts []entity.Post
-	err := db.Select("id").Find(&posts).Error
+	err := db.Select("id", "updated_at").Find(&posts).Error
 	if err != nil {
 		return nil, err
 	}
-	var ids = make([]uint, len(posts))
-	for i, post := range posts {
-		ids[i] = post.ID
-	}
-	return ids, nil
+	return posts, nil
 }
 
 func (r *postRepo) GetPostById(db *gorm.DB, id uint) (entity.Post, error) {

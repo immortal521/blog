@@ -40,9 +40,15 @@ func (p PostHandler) GetPosts(c *fiber.Ctx) error {
 }
 
 func (p PostHandler) GetPostIds(c *fiber.Ctx) error {
-	ids := p.svc.GetPostIDs(c.UserContext())
-	idsDTO := &dto.PostIdsRes{IDs: ids}
-	result := dto.Success(idsDTO)
+	metas := p.svc.GetPostsMeta(c.UserContext())
+	var metasDTO = make([]dto.PostMetaRes, len(metas))
+	for i, meta := range metas {
+		metasDTO[i] = dto.PostMetaRes{
+			ID:        meta.ID,
+			UpdatedAt: meta.UpdatedAt,
+		}
+	}
+	result := dto.Success(metasDTO)
 	return c.JSON(result)
 }
 

@@ -9,7 +9,7 @@ import (
 
 type IPostService interface {
 	GetPosts(ctx context.Context) ([]entity.Post, error)
-	GetPostIDs(ctx context.Context) []uint
+	GetPostsMeta(ctx context.Context) []entity.Post
 	GetPostByID(ctx context.Context, id uint) (entity.Post, error)
 }
 
@@ -30,12 +30,12 @@ func (p postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 	return posts, nil
 }
 
-func (p postService) GetPostIDs(ctx context.Context) []uint {
-	postIDs, err := p.postRepo.GetPostIDs(p.db.Conn(ctx))
+func (p postService) GetPostsMeta(ctx context.Context) []entity.Post {
+	posts, err := p.postRepo.GetPostsMeta(p.db.Conn(ctx))
 	if err != nil {
-		return []uint{}
+		return []entity.Post{}
 	}
-	return postIDs
+	return posts
 }
 
 func (p postService) GetPostByID(ctx context.Context, id uint) (entity.Post, error) {
