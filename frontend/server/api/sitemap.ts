@@ -1,6 +1,6 @@
 export default defineSitemapEventHandler(async () => {
   try {
-    // 调用后端 API 获取 posts 的 ids
+    // 调用后端 API 获取 posts 的 meta
     const { data } = await $fetch<{ data: { id: number; updatedAt: Date }[] }>(
       "/api/v1/posts/meta",
     );
@@ -9,7 +9,7 @@ export default defineSitemapEventHandler(async () => {
     const routeList = metas.map((meta) => ({
       loc: `/blog/${meta.id}`,
       _i18nTransform: true,
-      lastmod: new Date(meta.updatedAt).toISOString(), // 当前日期，或可自定义
+      lastmod: new Date(meta.updatedAt).toISOString(),
     }));
 
     return routeList;
