@@ -19,6 +19,7 @@ const post = computed<Post>(() => {
       id: -1,
       title: "",
       content: "",
+      summary: "",
       publishedAt: "",
       viewCount: 0,
       readTimeMinutes: 0,

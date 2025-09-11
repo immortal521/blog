@@ -8,7 +8,6 @@ const { data } = await useFetch<{
 });
 
 const posts = computed(() => data.value?.data ?? []);
-console.log(posts);
 </script>
 
 <template>
@@ -23,6 +22,7 @@ console.log(posts);
           :cover="post.cover"
           :url="localePath('/blog/' + post.id)"
           :title="post.title"
+          :summary="post.summary"
         />
       </div>
     </ContentPanel>

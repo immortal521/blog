@@ -33,7 +33,7 @@ console.log(index, title, summary, cover, date, author, variant);
       <!-- 文本部分 -->
       <div class="content">
         <h2 class="title">{{ title }}</h2>
-        <p>{{ summary }}</p>
+        <p class="summary">{{ summary }}</p>
       </div>
     </NuxtLinkLocale>
   </div>
@@ -70,8 +70,12 @@ console.log(index, title, summary, cover, date, author, variant);
 
   .content {
     position: relative;
+    width: 100%;
+    height: 60px;
+    padding-top: 15px;
+
     .title {
-      position: relative;
+      position: absolute;
       top: -30px;
       left: 20px;
       width: max-content;
@@ -81,9 +85,23 @@ console.log(index, title, summary, cover, date, author, variant);
       padding: 10px 20px;
       font-size: 2rem;
     }
+
+    .summary {
+      display: -webkit-box; /* 关键：将元素作为弹性伸缩盒子 */
+      -webkit-box-orient: vertical; /* 关键：垂直排列子元素 */
+      -webkit-line-clamp: 2; /* 关键：限制在两行 */
+      overflow: hidden; /* 超出隐藏 */
+      text-overflow: ellipsis; /* 溢出文本省略号 */
+      position: relative;
+      width: 100%;
+      height: 55px;
+      font-size: 1.5rem;
+      line-height: 27.5px;
+      padding: 5px 10px;
+      bottom: 0;
+    }
   }
 }
-
 @media (max-width: 768px) {
   .post-card-link {
     .content {
