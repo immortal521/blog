@@ -1,0 +1,193 @@
+<script setup lang="ts">
+import { onClickOutside } from "@vueuse/core";
+
+/**
+ * v-model:show 由父组件控制弹窗显隐
+ */
+const show = defineModel<boolean>("show", { default: false });
+
+/**
+ * 点击外部关闭
+ */
+const contentCard = useTemplateRef<HTMLDivElement>("content");
+onMounted(() => {
+  onClickOutside(contentCard, () => {
+    show.value = false;
+  });
+});
+
+/**
+ * 表单数据
+ */
+const form = ref({
+  name: "", // 友链名称
+  url: "", // 站点链接
+  description: "", // 站点简介
+  avatar: "",
+});
+
+const loading = ref(false);
+const errorMsg = ref("");
+const successMsg = ref("");
+
+/**
+ * 简单校验
+ */
+function validate() {
+  if (!form.value.name.trim()) return "请输入站点名称";
+  if (!form.value.url.trim()) return "请输入站点链接";
+  try {
+    new URL(form.value.url);
+  } catch {
+    return "站点链接格式错误";
+  }
+  try {
+    new URL(form.value.avatar);
+  } catch {
+    return "站点LOGO链接格式错误";
+  }
+  return "";
+}
+
+/**
+ * 提交处理
+ */
+async function handleSubmit() {
+  errorMsg.value = "";
+  successMsg.value = "";
+  const err = validate();
+  if (err) {
+    errorMsg.value = err;
+    return;
+  }
+  loading.value = true;
+  try {
+    // 根据需要修改提交地址
+    await useFetch("/api/v1/links/apply-link", {
+      method: "post",
+      body: form.value,
+    });
+    // 可选：清空表单
+    Object.keys(form.value).forEach((k) => ((form as any)[k] = ""));
+    // 可选：自动关闭
+    show.value = false;
+  } catch (e: any) {
+    errorMsg.value = e.message || "提交失败，请稍后重试";
+  } finally {
+    loading.value = false;
+  }
+}
+</script>
+
+<template>
+  <Transition name="friend-link-form">
+    <div v-if="show" class="friend-link-form">
+      <div class="content" ref="content">
+        <form @submit.prevent="handleSubmit" class="flex flex-col gap-3">
+          <h2 class="title">申请友链</h2>
+
+          <label class="label">
+            <span>站点名称</span>
+            <input v-model="form.name" type="text" class="input" />
+          </label>
+          <label class="label">
+            <span>站点链接</span>
+            <input v-model="form.url" type="text" placeholder="https://" class="input" />
+          </label>
+          <label class="label">
+            <span>站点描述</span>
+            <input v-model="form.description" type="text" class="input" />
+          </label>
+          <label class="label">
+            <span>站点LOGO</span>
+            <input v-model="form.avatar" type="text" placeholder="https://" class="input" />
+          </label>
+          <button type="submit" class="submit-btn">提交</button>
+        </form>
+      </div>
+    </div>
+  </Transition>
+</template>
+
+<style lang="less" scoped>
+.friend-link-form-enter-active,
+.friend-link-form-leave-active {
+  transition:
+    scale 0.5s ease-in-out,
+    opacity 0.5s ease-in-out;
+}
+
+.friend-link-form-enter-from,
+.friend-link-form-leave-to {
+  opacity: 0;
+  scale: 0.1;
+}
+
+.friend-link-form {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.content {
+  max-width: 480px;
+  width: 95%;
+  background: var(--bg-card-base);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card-base);
+  border-radius: 10px;
+  padding: 20px;
+  color: var(--text-color-base);
+}
+
+.title {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  margin: 5px 0;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  background-color: var(--bg-content);
+  color: var(--text-color-base);
+  border: 1px solid var(--border-color-base);
+  border-radius: 6px;
+}
+
+.input:focus {
+  outline: 1px solid var(--color-primary-base);
+  border: 1px solid transparent;
+}
+
+.submit-btn {
+  display: block;
+  padding: 8px 12px;
+  background: var(--color-primary-base);
+  color: #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 10px;
+  margin-left: auto;
+
+  &:hover {
+    background-color: var(--color-primary-hover);
+  }
+
+  &:active {
+    background-color: var(--color-primary-active);
+  }
+}
+
+.submit-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+</style>

@@ -9,12 +9,28 @@ const { data } = await useFetch<{
 });
 
 const links = computed(() => data.value?.data);
+
+const friendLinkFormisShow = ref(false);
+const handleShow = () => {
+  friendLinkFormisShow.value = true;
+};
 </script>
 
 <template>
   <ContentPanel style="min-height: 100vh">
     <article class="content">
       <h1 class="title">{{ t("friendLink.title") }}</h1>
+      <div class="submit-link-tips">
+        申请友链需要满足以下条件:
+        <ul>
+          <li>请先在您的站点添加本博客的友链信息，再提交申请。</li>
+          <li>HTTPS 访问稳定，正常加载。</li>
+          <li>友链信息不包含广告、色情、政治等违法信息。</li>
+          <li>若长期无法访问、域名失效或出现违规内容，将在不另行通知的情况下移除链接。</li>
+          <li>提交申请后，请耐心等待审核，审核通过后会在友链列表中显示。</li>
+        </ul>
+        <button class="submit-link-button" @click="handleShow">提交友链</button>
+      </div>
       <li class="links">
         <ul v-for="link in links" :key="link.id">
           <BaseCard class="item">
@@ -31,6 +47,7 @@ const links = computed(() => data.value?.data);
         </ul>
       </li>
     </article>
+    <FriendLinkForm v-model:show="friendLinkFormisShow" />
   </ContentPanel>
 </template>
 
@@ -51,11 +68,45 @@ const links = computed(() => data.value?.data);
   font-weight: 600;
 }
 
+.submit-link-tips {
+  position: relative;
+  background: var(--bg-card-base);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card-base);
+  padding: 20px;
+  color: var(--text-color-base);
+
+  li {
+    list-style: none;
+    padding-left: 2rem;
+  }
+
+  .submit-link-button {
+    display: block;
+    position: relative;
+    margin-left: auto;
+    width: 100px;
+    padding: 0 1.5rem;
+    height: 30px;
+    background: var(--color-primary-base);
+    color: #e0e0e0;
+    border-radius: 5px;
+
+    &:hover {
+      background-color: var(--color-primary-hover);
+    }
+
+    &:active {
+      background-color: var(--color-primary-active);
+    }
+  }
+}
+
 .links {
   width: 100%;
   display: grid; /* 启用 Flexbox */
   gap: 20px; /* 卡片之间的间距 */
-  padding: 20px;
+  margin-top: 20px;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 

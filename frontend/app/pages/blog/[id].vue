@@ -1,8 +1,4 @@
 <script setup lang="ts">
-useHead({
-  title: "markdown 渲染示例",
-});
-
 const route = useRoute();
 
 const params = computed(() => route.params);
@@ -28,11 +24,14 @@ const post = computed<Post>(() => {
     }
   );
 });
+
+useHead({
+  title: post.value.title,
+});
 </script>
 
 <template>
   <ContentPanel :spacer="false">
-    <!--  TODO: 修复 v-viewer 服务端渲染时报错的问题 -->
     <article class="article">
       <ArticleCover :src="post.cover" :title="post.title" />
       <main class="content">
