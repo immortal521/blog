@@ -20,11 +20,32 @@ const {
   variant = "horizontal",
 } = defineProps<Props>();
 
+const postCardRef = useTemplateRef<HTMLElement>("post-card");
+const isVisible = ref(false);
+
+onMounted(() => {
+  if (!postCardRef.value) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          isVisible.value = true;
+          observer.unobserve(entry.target); // 只触发一次
+        }
+      });
+    },
+    { threshold: 0.3 },
+  );
+
+  observer.observe(postCardRef.value);
+});
+
 console.log(index, title, summary, cover, date, author, variant);
 </script>
 
 <template>
-  <div class="post-card">
+  <div class="post-card" :class="{ show: isVisible }" ref="post-card">
     <NuxtLinkLocale :to="url" class="post-card-link">
       <div class="cover">
         <NuxtImg :src="cover" />
@@ -32,8 +53,8 @@ console.log(index, title, summary, cover, date, author, variant);
 
       <!-- 文本部分 -->
       <div class="content">
-        <h2 class="title">{{ title }}</h2>
-        <p class="summary">{{ summary }}</p>
+        <h2 class="title" :title="title">{{ title }}</h2>
+        <p class="summary" :title="summary">{{ summary }}</p>
       </div>
     </NuxtLinkLocale>
   </div>
@@ -44,6 +65,16 @@ console.log(index, title, summary, cover, date, author, variant);
   height: 260px;
   width: 100%;
   margin: 10px 0;
+  opacity: 0;
+  transform: translateY(50px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+
+.post-card.show {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .post-card-link {
@@ -55,6 +86,7 @@ console.log(index, title, summary, cover, date, author, variant);
   width: 100%;
   background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
+  transition: transform 0.3s ease-in-out;
 
   .cover {
     height: 180px;
@@ -79,6 +111,10 @@ console.log(index, title, summary, cover, date, author, variant);
       top: -30px;
       left: 20px;
       width: max-content;
+      max-width: 90%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
       background: var(--bg-card-title);
       border: 1px solid var(--border-color-base);
       border-radius: 5px;
@@ -90,16 +126,23 @@ console.log(index, title, summary, cover, date, author, variant);
       display: -webkit-box; /* 关键：将元素作为弹性伸缩盒子 */
       -webkit-box-orient: vertical; /* 关键：垂直排列子元素 */
       -webkit-line-clamp: 2; /* 关键：限制在两行 */
+      line-clamp: 2;
       overflow: hidden; /* 超出隐藏 */
       text-overflow: ellipsis; /* 溢出文本省略号 */
       position: relative;
       width: 100%;
+      // 字符间距
+      letter-spacing: 2px;
       height: 55px;
       font-size: 1.5rem;
       line-height: 27.5px;
       padding: 5px 10px;
       bottom: 0;
     }
+  }
+
+  &:hover {
+    transform: translateY(-5px);
   }
 }
 @media (max-width: 768px) {
