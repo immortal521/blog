@@ -21,7 +21,7 @@ func NewLinkRepo() LinkRepo {
 
 func (r *linkRepo) GetAllLinks(db *gorm.DB) ([]entity.Link, error) {
 	var links []entity.Link
-	err := db.Find(&links).Where("enabled = ?", true).Error
+	err := db.Where("enabled = ?", true).Find(&links).Error
 	if err != nil {
 		return nil, err
 	}
