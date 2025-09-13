@@ -16,6 +16,14 @@ onMounted(() => {
   });
 });
 
+watch(show, () => {
+  if (show.value) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+});
+
 /**
  * 表单数据
  */
@@ -126,6 +134,8 @@ async function handleSubmit() {
 .friend-link-form {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
