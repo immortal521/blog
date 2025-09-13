@@ -1,6 +1,8 @@
 <script setup lang="ts">
-// import { getLinksApi } from "@/api/link";
 const { t } = useI18n();
+useHead({
+  title: t("page.links"),
+});
 
 const { data } = await useFetch<{
   data: FriendLink[];
@@ -14,6 +16,10 @@ const friendLinkFormisShow = ref(false);
 const handleShow = () => {
   friendLinkFormisShow.value = true;
 };
+
+const linkCard = useTemplateRef<HTMLElement>("link-card");
+
+useAddClassOnIntersect(linkCard, "show");
 </script>
 
 <template>
@@ -33,7 +39,7 @@ const handleShow = () => {
       </div>
       <li class="links">
         <ul v-for="link in links" :key="link.id">
-          <BaseCard class="item">
+          <BaseCard class="item" ref="link-card">
             <a :href="link.url" target="_blank">
               <div class="avatar">
                 <img :src="link.avatar" />
@@ -111,14 +117,16 @@ const handleShow = () => {
 }
 
 .item {
-  animation: fade-in-up 1s ease-in-out;
-
   a {
     display: block;
     height: 100%;
     width: 100%;
     padding: 20px;
   }
+}
+
+.show {
+  animation: fade-in-up 1s ease-in-out;
 }
 
 .avatar {

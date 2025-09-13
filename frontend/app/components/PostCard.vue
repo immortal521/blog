@@ -1,47 +1,19 @@
 <script setup lang="ts">
 interface Props {
-  index: number;
   title: string;
   summary?: string;
   cover?: string;
   date?: string;
   author?: string;
   url: string;
-  variant?: "horizontal" | "vertical" | "mini";
 }
 
-const {
-  index,
-  title,
-  summary = "",
-  cover = "",
-  date = "1970-01-01",
-  author = "",
-  variant = "horizontal",
-} = defineProps<Props>();
+const { title, summary = "", cover = "", date = "1970-01-01", author = "" } = defineProps<Props>();
 
 const postCardRef = useTemplateRef<HTMLElement>("post-card");
 const isVisible = ref(false);
 
-onMounted(() => {
-  if (!postCardRef.value) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          isVisible.value = true;
-          observer.unobserve(entry.target); // 只触发一次
-        }
-      });
-    },
-    { threshold: 0.3 },
-  );
-
-  observer.observe(postCardRef.value);
-});
-
-console.log(index, title, summary, cover, date, author, variant);
+useAddClassOnIntersect(postCardRef, "show");
 </script>
 
 <template>

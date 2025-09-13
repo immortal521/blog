@@ -17,6 +17,7 @@ const post = computed<Post>(() => {
       content: "",
       summary: "",
       publishedAt: "",
+      updatedAt: "",
       viewCount: 0,
       readTimeMinutes: 0,
       cover: "",
