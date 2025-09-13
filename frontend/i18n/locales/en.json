@@ -1,23 +1,27 @@
 {
-	"navbar": { "home": "Home", "about": "About", "links": "Friends" },
-	"themeControl": {
-		"themeMode": "Theme Mode",
-		"light": "Light",
-		"dark": "Dark",
-		"primaryColor": "Primary Color",
-		"language": "Language"
-	},
-	"tooltip": {
-		"github": "View on GitHub",
-		"backToTop": "Back to top",
-		"addQQFriend": "Add QQ friend",
-		"themeOption": "Theme setting",
-		"contect": "Contact me"
-	},
-	"friendLink": {
-		"title": "Friend Links",
-		"requestLink": "Submit a Link"
-	},
-	"copy": "Copy",
-	"copied": "Copied"
+  "navbar": { "home": "Home", "about": "About", "links": "Friends" },
+  "themeControl": {
+    "themeMode": "Theme Mode",
+    "light": "Light",
+    "dark": "Dark",
+    "primaryColor": "Primary Color",
+    "language": "Language"
+  },
+  "tooltip": {
+    "github": "View on GitHub",
+    "backToTop": "Back to top",
+    "addQQFriend": "Add QQ friend",
+    "themeOption": "Theme setting",
+    "contect": "Contact me"
+  },
+  "friendLink": {
+    "title": "Friend Links",
+    "requestLink": "Submit a Link"
+  },
+  "page": {
+    "links": "Friends",
+    "about": "About me"
+  },
+  "copy": "Copy",
+  "copied": "Copied"
 }
