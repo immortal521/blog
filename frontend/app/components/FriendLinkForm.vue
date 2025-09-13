@@ -88,33 +88,35 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <Transition name="friend-link-form">
-    <div v-if="show" class="friend-link-form">
-      <div class="content" ref="content">
-        <form @submit.prevent="handleSubmit" class="flex flex-col gap-3">
-          <h2 class="title">申请友链</h2>
+  <Teleport to="body">
+    <Transition name="friend-link-form">
+      <div v-if="show" class="friend-link-form">
+        <div class="content" ref="content">
+          <form @submit.prevent="handleSubmit" class="flex flex-col gap-3">
+            <h2 class="title">申请友链</h2>
 
-          <label class="label">
-            <span>站点名称</span>
-            <input v-model="form.name" type="text" class="input" />
-          </label>
-          <label class="label">
-            <span>站点链接</span>
-            <input v-model="form.url" type="text" placeholder="https://" class="input" />
-          </label>
-          <label class="label">
-            <span>站点描述</span>
-            <input v-model="form.description" type="text" class="input" />
-          </label>
-          <label class="label">
-            <span>站点LOGO</span>
-            <input v-model="form.avatar" type="text" placeholder="https://" class="input" />
-          </label>
-          <button type="submit" class="submit-btn">提交</button>
-        </form>
+            <label class="label">
+              <span>站点名称</span>
+              <input v-model="form.name" type="text" class="input" />
+            </label>
+            <label class="label">
+              <span>站点链接</span>
+              <input v-model="form.url" type="text" placeholder="https://" class="input" />
+            </label>
+            <label class="label">
+              <span>站点描述</span>
+              <input v-model="form.description" type="text" class="input" />
+            </label>
+            <label class="label">
+              <span>站点LOGO</span>
+              <input v-model="form.avatar" type="text" placeholder="https://" class="input" />
+            </label>
+            <button type="submit" class="submit-btn">提交</button>
+          </form>
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
+  </Teleport>
 </template>
 
 <style lang="less" scoped>
