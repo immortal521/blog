@@ -15,6 +15,7 @@ function getDomElement(target: Target): HTMLElement | null {
   if (isComponent(target)) return target.$el ?? null;
   return target;
 }
+
 /**
  * useAddClassOnIntersect
  * 当元素进入视口时添加 class
@@ -24,28 +25,29 @@ export function useAddClassOnIntersect(
   className: string,
   options?: IntersectionObserverInit,
 ) {
-  let observers: IntersectionObserver[] = [];
+  let observer: IntersectionObserver | null = null;
 
   onMounted(async () => {
     await nextTick(); // 确保 DOM 渲染完成
 
-    const list: Target[] = Array.isArray(targets.value) ? targets.value : [targets.value];
+    // 将 targets 转为数组并提取真实 DOM 元素
+    const list: HTMLElement[] = (Array.isArray(targets.value) ? targets.value : [targets.value])
+      .map(getDomElement)
+      .filter((el): el is HTMLElement => el !== null); // TS 类型守卫
 
-    list.forEach((item) => {
-      const el = getDomElement(item);
-      if (!el) return;
+    if (list.length === 0) return;
 
-      const observer = new IntersectionObserver(([entry]) => {
-        if (entry?.isIntersecting) {
-          el.classList.add(className);
-          observer.disconnect();
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(className);
+          observer?.unobserve(entry.target); // 只处理一次
         }
-      }, options ?? {});
+      });
+    }, options ?? {});
 
-      observer.observe(el);
-      observers.push(observer);
-    });
+    list.forEach((el) => observer?.observe(el));
   });
 
-  onBeforeUnmount(() => observers.forEach((obs) => obs.disconnect()));
+  onBeforeUnmount(() => observer?.disconnect());
 }
