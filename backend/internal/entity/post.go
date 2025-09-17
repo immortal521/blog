@@ -3,7 +3,6 @@ package entity
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -23,12 +22,12 @@ type Post struct {
 	Summary         *string    `gorm:"type:varchar(500)"`
 	Content         string     `gorm:"type:longtext;not null"`
 	Cover           *string    `gorm:"type:varchar(255)"`
-	ReadTimeMinutes int64      `gorm:"not null"`
-	ViewCount       int64      `gorm:"not null"`
+	ReadTimeMinutes uint       `gorm:"not null"`
+	ViewCount       uint       `gorm:"not null"`
 	Status          PostStatus `gorm:"type:tinyint;default:1;not null"`
 
-	UserID uuid.UUID `gorm:"type:binary(16);not null;index"`
-	User   User      `gorm:"foreignKey:UserID;references:ID"`
+	UserID uint `gorm:"not null;index"`
+	User   User `gorm:"foreignKey:UserID;references:ID"`
 
 	PublishedAt *time.Time `gorm:"type:datetime(6)"`
 

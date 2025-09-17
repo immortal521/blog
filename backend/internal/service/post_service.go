@@ -23,7 +23,7 @@ func NewPostService(db database.DB, postRepo repo.PostRepo) IPostService {
 }
 
 func (p postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
-	posts, err := p.postRepo.GetAllPostsShort(p.db.Conn(ctx))
+	posts, err := p.postRepo.GetAllPosts(p.db.Conn(ctx))
 	if err != nil {
 		return nil, err
 	}

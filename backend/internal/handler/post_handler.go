@@ -27,13 +27,18 @@ func (p PostHandler) GetPosts(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	postDTOs := make([]dto.PostShortRes, len(posts))
+	postDTOs := make([]dto.PostListRes, len(posts))
 	for i, post := range posts {
-		postDTOs[i] = dto.PostShortRes{
-			ID:      post.ID,
-			Title:   post.Title,
-			Cover:   post.Cover,
-			Summary: post.Summary,
+		postDTOs[i] = dto.PostListRes{
+			ID:              post.ID,
+			Title:           post.Title,
+			Cover:           post.Cover,
+			Summary:         post.Summary,
+			PublishedAt:     post.PublishedAt,
+			UpdatedAt:       post.UpdatedAt,
+			ReadTimeMinutes: post.ReadTimeMinutes,
+			ViewCount:       post.ViewCount,
+			Author:          post.User.Username,
 		}
 	}
 	result := dto.Success(postDTOs)
