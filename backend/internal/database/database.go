@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"database/sql"
 
 	"gorm.io/driver/mysql"
@@ -10,9 +9,9 @@ import (
 )
 
 type DB interface {
-	Trans(ctx context.Context, fn func(tx *gorm.DB) error) error
-	Conn(ctx context.Context) *gorm.DB
-	BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*gorm.DB, error)
+	Trans(fn func(tx *gorm.DB) error) error
+	Conn() *gorm.DB
+	BeginTx(opts ...*sql.TxOptions) (*gorm.DB, error)
 }
 
 type db struct {
@@ -34,15 +33,15 @@ func NewDB(dsn string) (DB, error) {
 	return &db{db: gormDB}, nil
 }
 
-func (d *db) Trans(ctx context.Context, fn func(tx *gorm.DB) error) error {
-	return d.db.WithContext(ctx).Transaction(fn)
+func (d *db) Trans(fn func(tx *gorm.DB) error) error {
+	return d.db.Transaction(fn)
 }
 
-func (d *db) BeginTx(ctx context.Context, opts ...*sql.TxOptions) (*gorm.DB, error) {
-	return d.db.WithContext(ctx).Begin(opts...), nil
+func (d *db) BeginTx(opts ...*sql.TxOptions) (*gorm.DB, error) {
+	return d.db.Begin(opts...), nil
 }
 
 // Conn 普通连接（非事务场景）
-func (d *db) Conn(ctx context.Context) *gorm.DB {
-	return d.db.WithContext(ctx)
+func (d *db) Conn() *gorm.DB {
+	return d.db
 }

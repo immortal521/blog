@@ -23,7 +23,7 @@ func NewLinkService(db database.DB, linkRepo repo.LinkRepo) ILinkService {
 }
 
 func (s *linkService) GetLinks(ctx context.Context) ([]entity.Link, error) {
-	links, err := s.linkRepo.GetAllLinks(s.db.Conn(ctx))
+	links, err := s.linkRepo.GetAllLinks(ctx, s.db.Conn())
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (s *linkService) CreateLink(ctx context.Context, dto *dto.LinkCreateReq) er
 		Avatar:      dto.Avatar,
 		URL:         dto.Url,
 	}
-	err := s.linkRepo.CreateLink(s.db.Conn(ctx), &link)
+	err := s.linkRepo.CreateLink(ctx, s.db.Conn(), &link)
 	if err != nil {
 		return err
 	}

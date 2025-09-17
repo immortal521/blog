@@ -23,7 +23,7 @@ func NewPostService(db database.DB, postRepo repo.PostRepo) IPostService {
 }
 
 func (p postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
-	posts, err := p.postRepo.GetAllPosts(p.db.Conn(ctx))
+	posts, err := p.postRepo.GetAllPosts(ctx, p.db.Conn())
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (p postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 }
 
 func (p postService) GetPostsMeta(ctx context.Context) []entity.Post {
-	posts, err := p.postRepo.GetPostsMeta(p.db.Conn(ctx))
+	posts, err := p.postRepo.GetPostsMeta(ctx, p.db.Conn())
 	if err != nil {
 		return []entity.Post{}
 	}
@@ -39,7 +39,7 @@ func (p postService) GetPostsMeta(ctx context.Context) []entity.Post {
 }
 
 func (p postService) GetPostByID(ctx context.Context, id uint) (entity.Post, error) {
-	post, err := p.postRepo.GetPostById(p.db.Conn(ctx), id)
+	post, err := p.postRepo.GetPostById(ctx, p.db.Conn(), id)
 	if err != nil {
 		return entity.Post{}, err
 	}
