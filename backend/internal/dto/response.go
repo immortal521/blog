@@ -1,3 +1,4 @@
+// Package dto
 package dto
 
 type Response[T any] struct {

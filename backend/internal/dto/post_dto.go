@@ -28,4 +28,6 @@ type PostRes struct {
 	ReadTimeMinutes uint       `json:"readTimeMinutes"`
 	ViewCount       uint       `json:"viewCount"`
 	PublishedAt     *time.Time `json:"publishedAt"`
+	UpdatedAt       time.Time  `json:"updatedAt"`
+	Author          string     `json:"author"`
 }

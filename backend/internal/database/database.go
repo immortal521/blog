@@ -1,3 +1,5 @@
+// Package database provides a GORM-based interface for interacting with MySQL databases.
+// It includes transaction management and automatic migration capabilities.
 package database
 
 import (
@@ -41,7 +43,6 @@ func (d *db) BeginTx(opts ...*sql.TxOptions) (*gorm.DB, error) {
 	return d.db.Begin(opts...), nil
 }
 
-// Conn 普通连接（非事务场景）
 func (d *db) Conn() *gorm.DB {
 	return d.db
 }

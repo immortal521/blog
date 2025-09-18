@@ -1,8 +1,10 @@
+// Package handler provider web api handler
 package handler
 
 import (
 	"blog-server/internal/dto"
 	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
