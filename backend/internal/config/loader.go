@@ -72,7 +72,7 @@ func Load(configPath string) (*Config, error) {
 // setDefaults 设置默认值
 func setDefaults() {
 	v.SetDefault("app.name", "my-app")
-	v.SetDefault("app.version", "1.0.0")
+	v.SetDefault("app.version", "1.0.1")
 	v.SetDefault("app.environment", "development")
 	v.SetDefault("app.debug", true)
 	v.SetDefault("app.domain", "localhost:8000")
@@ -86,7 +86,7 @@ func setDefaults() {
 	v.SetDefault("server.max_header_bytes", 1048576)
 	v.SetDefault("server.graceful_shutdown", "10s")
 
-	v.SetDefault("database.host", "mysql")
+	v.SetDefault("database.host", "localhost")
 	v.SetDefault("database.port", 3306)
 	v.SetDefault("database.user", "root")
 	v.SetDefault("database.name", "blog")
