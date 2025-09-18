@@ -17,8 +17,8 @@ const posts = computed(() => data.value?.data ?? []);
       <div class="post-list">
         <PostCard
           v-for="(post, index) in posts"
-          :index="index"
           :key="post.id"
+          :index="index"
           :cover="post.cover"
           :url="localePath('/blog/' + post.id)"
           :title="post.title"
