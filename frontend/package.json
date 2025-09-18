@@ -2,6 +2,7 @@
   "name": "blog-nuxt",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.15.0",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -28,6 +29,7 @@
     "js-cookie": "^3.0.5",
     "lodash-es": "^4.17.21",
     "markdown-it": "^14.1.0",
+    "motion-v": "^1.7.1",
     "nuxt": "^4.1.1",
     "pinia": "^3.0.3",
     "tinycolor2": "^1.6.0",
