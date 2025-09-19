@@ -12,7 +12,9 @@ import (
 	"blog-server/internal/service"
 	"blog-server/pkg/logger"
 	"context"
-	"os"
+	"errors"
+	"fmt"
+	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
@@ -70,24 +72,28 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 	router.RegisterAuthRoutes(app, authHandler)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// 监听系统信号
-	go func() {
-		sigCh := make(chan os.Signal, 1)
-		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-		<-sigCh // 阻塞直到收到信号
-		log.Info("Shutting down gracefully...")
-		cancel() // 触发 ctx.Done()
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	scheduler.New(postService).Start(ctx)
 
-	log.Fatal(app.Listen(cfg.Server.GetAddr()).Error())
+	go func() {
+		log.Info(fmt.Sprintf("Server is starting and listening on %s", cfg.Server.GetAddr()))
+		if err := app.Listen(cfg.Server.GetAddr()); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(fmt.Sprintf("Server listen error: %v", err))
+		}
+	}()
 
 	<-ctx.Done()
+	log.Info("Shutting down server gracefully...")
+
+	// 创建一个带超时的 context 用于关停服务器，防止关停过程无限期阻塞
 	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelShutdown()
-	_ = app.ShutdownWithContext(shutdownCtx)
+
+	if err := app.ShutdownWithContext(shutdownCtx); err != nil {
+		log.Error(fmt.Sprintf("Server shutdown failed: %v", err))
+	}
+
+	log.Info("Server has been shut down successfully.")
 }
