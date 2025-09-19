@@ -4,9 +4,6 @@ import (
 	"blog-server/internal/dto"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
-	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -37,17 +34,13 @@ func (a *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 	}
 
 	if request.Type == "" {
-		request.Type = "Register" // 如果用户未提供 Type，则默认为 Register
+		request.Type = string(service.Register)
 	}
 
-	captcha := fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
-
-	err := a.svc.SendCaptchaMail(c.UserContext(), request.Email, captcha, service.CaptchaType(request.Type))
+	err := a.svc.SendCaptchaMail(c.UserContext(), request.Email, service.CaptchaType(request.Type))
 	if err != nil {
 		return err
 	}
-
-	// TODO: 在 Redis 中存储验证码和邮箱的映射关系，并设置过期时间
 
 	return c.JSON(dto.Success(""))
 }

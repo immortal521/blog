@@ -68,7 +68,7 @@ func main() {
 		panic(err)
 	}
 
-	authService := service.NewAuthService(mailService)
+	authService := service.NewAuthService(rdb, mailService)
 	authHandler := handler.NewAuthHandler(authService)
 	router.RegisterAuthRoutes(app, authHandler)
 
