@@ -9,7 +9,7 @@ import (
 )
 
 type ILinkService interface {
-	GetLinks(ctx context.Context) ([]entity.Link, error)
+	GetLinks(ctx context.Context) ([]*entity.Link, error)
 	CreateLink(ctx context.Context, dto *dto.LinkCreateReq) error
 }
 
@@ -22,7 +22,7 @@ func NewLinkService(db database.DB, linkRepo repo.LinkRepo) ILinkService {
 	return &linkService{db: db, linkRepo: linkRepo}
 }
 
-func (s *linkService) GetLinks(ctx context.Context) ([]entity.Link, error) {
+func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
 	links, err := s.linkRepo.GetAllLinks(ctx, s.db.Conn())
 	if err != nil {
 		return nil, err

@@ -11,7 +11,7 @@ import (
 )
 
 type LinkRepo interface {
-	GetAllLinks(ctx context.Context, db *gorm.DB) ([]entity.Link, error)
+	GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error)
 	CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error
 }
 
@@ -21,8 +21,8 @@ func NewLinkRepo() LinkRepo {
 	return &linkRepo{}
 }
 
-func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]entity.Link, error) {
-	links, err := gorm.G[entity.Link](db).Where("enabled = ?", true).Find(ctx)
+func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
+	links, err := gorm.G[*entity.Link](db).Where("enabled = ?", true).Find(ctx)
 	if err != nil {
 		return nil, err
 	}

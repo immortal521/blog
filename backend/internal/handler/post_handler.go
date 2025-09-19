@@ -14,15 +14,15 @@ type IPostHandler interface {
 	GetPostIds(c *fiber.Ctx) error
 }
 
-type PostHandler struct {
+type postHandler struct {
 	svc service.IPostService
 }
 
-func NewPostHandler(svc service.IPostService) *PostHandler {
-	return &PostHandler{svc: svc}
+func NewPostHandler(svc service.IPostService) IPostHandler {
+	return &postHandler{svc: svc}
 }
 
-func (p PostHandler) GetPosts(c *fiber.Ctx) error {
+func (p *postHandler) GetPosts(c *fiber.Ctx) error {
 	posts, err := p.svc.GetPosts(c.UserContext())
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (p PostHandler) GetPosts(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func (p PostHandler) GetPostIds(c *fiber.Ctx) error {
+func (p *postHandler) GetPostIds(c *fiber.Ctx) error {
 	metas := p.svc.GetPostsMeta(c.UserContext())
 	var metasDTO = make([]dto.PostMetaRes, len(metas))
 	for i, meta := range metas {
@@ -58,7 +58,7 @@ func (p PostHandler) GetPostIds(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func (p PostHandler) GetPost(c *fiber.Ctx) error {
+func (p *postHandler) GetPost(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return err
