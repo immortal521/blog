@@ -57,7 +57,7 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 
 func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	var cursor uint64
-	updates := make(map[uint]int64)
+	var errs []error
 
 	for {
 		keys, next, err := p.rdb.Scan(ctx, cursor, "blog:post:view_count:*", 100).Result()
@@ -81,9 +81,10 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 
 		_, _ = pipe.Exec(ctx)
 
+		updates := make(map[uint]int64)
 		for i, key := range keys {
-			val, err := cmds[i].Int64()
-			if err != nil && val == 0 {
+			val, _ := cmds[i].Int64()
+			if val == 0 {
 				continue
 			}
 
@@ -96,12 +97,16 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 			updates[uint(postID)] += val
 		}
 
+		err = p.postRepo.UpdateViewCounts(ctx, p.db.Conn(), updates)
+		if err != nil {
+			errs = append(errs, err)
+		}
 		if cursor == 0 {
 			break
 		}
 	}
-	if len(updates) == 0 {
-		return nil
+	if len(errs) > 0 {
+		return fmt.Errorf("flush completed with %d errors: %v", len(errs), errs)
 	}
-	return p.postRepo.UpdateViewCounts(ctx, p.db.Conn(), updates)
+	return nil
 }
