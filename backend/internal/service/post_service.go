@@ -46,7 +46,7 @@ func (p postService) GetPostsMeta(ctx context.Context) []entity.Post {
 }
 
 func (p postService) GetPostByID(ctx context.Context, id uint) (entity.Post, error) {
-	post, err := p.postRepo.GetPostById(ctx, p.db.Conn(), id)
+	post, err := p.postRepo.GetPostByID(ctx, p.db.Conn(), id)
 	if err != nil {
 		return entity.Post{}, err
 	}

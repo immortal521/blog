@@ -76,6 +76,7 @@ func (p PostHandler) GetPost(c *fiber.Ctx) error {
 		ReadTimeMinutes: post.ReadTimeMinutes,
 		ViewCount:       post.ViewCount,
 		PublishedAt:     post.PublishedAt,
+		Author:          post.User.Username,
 	})
 	return c.JSON(result)
 }
