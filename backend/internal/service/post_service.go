@@ -29,7 +29,7 @@ func NewPostService(db database.DB, rdb *redis.Client, postRepo repo.PostRepo) I
 	return &postService{db: db, rdb: rdb, postRepo: postRepo}
 }
 
-func (p postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
+func (p *postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 	posts, err := p.postRepo.GetAllPosts(ctx, p.db.Conn())
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (p postService) GetPosts(ctx context.Context) ([]entity.Post, error) {
 	return posts, nil
 }
 
-func (p postService) GetPostsMeta(ctx context.Context) []entity.Post {
+func (p *postService) GetPostsMeta(ctx context.Context) []entity.Post {
 	posts, err := p.postRepo.GetPostsMeta(ctx, p.db.Conn())
 	if err != nil {
 		return []entity.Post{}
@@ -45,7 +45,7 @@ func (p postService) GetPostsMeta(ctx context.Context) []entity.Post {
 	return posts
 }
 
-func (p postService) GetPostByID(ctx context.Context, id uint) (entity.Post, error) {
+func (p *postService) GetPostByID(ctx context.Context, id uint) (entity.Post, error) {
 	post, err := p.postRepo.GetPostByID(ctx, p.db.Conn(), id)
 	if err != nil {
 		return entity.Post{}, err
@@ -55,7 +55,7 @@ func (p postService) GetPostByID(ctx context.Context, id uint) (entity.Post, err
 	return post, nil
 }
 
-func (p postService) FlushViewCountToDB(ctx context.Context) error {
+func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	var cursor uint64
 	for {
 		keys, next, err := p.rdb.Scan(ctx, cursor, "blog:post:view_count:*", 100).Result()
@@ -73,10 +73,7 @@ func (p postService) FlushViewCountToDB(ctx context.Context) error {
 				continue
 			}
 			parts := strings.Split(key, ":")
-			if len(parts) < 4 {
-				continue
-			}
-			postID := parts[3]
+			postID := parts[len(parts)-1]
 
 			// 使用 gorm 表达式累加浏览数
 			if err := p.db.Conn().Model(&entity.Post{}).
