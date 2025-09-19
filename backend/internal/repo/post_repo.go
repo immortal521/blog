@@ -74,7 +74,7 @@ func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates ma
 	var caseBuilder strings.Builder
 	var idArgs []any
 	var ids []any
-	caseBuilder.WriteString("CASE id ")
+	caseBuilder.WriteString("view_count + CASE id ")
 	for id, val := range updates {
 		caseBuilder.WriteString("WHEN ? THEN ? ")
 		idArgs = append(idArgs, id, val)
