@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
 )
 
@@ -32,12 +31,11 @@ func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]entity.Link,
 
 func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error {
 	err := gorm.G[entity.Link](db).Create(ctx, link)
-	log.Error(errors.Is(err, gorm.ErrRecordNotFound))
-	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return errs.BadRequest("url is duplicated")
-		}
-		return err
+	if err == nil {
+		return nil
 	}
-	return nil
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return errs.ErrDuplicateURL
+	}
+	return err
 }

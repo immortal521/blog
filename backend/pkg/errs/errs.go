@@ -1,3 +1,4 @@
+// Package errs
 package errs
 
 import "github.com/gofiber/fiber/v2"

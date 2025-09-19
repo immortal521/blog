@@ -2,7 +2,9 @@ package repo
 
 import (
 	"blog-server/internal/entity"
+	"blog-server/pkg/errs"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -11,7 +13,7 @@ import (
 type PostRepo interface {
 	GetAllPosts(ctx context.Context, db *gorm.DB) ([]entity.Post, error)
 	GetPostsMeta(ctx context.Context, db *gorm.DB) ([]entity.Post, error)
-	GetPostById(ctx context.Context, db *gorm.DB, id uint) (entity.Post, error)
+	GetPostByID(ctx context.Context, db *gorm.DB, id uint) (entity.Post, error)
 }
 
 type postRepo struct{}
@@ -21,10 +23,14 @@ func NewPostRepo() PostRepo {
 }
 
 func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]entity.Post, error) {
-	posts, err := gorm.G[entity.Post](db).Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
-		db.Select("username")
-		return nil
-	}).Select("posts.id", "posts.title", "posts.summary", "posts.cover", "posts.read_time_minutes", "posts.view_count", "posts.published_at", "posts.updated_at").Find(ctx)
+	posts, err := gorm.G[entity.Post](db).
+		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
+			db.Select("username")
+			return nil
+		}).
+		Select("posts.id", "posts.title", "posts.summary", "posts.cover", "posts.read_time_minutes", "posts.view_count", "posts.published_at", "posts.updated_at").
+		Where("status = ?", entity.PostPublished).
+		Find(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -39,11 +45,21 @@ func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]entity.Post
 	return posts, nil
 }
 
-func (r *postRepo) GetPostById(ctx context.Context, db *gorm.DB, id uint) (entity.Post, error) {
-	var post entity.Post
-	post, err := gorm.G[entity.Post](db).Where("id = ?", id).First(ctx)
-	if err != nil {
-		return entity.Post{}, err
+func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (entity.Post, error) {
+	post, err := gorm.G[entity.Post](db).
+		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
+			db.Select("username")
+			return nil
+		}).
+		Select("posts.id", "posts.title", "posts.summary", "posts.content", "posts.cover", "posts.read_time_minutes", "posts.view_count", "posts.published_at", "posts.updated_at").
+		Where("status = ?", entity.PostPublished).
+		Where("posts.id = ?", id).
+		First(ctx)
+	if err == nil {
+		return post, nil
 	}
-	return post, nil
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.Post{}, errs.ErrPostNotFound
+	}
+	return entity.Post{}, err
 }
