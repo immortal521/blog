@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterAuthRoutes(r *fiber.App, h handler.IAuthHandler) {
-	group := r.Group("/api/v1/auth")
+func RegisterAuthRoutes(r fiber.Router, h handler.IAuthHandler) {
+	group := r.Group("/auth")
 	group.Post("/captcha", h.SendCaptcha)
 }

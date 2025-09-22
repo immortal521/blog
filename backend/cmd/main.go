@@ -55,12 +55,10 @@ func main() {
 	linkRepo := repo.NewLinkRepo()
 	linkService := service.NewLinkService(db, linkRepo)
 	linkHandler := handler.NewLinkHandler(linkService)
-	router.RegisterLinkRoutes(app, linkHandler)
 
 	postRepo := repo.NewPostRepo()
 	postService := service.NewPostService(db, rdb, postRepo)
 	postHandler := handler.NewPostHandler(postService)
-	router.RegisterPostRoutes(app, postHandler)
 
 	mailService, err := service.NewEmailService()
 	if err != nil {
@@ -70,7 +68,12 @@ func main() {
 
 	authService := service.NewAuthService(rdb, mailService)
 	authHandler := handler.NewAuthHandler(authService)
-	router.RegisterAuthRoutes(app, authHandler)
+
+	api := app.Group("/api")
+	v1 := api.Group("/v1")
+	router.RegisterLinkRoutes(v1, linkHandler)
+	router.RegisterPostRoutes(v1, postHandler)
+	router.RegisterAuthRoutes(v1, authHandler)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
