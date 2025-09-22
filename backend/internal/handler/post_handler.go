@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"blog-server/internal/dto"
+	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"strconv"
 
@@ -27,9 +27,9 @@ func (p *postHandler) GetPosts(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	postDTOs := make([]dto.PostListRes, len(posts))
+	postDTOs := make([]response.PostListRes, len(posts))
 	for i, post := range posts {
-		postDTOs[i] = dto.PostListRes{
+		postDTOs[i] = response.PostListRes{
 			ID:              post.ID,
 			Title:           post.Title,
 			Cover:           post.Cover,
@@ -41,20 +41,21 @@ func (p *postHandler) GetPosts(c *fiber.Ctx) error {
 			Author:          post.User.Username,
 		}
 	}
-	result := dto.Success(postDTOs)
+
+	result := response.Success(postDTOs)
 	return c.JSON(result)
 }
 
 func (p *postHandler) GetPostIds(c *fiber.Ctx) error {
 	metas := p.svc.GetPostsMeta(c.UserContext())
-	var metasDTO = make([]dto.PostMetaRes, len(metas))
+	var metasDTO = make([]response.PostMetaRes, len(metas))
 	for i, meta := range metas {
-		metasDTO[i] = dto.PostMetaRes{
+		metasDTO[i] = response.PostMetaRes{
 			ID:        meta.ID,
 			UpdatedAt: meta.UpdatedAt,
 		}
 	}
-	result := dto.Success(metasDTO)
+	result := response.Success(metasDTO)
 	return c.JSON(result)
 }
 
@@ -67,7 +68,7 @@ func (p *postHandler) GetPost(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	result := dto.Success(dto.PostRes{
+	result := response.Success(response.PostRes{
 		ID:              post.ID,
 		Title:           post.Title,
 		Summary:         post.Summary,

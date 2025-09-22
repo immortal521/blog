@@ -2,7 +2,7 @@ package service
 
 import (
 	"blog-server/internal/database"
-	"blog-server/internal/dto"
+	"blog-server/internal/dto/request"
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
 	"context"
@@ -10,7 +10,7 @@ import (
 
 type ILinkService interface {
 	GetLinks(ctx context.Context) ([]*entity.Link, error)
-	CreateLink(ctx context.Context, dto *dto.LinkCreateReq) error
+	CreateLink(ctx context.Context, dto *request.CreateLinkReq) error
 }
 
 type linkService struct {
@@ -30,12 +30,12 @@ func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
 	return links, nil
 }
 
-func (s *linkService) CreateLink(ctx context.Context, dto *dto.LinkCreateReq) error {
+func (s *linkService) CreateLink(ctx context.Context, dto *request.CreateLinkReq) error {
 	link := entity.Link{
 		Name:        dto.Name,
 		Description: dto.Description,
 		Avatar:      dto.Avatar,
-		URL:         dto.Url,
+		URL:         dto.URL,
 	}
 	err := s.linkRepo.CreateLink(ctx, s.db.Conn(), &link)
 	if err != nil {

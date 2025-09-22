@@ -1,9 +1,12 @@
 package handler
 
 import (
-	"blog-server/internal/dto"
+	"blog-server/internal/dto/request"
+	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
+	"errors"
+
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,35 +30,37 @@ func (l *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	linkDTOs := make([]dto.LinkRes, len(links))
+	linkDTOs := make([]response.LinkResponse, len(links))
 	for i, link := range links {
-		linkDTOs[i] = dto.LinkRes{
+		linkDTOs[i] = response.LinkResponse{
 			ID:          link.ID,
 			Name:        link.Name,
-			Url:         link.URL,
+			URL:         link.URL,
 			Description: link.Description,
 			Avatar:      link.Avatar,
 			SortOrder:   link.SortOrder,
 		}
 	}
-	result := dto.Success(linkDTOs)
+	result := response.Success(linkDTOs)
 	return c.JSON(result)
 }
 
 func (l *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
-	request := new(dto.LinkCreateReq)
-	if err := c.BodyParser(request); err != nil {
+	req := new(request.CreateLinkReq)
+	if err := c.BodyParser(req); err != nil {
 		return err
 	}
 
-	if (len(request.Url) == 0) || (len(request.Name) == 0) {
+	if (len(req.URL) == 0) || (len(req.Name) == 0) {
 		return errs.BadRequest("url or name is empty")
 	}
 
-	err := l.svc.CreateLink(c.UserContext(), request)
-	if err != nil {
-		return err
+	err := l.svc.CreateLink(c.UserContext(), req)
+	if err == nil {
+		return c.JSON(response.Success(""))
 	}
-
-	return c.JSON(dto.Success(""))
+	if errors.Is(err, errs.ErrDuplicateURL) {
+		return errs.Conflict(err.Error())
+	}
+	return err
 }

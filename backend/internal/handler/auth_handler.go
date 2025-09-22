@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"blog-server/internal/dto"
+	"blog-server/internal/dto/request"
+	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 
@@ -23,7 +24,7 @@ func NewAuthHandler(authService service.IAuthService) IAuthHandler {
 }
 
 func (a *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
-	request := new(dto.CaptchaReq)
+	request := new(request.GetCaptchaReq)
 
 	if err := c.BodyParser(request); err != nil {
 		return errs.BadRequest("invalid request")
@@ -42,5 +43,5 @@ func (a *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(dto.Success(""))
+	return c.JSON(response.Success(""))
 }

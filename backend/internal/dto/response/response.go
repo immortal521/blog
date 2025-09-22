@@ -1,5 +1,5 @@
-// Package dto
-package dto
+// Package response
+package response
 
 type Response[T any] struct {
 	Code int    `json:"code"`
@@ -10,6 +10,13 @@ type Response[T any] struct {
 type ErrorResponse struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
+}
+
+type Page[T any] struct {
+	Total uint `json:"total"`
+	Page  uint `json:"page"`
+	Limit uint `json:"limit"`
+	Data  []T  `json:"data"`
 }
 
 func Success[T any](data T) *Response[T] {
