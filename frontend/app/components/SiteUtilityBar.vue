@@ -6,6 +6,10 @@ const backTop = () => {
     behavior: "smooth",
   });
 };
+
+// TODO: 跳转用户设置界面逻辑, 双 Token 刷新机制
+// Navigation logic to the user settings page, with a dual-token refresh mechanism
+const toUserSetting = () => {};
 </script>
 
 <template>
@@ -25,6 +29,11 @@ const backTop = () => {
     >
       <ThemeControlCard />
     </PanelButton>
+    <ActionButton
+      icon="iconamoon:settings-fill"
+      :title="$t('tooltip.userSetting')"
+      @click="toUserSetting"
+    />
   </FloatActionGroup>
 </template>
 
