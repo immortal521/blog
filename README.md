@@ -13,7 +13,7 @@ pnpm dev:backend
 ```bash
 go run ./cmd
 ```
-可以启动服务
+
 后端需要一些服务：
 - redis
 - mysql
