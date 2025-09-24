@@ -98,7 +98,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   overflow-wrap: break-word;
 }
 
-:deep(:not(.shiki) code) {
+:deep(:not(pre.shiki) > code) {
   display: inline-block;
   padding: 0.2em 0.4em;
   font-family: "Maple Mono", "Noto Sans SC", monospace;
