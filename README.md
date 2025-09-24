@@ -1,13 +1,37 @@
 # Immortal's Blog
 
 ## 部署
-nginx可以复制`config/nginx`内的`nginx.conf`
-修改其中的
+暂时无法一键部署
+
+## 开发环境
+### 后端
+在理论上根目录运行
+```bash
+pnpm dev:backend
 ```
-server_name blog.local;  # 修改为你自己的域名或 IP
+或在`backend`目录运行
+```bash
+go run ./cmd
 ```
-然后使用
+可以启动服务
+后端需要一些服务：
+- redis
+- mysql
+mysql 需要拥有名为 `blog` 的数据库
+会自动建表
+
+### 前端
+需要先在`frontend`目录安装依赖
+```bash
+pnpm i --frozen-lockfile
 ```
-sudo certbot --nginx
+在根目录运行
+```bash
+pnpm dev:frontend
 ```
-提供HTTPS支持
+或在`frontend`目录运行
+```bash
+pnpm dev
+```
+
+
