@@ -1,33 +1,19 @@
 export const useAuthStore = defineStore("auth", () => {
-  const accessToken = ref(useCookie("accessToken").value || "");
-  const refreshToken = ref(useCookie("refreshToken").value || "");
+  const accessToken = ref(localStorage.getItem("accessToken") || "");
 
-  const saveToCookies = (accessToken: string, refreshToken: string) => {
-    useCookie("accessToken", { httpOnly: true }).value = accessToken;
-    useCookie("refreshToken", { httpOnly: true }).value = refreshToken;
-  };
-
-  const setTokens = (newAccessToken: string, newRefreshToken: string) => {
+  const setAccessToken = (newAccessToken: string) => {
     accessToken.value = newAccessToken;
-    refreshToken.value = newRefreshToken;
-    saveToCookies(newAccessToken, newRefreshToken);
-  };
-
-  const clearCookies = () => {
-    useCookie("accessToken").value = null;
-    useCookie("refreshToken").value = null;
+    localStorage.setItem("accessToken", newAccessToken);
   };
 
   const clear = () => {
     accessToken.value = "";
-    refreshToken.value = "";
-    clearCookies();
+    localStorage.removeItem("accessToken");
   };
 
   return {
     accessToken,
-    refreshToken,
-    setTokens,
+    setAccessToken,
     clear,
   };
 });
