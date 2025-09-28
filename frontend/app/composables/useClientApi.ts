@@ -1,4 +1,4 @@
-import { ofetch, type FetchOptions } from "ofetch";
+import { ofetch, type FetchError, type FetchOptions } from "ofetch";
 
 /**
  * Flag indicating whether the Access Token is currently being refreshed
@@ -25,6 +25,16 @@ const $baseFetch = ofetch.create({
  * token handling and refresh logic.
  */
 export function useClientApi() {
+  async function doRequest<T>(
+    url: string,
+    options: FetchOptions<"json", unknown> = {},
+  ): Promise<T> {
+    const accessToken = useAuthStore().accessToken;
+    const headers = accessToken
+      ? { ...(options.headers || {}), Authorization: `Bearer ${accessToken}` }
+      : options.headers;
+    return $baseFetch<T>(url, { ...options, headers });
+  }
   /**
    * Client-only API request function. Automatically attaches the Access Token
    * and supports token refresh.
@@ -53,27 +63,25 @@ export function useClientApi() {
       throw new Error("apiFetch must be called on the client");
     }
 
-    // Access the store only inside the function to ensure Pinia is active
-    const accessToken = storeToRefs(useAuthStore()).accessToken;
-
     // Wait if a token refresh is in progress
     if (isRefreshing) {
       await new Promise<void>((resolve) => pendingRequests.push(resolve));
     }
 
-    // Refresh token if missing or expired
-    if (!accessToken.value || isTokenExpired(accessToken.value)) {
+    try {
+      return await doRequest<T>(url, options);
+    } catch (err: unknown) {
+      const fetchErr = err as FetchError;
+      if (fetchErr?.response?.status !== 401) throw fetchErr;
       await refreshAccessToken();
+      return doRequest<T>(url, options).catch((err: FetchError) => {
+        if (err?.response?.status === 401) {
+          // TODO: layout logic
+          console.log(err);
+        }
+        throw err;
+      });
     }
-
-    // Add Authorization header
-    options.headers = {
-      ...(options.headers || {}),
-      Authorization: `Bearer ${accessToken.value}`,
-    };
-
-    const data = await $baseFetch<T>(url, options);
-    return data;
   }
 
   /**
@@ -99,25 +107,6 @@ export function useClientApi() {
       // Resolve all pending requests
       pendingRequests.forEach((resolve) => resolve());
       pendingRequests.splice(0);
-    }
-  }
-
-  /**
-   * Checks whether a JWT Access Token is expired.
-   *
-   * @param {string} token - The JWT Access Token
-   * @returns {boolean} Returns true if the token is invalid or expired, otherwise false
-   */
-  function isTokenExpired(token: string): boolean {
-    try {
-      const parts = token.split(".");
-      if (parts.length !== 3) return true;
-      const payloadStr = parts[1];
-      if (!payloadStr) return true;
-      const payload = JSON.parse(atob(payloadStr));
-      return Date.now() >= payload.exp * 1000;
-    } catch {
-      return true;
     }
   }
 
