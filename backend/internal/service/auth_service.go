@@ -33,11 +33,13 @@ type IAuthService interface {
 type AuthService struct {
 	rdb         *redis.Client
 	mailService IMailService
+	jwtService  IJwtService
 }
 
-func NewAuthService(rdb *redis.Client, mailService IMailService) IAuthService {
+func NewAuthService(rdb *redis.Client, jwtService IJwtService, mailService IMailService) IAuthService {
 	return &AuthService{
 		rdb:         rdb,
+		jwtService:  jwtService,
 		mailService: mailService,
 	}
 }

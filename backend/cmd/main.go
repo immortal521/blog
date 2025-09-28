@@ -66,7 +66,8 @@ func main() {
 		panic(err)
 	}
 
-	authService := service.NewAuthService(rdb, mailService)
+	jwtService := service.NewJwtService()
+	authService := service.NewAuthService(rdb, jwtService, mailService)
 	authHandler := handler.NewAuthHandler(authService)
 
 	api := app.Group("/api")
