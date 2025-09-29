@@ -1,11 +1,11 @@
-// Package database provides a GORM-based interface for interacting with MySQL databases.
+// Package database provides a GORM-based interface for interacting with PostgresSQL databases.
 // It includes transaction management and automatic migration capabilities.
 package database
 
 import (
 	"database/sql"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -21,7 +21,7 @@ type db struct {
 }
 
 func NewDB(dsn string) (DB, error) {
-	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:         logger.Default.LogMode(logger.Info),
 		TranslateError: true,
 	})

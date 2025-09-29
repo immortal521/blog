@@ -21,16 +21,16 @@ type Post struct {
 
 	Title           string     `gorm:"type:varchar(255);not null"`
 	Summary         *string    `gorm:"type:varchar(500)"`
-	Content         string     `gorm:"type:longtext;not null"`
+	Content         string     `gorm:"type:text;not null"`
 	Cover           *string    `gorm:"type:varchar(255)"`
 	ReadTimeMinutes uint       `gorm:"not null"`
 	ViewCount       uint       `gorm:"not null"`
-	Status          PostStatus `gorm:"type:tinyint;default:1;not null"`
+	Status          PostStatus `gorm:"type:smallint;default:1;not null"`
 
 	UserID uint `gorm:"not null;index"`
 	User   User `gorm:"foreignKey:UserID;references:ID"`
 
-	PublishedAt *time.Time `gorm:"type:datetime(6)"`
+	PublishedAt *time.Time `gorm:"type:timestamp(6)"`
 
 	Categories []PostCategory `gorm:"many2many:post_category_relations;"`
 	Tags       []PostTag      `gorm:"many2many:post_tag_relations;"`

@@ -54,13 +54,13 @@ type DatabaseConfig struct {
 }
 
 func (d DatabaseConfig) GetDSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=%s",
+	return fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable connect_timeout=%d",
 		d.User,
 		d.Password,
 		d.Host,
 		d.Port,
 		d.Name,
-		d.Timeout,
+		int(d.Timeout.Seconds()),
 	)
 }
 

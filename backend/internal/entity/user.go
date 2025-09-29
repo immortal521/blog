@@ -15,11 +15,11 @@ const (
 type User struct {
 	*gorm.Model
 
-	UUID     uuid.UUID `gorm:"type:binary(16);not null;unique"`
+	UUID     uuid.UUID `gorm:"type:bytea;not null;unique"`
 	Avatar   *string   `gorm:"type:varchar(255)"`
 	Email    string    `gorm:"type:varchar(100);not null;unique"`
 	Password string    `gorm:"type:varchar(255);not null" json:"-"`
-	Role     UserRole  `gorm:"type:tinyint;default:1;not null"`
+	Role     UserRole  `gorm:"type:smallint;default:1;not null"`
 	Username string    `gorm:"type:varchar(50);not null"`
 
 	Posts []Post `gorm:"foreignKey:UserID;references:ID"`
