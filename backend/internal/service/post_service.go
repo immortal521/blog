@@ -4,6 +4,7 @@ import (
 	"blog-server/internal/database"
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
+	"errors"
 
 	"context"
 	"fmt"
@@ -57,6 +58,7 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 }
 
 func (p *postService) FlushViewCountToDB(ctx context.Context) error {
+	const batchSize = 1000
 	var cursor uint64
 	var errs []error
 
@@ -74,34 +76,47 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 
 		pipe := p.rdb.Pipeline()
-		cmds := make([]*redis.StringCmd, 0, len(keys))
+		cmds := make([]*redis.StringCmd, len(keys))
 
-		for _, key := range keys {
-			cmds = append(cmds, pipe.GetDel(ctx, key))
+		for i, key := range keys {
+			cmds[i] = pipe.GetDel(ctx, key)
 		}
 
-		_, _ = pipe.Exec(ctx)
+		if _, err = pipe.Exec(ctx); err != nil && !errors.Is(err, redis.Nil) {
+			errs = append(errs, fmt.Errorf("pipeline exec failed: %w", err))
+			continue
+		}
 
 		updates := make(map[uint]int64)
 		for i, key := range keys {
-			val, _ := cmds[i].Int64()
-			if val == 0 {
+			valStr, err := cmds[i].Result()
+			if err != nil && !errors.Is(err, redis.Nil) {
+				continue
+			}
+
+			count, err := strconv.ParseInt(valStr, 10, 64)
+			if err != nil || count == 0 {
 				continue
 			}
 
 			parts := strings.Split(key, ":")
+			if len(parts) < 4 {
+				continue
+			}
 			postID, err := strconv.ParseUint(parts[len(parts)-1], 10, 64)
 			if err != nil {
 				continue
 			}
 
-			updates[uint(postID)] += val
+			updates[uint(postID)] += count
 		}
 
-		err = p.postRepo.UpdateViewCounts(ctx, p.db.Conn(), updates)
-		if err != nil {
-			errs = append(errs, err)
+		if len(updates) > 0 {
+			if err := p.postRepo.UpdateViewCounts(ctx, p.db.Conn(), updates); err != nil {
+				errs = append(errs, fmt.Errorf("db update failed: %w", err))
+			}
 		}
+
 		if cursor == 0 {
 			break
 		}
