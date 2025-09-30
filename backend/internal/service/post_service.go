@@ -23,10 +23,10 @@ type IPostService interface {
 type postService struct {
 	db       database.DB
 	rdb      *redis.Client
-	postRepo repo.PostRepo
+	postRepo repo.IPostRepo
 }
 
-func NewPostService(db database.DB, rdb *redis.Client, postRepo repo.PostRepo) IPostService {
+func NewPostService(db database.DB, rdb *redis.Client, postRepo repo.IPostRepo) IPostService {
 	return &postService{db: db, rdb: rdb, postRepo: postRepo}
 }
 

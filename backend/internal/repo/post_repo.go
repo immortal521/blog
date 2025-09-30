@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type PostRepo interface {
+type IPostRepo interface {
 	GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
 	GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
 	GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*entity.Post, error)
@@ -20,7 +20,7 @@ type PostRepo interface {
 
 type postRepo struct{}
 
-func NewPostRepo() PostRepo {
+func NewPostRepo() IPostRepo {
 	return &postRepo{}
 }
 

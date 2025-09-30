@@ -10,14 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type LinkRepo interface {
+type ILinkRepo interface {
 	GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error)
 	CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error
 }
 
 type linkRepo struct{}
 
-func NewLinkRepo() LinkRepo {
+func NewLinkRepo() ILinkRepo {
 	return &linkRepo{}
 }
 

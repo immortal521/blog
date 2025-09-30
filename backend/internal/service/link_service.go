@@ -15,10 +15,10 @@ type ILinkService interface {
 
 type linkService struct {
 	db       database.DB
-	linkRepo repo.LinkRepo
+	linkRepo repo.ILinkRepo
 }
 
-func NewLinkService(db database.DB, linkRepo repo.LinkRepo) ILinkService {
+func NewLinkService(db database.DB, linkRepo repo.ILinkRepo) ILinkService {
 	return &linkService{db: db, linkRepo: linkRepo}
 }
 

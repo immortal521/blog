@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepo interface {
+type IUserRepo interface {
 	GetUserByEmail(ctx context.Context, db *gorm.DB, email string) (*entity.User, error)
 	CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) error
 	ExistsByEmail(ctx context.Context, db *gorm.DB, email string) (bool, error)
@@ -55,6 +55,6 @@ func (u *userRepo) ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, 
 	return true, nil
 }
 
-func NewUserRepo() UserRepo {
+func NewUserRepo() IUserRepo {
 	return &userRepo{}
 }
