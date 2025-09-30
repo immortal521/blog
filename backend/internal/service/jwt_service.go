@@ -45,7 +45,11 @@ func (j *JwtService) generateTokenWithExpires(userUUID string, expires time.Dura
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.cfg.Secret)
+	signed, err := token.SignedString([]byte(j.cfg.Secret))
+	if err != nil {
+		return "", errs.ErrTokenGeneration
+	}
+	return signed, nil
 }
 
 func (j *JwtService) GenerateAccessToken(userUUID string) (string, error) {
