@@ -26,7 +26,9 @@ func main() {
 	log := logger.Get()
 
 	app := fiber.New(fiber.Config{
-		ErrorHandler: handler.ErrorHandler,
+		EnableTrustedProxyCheck: true,
+		TrustedProxies:          []string{"127.0.0.1"},
+		ErrorHandler:            handler.ErrorHandler,
 	})
 
 	cfg, err := config.Load("./config.yml")
