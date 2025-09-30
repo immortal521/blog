@@ -27,35 +27,54 @@ func NewAuthHandler(authService service.IAuthService) IAuthHandler {
 	return &AuthHandler{svc: authService, validate: validatorx.Get()}
 }
 
-func (a *AuthHandler) Register(c *fiber.Ctx) error {
+func (h *AuthHandler) Register(c *fiber.Ctx) error {
+	req := new(request.RegisterReq)
+
+	if err := c.BodyParser(req); err != nil {
+		return errs.BadRequest("invalid request")
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		return errs.BadRequest("invalid")
+	}
 
 	return nil
 }
 
-func (a *AuthHandler) Layout(c *fiber.Ctx) error {
+func (h *AuthHandler) Layout(c *fiber.Ctx) error {
 	panic("unimplemented")
 }
 
-func (a *AuthHandler) Login(c *fiber.Ctx) error {
-	panic("unimplemented")
-}
+func (h *AuthHandler) Login(c *fiber.Ctx) error {
+	req := new(request.LoginReq)
 
-func (a *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
-	request := new(request.GetCaptchaReq)
-
-	if err := c.BodyParser(request); err != nil {
+	if err := c.BodyParser(req); err != nil {
 		return errs.BadRequest("invalid request")
 	}
 
-	if err := a.validate.Struct(request); err != nil {
+	if err := h.validate.Struct(req); err != nil {
 		return errs.BadRequest("invalid")
 	}
 
-	if request.Type == "" {
-		request.Type = string(service.Register)
+	return nil
+}
+
+func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
+	req := new(request.GetCaptchaReq)
+
+	if err := c.BodyParser(req); err != nil {
+		return errs.BadRequest("invalid request")
 	}
 
-	err := a.svc.SendCaptchaMail(c.UserContext(), request.Email, service.CaptchaType(request.Type))
+	if err := h.validate.Struct(req); err != nil {
+		return errs.BadRequest("invalid")
+	}
+
+	if req.Type == "" {
+		req.Type = string(service.Register)
+	}
+
+	err := h.svc.SendCaptchaMail(c.UserContext(), req.Email, service.CaptchaType(req.Type))
 	if err != nil {
 		return err
 	}

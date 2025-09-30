@@ -2,6 +2,8 @@
 package service
 
 import (
+	"blog-server/internal/entity"
+	"blog-server/internal/repo"
 	"blog-server/pkg/util"
 	"context"
 	"fmt"
@@ -28,10 +30,13 @@ const (
 
 type IAuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
+	Register(ctx context.Context, user *entity.User) error
+	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
 }
 
 type AuthService struct {
 	rdb         *redis.Client
+	userRepo    repo.IUserRepo
 	mailService IMailService
 	jwtService  IJwtService
 }
@@ -42,6 +47,15 @@ func NewAuthService(rdb *redis.Client, jwtService IJwtService, mailService IMail
 		jwtService:  jwtService,
 		mailService: mailService,
 	}
+}
+
+func (s *AuthService) Register(ctx context.Context, user *entity.User) error {
+
+	return nil
+}
+
+func (s *AuthService) Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error) {
+	return "", "", nil
 }
 
 func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {

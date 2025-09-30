@@ -26,8 +26,8 @@ func NewLinkHandler(svc service.ILinkService) ILinkHandler {
 	return &LinkHandler{svc: svc, validate: validatorx.Get()}
 }
 
-func (l *LinkHandler) GetLinks(c *fiber.Ctx) error {
-	links, err := l.svc.GetLinks(c.UserContext())
+func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
+	links, err := h.svc.GetLinks(c.UserContext())
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (l *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func (l *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
+func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
 	req := new(request.CreateLinkReq)
 	if err := c.BodyParser(req); err != nil {
 		return err
@@ -56,7 +56,7 @@ func (l *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
 		return errs.BadRequest("url or name is empty")
 	}
 
-	err := l.svc.CreateLink(c.UserContext(), req)
+	err := h.svc.CreateLink(c.UserContext(), req)
 	if err == nil {
 		return c.JSON(response.Success(""))
 	}

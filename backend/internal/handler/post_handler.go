@@ -22,8 +22,8 @@ func NewPostHandler(svc service.IPostService) IPostHandler {
 	return &postHandler{svc: svc}
 }
 
-func (p *postHandler) GetPosts(c *fiber.Ctx) error {
-	posts, err := p.svc.GetPosts(c.UserContext())
+func (h *postHandler) GetPosts(c *fiber.Ctx) error {
+	posts, err := h.svc.GetPosts(c.UserContext())
 	if err != nil {
 		return err
 	}
@@ -46,8 +46,8 @@ func (p *postHandler) GetPosts(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func (p *postHandler) GetPostIds(c *fiber.Ctx) error {
-	metas := p.svc.GetPostsMeta(c.UserContext())
+func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
+	metas := h.svc.GetPostsMeta(c.UserContext())
 	var metasDTO = make([]response.PostMetaRes, len(metas))
 	for i, meta := range metas {
 		metasDTO[i] = response.PostMetaRes{
@@ -59,12 +59,12 @@ func (p *postHandler) GetPostIds(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func (p *postHandler) GetPost(c *fiber.Ctx) error {
+func (h *postHandler) GetPost(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return err
 	}
-	post, err := p.svc.GetPostByID(c.UserContext(), uint(id))
+	post, err := h.svc.GetPostByID(c.UserContext(), uint(id))
 	if err != nil {
 		return err
 	}
