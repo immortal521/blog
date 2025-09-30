@@ -11,7 +11,7 @@ import (
 )
 
 type DB interface {
-	Trans(fn func(tx *gorm.DB) error) error
+	Trans(fn func(txc *TxContext) error) error
 	Conn() *gorm.DB
 	BeginTx(opts ...*sql.TxOptions) (*gorm.DB, error)
 }
@@ -35,8 +35,10 @@ func NewDB(dsn string) (DB, error) {
 	return &db{db: gormDB}, nil
 }
 
-func (d *db) Trans(fn func(tx *gorm.DB) error) error {
-	return d.db.Transaction(fn)
+func (d *db) Trans(fn func(txc *TxContext) error) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		return fn(&TxContext{tx: tx})
+	})
 }
 
 func (d *db) BeginTx(opts ...*sql.TxOptions) (*gorm.DB, error) {
@@ -45,4 +47,12 @@ func (d *db) BeginTx(opts ...*sql.TxOptions) (*gorm.DB, error) {
 
 func (d *db) Conn() *gorm.DB {
 	return d.db
+}
+
+type TxContext struct {
+	tx *gorm.DB
+}
+
+func (t *TxContext) GetTx() *gorm.DB {
+	return t.tx
 }
