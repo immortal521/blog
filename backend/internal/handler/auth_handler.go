@@ -6,6 +6,7 @@ import (
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
+	"errors"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -36,6 +37,17 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 
 	if err := h.validate.Struct(req); err != nil {
 		return errs.BadRequest("invalid")
+	}
+
+	err := h.svc.Register(c.UserContext(), req)
+	if errors.Is(err, errs.ErrInvalidCaptcha) {
+		return errs.BadRequest(err.Error())
+	}
+	if errors.Is(err, errs.ErrUserExists) {
+		return errs.Conflict(err.Error())
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -75,6 +87,9 @@ func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 	}
 
 	err := h.svc.SendCaptchaMail(c.UserContext(), req.Email, service.CaptchaType(req.Type))
+	if errors.Is(err, errs.ErrUserExists) {
+		return errs.Conflict(err.Error())
+	}
 	if err != nil {
 		return err
 	}

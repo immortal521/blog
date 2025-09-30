@@ -19,7 +19,16 @@ type IUserRepo interface {
 type userRepo struct{}
 
 func (u *userRepo) CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) error {
-	panic("unimplemented")
+	result := gorm.WithResult()
+
+	err := gorm.G[entity.User](db, result).Create(ctx, user)
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return errs.ErrUserExists
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u *userRepo) GetUserByEmail(ctx context.Context, db *gorm.DB, email string) (*entity.User, error) {
