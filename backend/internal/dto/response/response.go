@@ -27,7 +27,7 @@ func Success[T any](data T) *Response[T] {
 	}
 }
 
-func SuccessWithString[T any](msg string, data T) *Response[T] {
+func SuccessWithMsg[T any](msg string, data T) *Response[T] {
 	return &Response[T]{
 		Code: 200,
 		Msg:  msg,
