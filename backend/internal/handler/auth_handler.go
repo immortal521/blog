@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"blog-server/internal/config"
 	"blog-server/internal/dto/request"
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
 	"errors"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -39,18 +41,25 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return errs.BadRequest("invalid")
 	}
 
-	err := h.svc.Register(c.UserContext(), req)
-	if errors.Is(err, errs.ErrInvalidCaptcha) {
+	accessToken, refreshToken, err := h.svc.Register(c.UserContext(), req)
+	switch {
+	case errors.Is(err, errs.ErrInvalidCaptcha):
 		return errs.BadRequest(err.Error())
-	}
-	if errors.Is(err, errs.ErrUserExists) {
+	case errors.Is(err, errs.ErrUserExists):
 		return errs.Conflict(err.Error())
-	}
-	if err != nil {
+	case errors.Is(err, errs.ErrTokenGeneration):
+		// 用户已注册成功，但登录失败
+		return c.JSON(response.SuccessWithMsg("Register success", "Register success"))
+	case err != nil:
 		return err
 	}
 
-	return nil
+	setRefreshTokenCookie(c, refreshToken)
+
+	res := response.Success(response.LoginRes{
+		AccessToken: accessToken,
+	})
+	return c.JSON(res)
 }
 
 func (h *AuthHandler) Layout(c *fiber.Ctx) error {
@@ -95,4 +104,15 @@ func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(response.SuccessWithMsg("Captcha sent successfully", "Captcha sent successfully"))
+}
+
+func setRefreshTokenCookie(c *fiber.Ctx, value string) {
+	maxAge := config.Get().JWT.RefreshExpiration
+	c.Cookie(&fiber.Cookie{
+		Name:     "refreshToken",
+		Value:    value,
+		Expires:  time.Now().Add(maxAge),
+		HTTPOnly: true,
+		Secure:   true,
+	})
 }

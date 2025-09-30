@@ -35,7 +35,7 @@ const (
 
 type IAuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
-	Register(ctx context.Context, dto *request.RegisterReq) error
+	Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error)
 	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
 }
 
@@ -57,18 +57,18 @@ func NewAuthService(db database.DB, rdb *redis.Client, userRepo repo.IUserRepo, 
 	}
 }
 
-func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) error {
+func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error) {
 	email := dto.Email
 
 	cachedCaptcha := s.rdb.Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
 
 	if !strings.EqualFold(cachedCaptcha, dto.Captcha) {
-		return errs.ErrInvalidCaptcha
+		return "", "", errs.ErrInvalidCaptcha
 	}
 
 	hashPassword, err := util.HashPassword(dto.Password)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	user := &entity.User{
@@ -77,12 +77,19 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) er
 		Password: hashPassword,
 	}
 
-	err = s.userRepo.CreateUser(ctx, s.db.Conn(), user)
+	err = s.db.Trans(func(txCtx *database.TxContext) error {
+		return s.userRepo.CreateUser(ctx, txCtx.GetTx(), user)
+	})
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
-	return nil
+	accessToken, refreshToken, err = s.jwtService.GenerateAllTokens(user.UUID.String())
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error) {
