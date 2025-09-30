@@ -36,7 +36,7 @@ const (
 type IAuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
 	Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error)
-	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
+	Login(ctx context.Context, dto *request.LoginReq) (accessToken, refreshToken string, err error)
 }
 
 type AuthService struct {
@@ -92,8 +92,21 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (a
 	return accessToken, refreshToken, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error) {
-	return "", "", nil
+func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (accessToken, refreshToken string, err error) {
+	user, err := s.userRepo.GetUserByEmail(ctx, s.db.Conn(), dto.Email)
+	if err != nil {
+		return "", "", err
+	}
+	if !util.VerifyPassword(dto.Password, user.Password) {
+		return "", "", errs.Unauthorized("邮箱或密码错误")
+	}
+
+	accessToken, refreshToken, err = s.jwtService.GenerateAllTokens(user.UUID.String())
+	if err != nil {
+		return "", "", errs.ErrTokenGeneration
+	}
+
+	return accessToken, refreshToken, nil
 }
 
 func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {

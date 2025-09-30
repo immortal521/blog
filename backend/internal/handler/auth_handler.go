@@ -74,10 +74,20 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errs.BadRequest("invalid")
+		return errs.BadRequest("parameter validation failed")
 	}
 
-	return nil
+	accessToken, refreshToken, err := h.svc.Login(c.UserContext(), req)
+	if err != nil {
+		return err
+	}
+
+	setRefreshTokenCookie(c, refreshToken)
+
+	res := response.Success(response.LoginRes{
+		AccessToken: accessToken,
+	})
+	return c.JSON(res)
 }
 
 func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
