@@ -10,4 +10,7 @@ import (
 func RegisterAuthRoutes(r fiber.Router, h handler.IAuthHandler) {
 	group := r.Group("/auth")
 	group.Post("/captcha", h.SendCaptcha)
+	group.Post("/register", h.Register)
+	group.Post("/login", h.Login)
+	group.Post("/layout", h.Layout)
 }

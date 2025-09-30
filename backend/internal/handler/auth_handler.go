@@ -5,6 +5,7 @@ import (
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
+	"blog-server/pkg/validatorx"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -12,6 +13,9 @@ import (
 
 type IAuthHandler interface {
 	SendCaptcha(c *fiber.Ctx) error
+	Register(c *fiber.Ctx) error
+	Login(c *fiber.Ctx) error
+	Layout(c *fiber.Ctx) error
 }
 
 type AuthHandler struct {
@@ -20,7 +24,20 @@ type AuthHandler struct {
 }
 
 func NewAuthHandler(authService service.IAuthService) IAuthHandler {
-	return &AuthHandler{svc: authService, validate: validator.New()}
+	return &AuthHandler{svc: authService, validate: validatorx.Get()}
+}
+
+func (a *AuthHandler) Register(c *fiber.Ctx) error {
+
+	return nil
+}
+
+func (a *AuthHandler) Layout(c *fiber.Ctx) error {
+	panic("unimplemented")
+}
+
+func (a *AuthHandler) Login(c *fiber.Ctx) error {
+	panic("unimplemented")
 }
 
 func (a *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
@@ -43,5 +60,5 @@ func (a *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(response.Success(""))
+	return c.JSON(response.SuccessWithMsg("Captcha sent successfully", "Captcha sent successfully"))
 }
