@@ -19,14 +19,11 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 	if errors.As(err, &e) {
 		code = e.Code
 		msg = e.Message
-	} else {
-		code = fiber.StatusInternalServerError
-		msg = "Internal Server Error"
 	}
 
 	log.Error(err.Error())
 	if err := c.Status(code).JSON(response.Error(code, msg)); err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+		return c.Status(code).SendString(msg)
 	}
 
 	return nil
