@@ -11,6 +11,7 @@ import (
 	"blog-server/internal/scheduler"
 	"blog-server/internal/service"
 	"blog-server/pkg/logger"
+	"blog-server/pkg/util"
 	"context"
 	"errors"
 	"fmt"
@@ -25,17 +26,28 @@ import (
 func main() {
 	log := logger.Get()
 
-	app := fiber.New(fiber.Config{
-		EnableTrustedProxyCheck: true,
-		TrustedProxies:          []string{"127.0.0.1/8"},
-		ErrorHandler:            handler.ErrorHandler,
-	})
-
 	cfg, err := config.Load("./config.yml")
 	if err != nil {
 		log.Fatal(err.Error())
 		panic(err)
 	}
+
+	var ips []string
+	if cfg.App.Environment == "production" {
+		ips, err = util.FetchCloudflareIPs()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+	ips = append(ips, "127.0.0.1")
+
+	fiberCfg := fiber.Config{
+		EnableTrustedProxyCheck: true,
+		ErrorHandler:            handler.ErrorHandler,
+		TrustedProxies:          ips,
+	}
+
+	app := fiber.New(fiberCfg)
 
 	app.Use(middleware.RequestLogger(log))
 
