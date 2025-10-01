@@ -46,6 +46,7 @@ func main() {
 		ErrorHandler:            handler.ErrorHandler,
 		TrustedProxies:          ips,
 	}
+	fmt.Println(ips)
 
 	app := fiber.New(fiberCfg)
 
