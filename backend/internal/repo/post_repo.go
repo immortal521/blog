@@ -80,7 +80,7 @@ func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates ma
 		idArgs = append(idArgs, id, val)
 		ids = append(ids, id)
 	}
-	caseBuilder.WriteString("END")
+	caseBuilder.WriteString("ELSE 0 END")
 	return db.Model(&entity.Post{}).
 		Where("id IN (?)", ids).
 		UpdateColumn("view_count", gorm.Expr(caseBuilder.String(), idArgs...)).Error
