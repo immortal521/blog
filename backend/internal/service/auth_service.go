@@ -5,6 +5,7 @@ import (
 	"blog-server/internal/config"
 	"blog-server/internal/database"
 	"blog-server/internal/dto/request"
+	"blog-server/internal/dto/response"
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
 	"blog-server/pkg/errs"
@@ -38,8 +39,8 @@ const (
 // IAuthService is an interface for authentication services.
 type IAuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
-	Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error)
-	Login(ctx context.Context, dto *request.LoginReq) (accessToken, refreshToken string, err error)
+	Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error)
+	Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error)
 }
 
 // AuthService implements the IAuthService interface.
@@ -65,18 +66,18 @@ func NewAuthService(db database.DB, rdb *redis.Client, userRepo repo.IUserRepo, 
 }
 
 // Register registers a new user and generated access/refresh tokens
-func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error) {
+func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error) {
 	email := dto.Email
 
 	cachedCaptcha := s.rdb.Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
 
 	if !strings.EqualFold(cachedCaptcha, dto.Captcha) {
-		return "", "", errs.ErrInvalidCaptcha
+		return nil, errs.ErrInvalidCaptcha
 	}
 
 	hashPassword, err := util.HashPassword(dto.Password)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	user := &entity.User{
@@ -84,46 +85,66 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (a
 		Email:    dto.Email,
 		Password: hashPassword,
 	}
+	var newUser *entity.User
 
 	err = s.db.Trans(func(txCtx *database.TxContext) error {
-		return s.userRepo.CreateUser(ctx, txCtx.GetTx(), user)
+		newUser, err = s.userRepo.CreateUser(ctx, txCtx.GetTx(), user)
+		return err
 	})
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	accessToken, refreshToken, err = s.jwtService.GenerateAllTokens(user.UUID.String())
+	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return accessToken, refreshToken, nil
+	result := &response.LoginRes{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UUID:         newUser.UUID.String(),
+		Username:     newUser.Username,
+		Avatar:       newUser.Avatar,
+		Role:         newUser.Role,
+	}
+
+	return result, nil
 }
 
 // Login logs in a user and generates access/refresh tokens
-func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (accessToken, refreshToken string, err error) {
+func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, s.db.Conn(), dto.Email)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	if !util.VerifyPassword(dto.Password, user.Password) {
-		return "", "", errs.ErrPasswordWrong
+		return nil, errs.ErrPasswordWrong
 	}
 
-	accessToken, refreshToken, err = s.jwtService.GenerateAllTokens(user.UUID.String())
+	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return "", "", errs.ErrTokenGeneration
+		return nil, errs.ErrTokenGeneration
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return accessToken, refreshToken, nil
+	result := &response.LoginRes{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UUID:         user.UUID.String(),
+		Username:     user.Username,
+		Avatar:       user.Avatar,
+		Role:         user.Role,
+	}
+
+	return result, nil
 }
 
 // SendCaptchaMail generates a captcha, stores it in Redis, and sends an email.

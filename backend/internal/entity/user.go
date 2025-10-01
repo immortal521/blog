@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"encoding/json"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -11,6 +13,19 @@ const (
 	RoleReader UserRole = iota + 1
 	RoleAdmin
 )
+
+func (r UserRole) MarshalJSON() ([]byte, error) {
+	var s string
+	switch r {
+	default:
+		s = "unknown"
+	case RoleReader:
+		s = "reader"
+	case RoleAdmin:
+		s = "admin"
+	}
+	return json.Marshal(s)
+}
 
 type User struct {
 	*gorm.Model

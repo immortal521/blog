@@ -41,7 +41,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return errs.BadRequest("invalid")
 	}
 
-	accessToken, refreshToken, err := h.svc.Register(c.UserContext(), req)
+	result, err := h.svc.Register(c.UserContext(), req)
 	switch {
 	case errors.Is(err, errs.ErrInvalidCaptcha):
 		return errs.BadRequest(err.Error())
@@ -54,11 +54,9 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return err
 	}
 
-	setRefreshTokenCookie(c, refreshToken)
+	setRefreshTokenCookie(c, result.RefreshToken)
 
-	res := response.Success(response.LoginRes{
-		AccessToken: accessToken,
-	})
+	res := response.Success(result)
 	return c.JSON(res)
 }
 
@@ -85,16 +83,14 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return errs.BadRequest("parameter validation failed")
 	}
 
-	accessToken, refreshToken, err := h.svc.Login(c.UserContext(), req)
+	result, err := h.svc.Login(c.UserContext(), req)
 	if err != nil {
 		return err
 	}
 
-	setRefreshTokenCookie(c, refreshToken)
+	setRefreshTokenCookie(c, result.RefreshToken)
 
-	res := response.Success(response.LoginRes{
-		AccessToken: accessToken,
-	})
+	res := response.Success(result)
 	return c.JSON(res)
 }
 

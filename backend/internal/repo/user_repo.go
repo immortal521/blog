@@ -11,22 +11,23 @@ import (
 
 type IUserRepo interface {
 	GetUserByEmail(ctx context.Context, db *gorm.DB, email string) (*entity.User, error)
-	CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) error
+	CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) (*entity.User, error)
 	ExistsByEmail(ctx context.Context, db *gorm.DB, email string) (bool, error)
 	ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, error)
 }
 
 type userRepo struct{}
 
-func (u *userRepo) CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) error {
-	err := gorm.G[entity.User](db).Create(ctx, user)
+func (u *userRepo) CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) (*entity.User, error) {
+	result := gorm.WithResult()
+	err := gorm.G[entity.User](db, result).Create(ctx, user)
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return errs.ErrUserExists
+		return nil, errs.ErrUserExists
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return user, nil
 }
 
 func (u *userRepo) GetUserByEmail(ctx context.Context, db *gorm.DB, email string) (*entity.User, error) {
