@@ -19,6 +19,10 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 		// 为每个请求生成一个唯一 ID
 		reqID := uuid.New().String()
 
+		fmt.Println("X-Forwarded-For:", c.Get("X-Forwarded-For"))
+		fmt.Println("X-Real-IP:", c.Get("X-Real-IP"))
+		fmt.Println("c.IP():", c.IP())
+
 		// 基于全局 logger 创建一个带请求上下文的 logger
 		reqLogger := log.With(
 			zap.String("request_id", reqID),
@@ -55,15 +59,15 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 		// 根据状态码记录不同级别的日志
 		switch {
 		case statusCode >= 500:
-			reqLogger.Error("HTTP请求处理失败", fields...)
+			reqLogger.Error("HTTP request failed", fields...)
 		case statusCode >= 400:
-			reqLogger.Warn("HTTP请求客户端错误", fields...)
+			reqLogger.Warn("HTTP client error", fields...)
 		default:
-			reqLogger.Info("HTTP请求完成", fields...)
+			reqLogger.Info("HTTP request completed", fields...)
 		}
 
 		if err != nil {
-			reqLogger.Error("请求处理异常", zap.Error(err))
+			reqLogger.Error("Request processing error", zap.Error(err))
 		}
 
 		return err

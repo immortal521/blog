@@ -27,7 +27,7 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		EnableTrustedProxyCheck: true,
-		TrustedProxies:          []string{"127.0.0.1"},
+		TrustedProxies:          []string{"127.0.0.1/8"},
 		ErrorHandler:            handler.ErrorHandler,
 	})
 
