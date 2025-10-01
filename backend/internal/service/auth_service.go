@@ -84,6 +84,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 		UUID:     uuid.New(),
 		Email:    dto.Email,
 		Password: hashPassword,
+		Username: util.GenerateUsername(),
 	}
 	var newUser *entity.User
 
