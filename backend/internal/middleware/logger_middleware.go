@@ -19,6 +19,7 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 		// 为每个请求生成一个唯一 ID
 		reqID := uuid.New().String()
 
+		fmt.Println("RemoteAddr:", c.Context().RemoteAddr())
 		fmt.Println("X-Forwarded-For:", c.Get("X-Forwarded-For"))
 		fmt.Println("X-Real-IP:", c.Get("X-Real-IP"))
 		fmt.Println("c.IP():", c.IP())

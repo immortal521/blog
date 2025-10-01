@@ -39,14 +39,13 @@ func main() {
 			log.Fatal(err.Error())
 		}
 	}
-	ips = append(ips, "127.0.0.1")
+	ips = append(ips, "127.0.0.0/16")
 
 	fiberCfg := fiber.Config{
 		EnableTrustedProxyCheck: true,
 		ErrorHandler:            handler.ErrorHandler,
 		TrustedProxies:          ips,
 	}
-	fmt.Println(ips)
 
 	app := fiber.New(fiberCfg)
 
