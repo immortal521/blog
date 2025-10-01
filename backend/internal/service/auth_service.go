@@ -2,6 +2,7 @@
 package service
 
 import (
+	"blog-server/internal/config"
 	"blog-server/internal/database"
 	"blog-server/internal/dto/request"
 	"blog-server/internal/entity"
@@ -17,6 +18,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// AuthMailData represents the data required to send a captcha email.
 type AuthMailData struct {
 	Title   string
 	Type    string
@@ -30,33 +32,39 @@ type CaptchaType string
 const (
 	Register      CaptchaType = "Register"
 	PasswordReset CaptchaType = "PasswordReset"
-	ChangeEmail   CaptchaType = "ChangeEmail" // 更改邮箱
+	ChangeEmail   CaptchaType = "ChangeEmail"
 )
 
+// IAuthService is an interface for authentication services.
 type IAuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
 	Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error)
 	Login(ctx context.Context, dto *request.LoginReq) (accessToken, refreshToken string, err error)
 }
 
+// AuthService implements the IAuthService interface.
 type AuthService struct {
 	db          database.DB
 	rdb         *redis.Client
+	cfg         *config.Config
 	userRepo    repo.IUserRepo
 	jwtService  IJwtService
 	mailService IMailService
 }
 
+// NewAuthService creates and returns a new AuthService instance
 func NewAuthService(db database.DB, rdb *redis.Client, userRepo repo.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
 	return &AuthService{
 		db:          db,
 		rdb:         rdb,
+		cfg:         config.Get(),
 		userRepo:    userRepo,
 		jwtService:  jwtService,
 		mailService: mailService,
 	}
 }
 
+// Register registers a new user and generated access/refresh tokens
 func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (accessToken, refreshToken string, err error) {
 	email := dto.Email
 
@@ -89,16 +97,21 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (a
 		return "", "", err
 	}
 
+	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
+		return "", "", err
+	}
+
 	return accessToken, refreshToken, nil
 }
 
+// Login logs in a user and generates access/refresh tokens
 func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (accessToken, refreshToken string, err error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, s.db.Conn(), dto.Email)
 	if err != nil {
 		return "", "", err
 	}
 	if !util.VerifyPassword(dto.Password, user.Password) {
-		return "", "", errs.Unauthorized("邮箱或密码错误")
+		return "", "", errs.ErrPasswordWrong
 	}
 
 	accessToken, refreshToken, err = s.jwtService.GenerateAllTokens(user.UUID.String())
@@ -106,9 +119,14 @@ func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (accessT
 		return "", "", errs.ErrTokenGeneration
 	}
 
+	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
+		return "", "", err
+	}
+
 	return accessToken, refreshToken, nil
 }
 
+// SendCaptchaMail generates a captcha, stores it in Redis, and sends an email.
 func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {
 	userIsExist, err := s.userRepo.ExistsByEmail(ctx, s.db.Conn(), to)
 	if err != nil {
@@ -143,6 +161,21 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	return nil
 }
 
+// cacheRefreshToken stores the refresh token in Redis.
+func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
+	key := fmt.Sprintf("RefreshToken:%s", userUUID)
+	return s.rdb.Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err()
+}
+
+// getCaptchaEmailMeta returns email metadata based on captcha type.
+func getCaptchaEmailMeta(t CaptchaType) (AuthMailData, error) {
+	data, ok := captchaMetaMap[t]
+	if !ok {
+		return AuthMailData{}, fmt.Errorf("unknown captcha type: %s", t)
+	}
+	return data, nil
+}
+
 var captchaMetaMap = map[CaptchaType]AuthMailData{
 	Register: {
 		Subject: "【Immortal's Blog】邮箱验证",
@@ -162,12 +195,4 @@ var captchaMetaMap = map[CaptchaType]AuthMailData{
 		Type:    "更改邮箱",
 		Content: "您正在进行更改邮箱操作，请使用此验证码验证您的新邮箱",
 	},
-}
-
-func getCaptchaEmailMeta(t CaptchaType) (AuthMailData, error) {
-	data, ok := captchaMetaMap[t]
-	if !ok {
-		return AuthMailData{}, fmt.Errorf("unknown captcha type: %s", t)
-	}
-	return data, nil
 }

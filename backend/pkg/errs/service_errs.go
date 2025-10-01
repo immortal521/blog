@@ -6,4 +6,5 @@ var (
 	ErrInvalidCaptcha  = errors.New("invalid captcha")
 	ErrInvalidToken    = errors.New("invalid token")
 	ErrTokenGeneration = errors.New("token generation failed")
+	ErrPasswordWrong   = errors.New("password wrong")
 )
