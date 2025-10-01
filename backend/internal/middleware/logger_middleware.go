@@ -19,6 +19,10 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 		// 为每个请求生成一个唯一 ID
 		reqID := uuid.New().String()
 
+		fmt.Println("X-Forwarded-For:", c.Get("X-Forwarded-For"))
+		fmt.Println("X-Real-IP:", c.Get("X-Real-IP"))
+		fmt.Println("c.IP():", c.IP())
+
 		// 基于全局 logger 创建一个带请求上下文的 logger
 		reqLogger := log.With(
 			zap.String("request_id", reqID),
