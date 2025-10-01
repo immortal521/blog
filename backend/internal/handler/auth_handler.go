@@ -18,7 +18,7 @@ type IAuthHandler interface {
 	SendCaptcha(c *fiber.Ctx) error
 	Register(c *fiber.Ctx) error
 	Login(c *fiber.Ctx) error
-	Layout(c *fiber.Ctx) error
+	Logout(c *fiber.Ctx) error
 }
 
 type AuthHandler struct {
@@ -62,8 +62,16 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	return c.JSON(res)
 }
 
-func (h *AuthHandler) Layout(c *fiber.Ctx) error {
-	panic("unimplemented")
+func (h *AuthHandler) Logout(c *fiber.Ctx) error {
+	c.Cookie(&fiber.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+		Secure:   true,
+	})
+
+	return c.JSON(response.SuccessWithMsg("logout success", "logout success"))
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
