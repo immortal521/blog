@@ -31,5 +31,6 @@ func FetchCloudflareIPs() ([]string, error) {
 			}
 		}
 	}
+	ips = append(ips, "172.70.0.0/16")
 	return ips, nil
 }
