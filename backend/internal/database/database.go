@@ -1,8 +1,10 @@
-// Package database provides a GORM-based interface for interacting with PostgreSQL databases.
+// Package databasev2 provides a GORM-based interface for interacting with PostgreSQL databases.
 // It includes transaction management and automatic migration capabilities.
+
 package database
 
 import (
+	"blog-server/internal/config"
 	"context"
 	"database/sql"
 
@@ -26,7 +28,8 @@ type db struct {
 	db *gorm.DB
 }
 
-func NewDB(dsn string) (DB, error) {
+func NewDB(cfg *config.Config) (DB, error) {
+	dsn := cfg.Database.GetDSN()
 	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:         logger.Default.LogMode(logger.Info),
 		TranslateError: true,

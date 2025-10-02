@@ -12,7 +12,7 @@ type Scheduler struct {
 	postService service.IPostService
 }
 
-func New(postService service.IPostService) *Scheduler {
+func NewScheduler(postService service.IPostService) *Scheduler {
 	return &Scheduler{postService: postService}
 }
 

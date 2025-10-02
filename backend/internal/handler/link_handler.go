@@ -5,7 +5,6 @@ import (
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
-	"blog-server/pkg/validatorx"
 	"errors"
 
 	"github.com/go-playground/validator/v10"
@@ -22,8 +21,8 @@ type LinkHandler struct {
 	validate *validator.Validate
 }
 
-func NewLinkHandler(svc service.ILinkService) ILinkHandler {
-	return &LinkHandler{svc: svc, validate: validatorx.Get()}
+func NewLinkHandler(svc service.ILinkService, validate *validator.Validate) ILinkHandler {
+	return &LinkHandler{svc: svc, validate: validate}
 }
 
 func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {

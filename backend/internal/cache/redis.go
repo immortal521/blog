@@ -27,13 +27,14 @@ func (c *client) Close() error {
 	return c.rdb.Close()
 }
 
-func New(cfg config.RedisConfig) (RedisClient, error) {
+func NewRedisClient(cfg *config.Config) (RedisClient, error) {
+	rcfg := cfg.Redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr:         fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Password:     cfg.Password,
-		DB:           cfg.DB,
-		PoolSize:     cfg.PoolSize,
-		MinIdleConns: cfg.MinIdleConns,
+		Addr:         fmt.Sprintf("%s:%d", rcfg.Host, rcfg.Port),
+		Password:     rcfg.Password,
+		DB:           rcfg.DB,
+		PoolSize:     rcfg.PoolSize,
+		MinIdleConns: rcfg.MinIdleConns,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

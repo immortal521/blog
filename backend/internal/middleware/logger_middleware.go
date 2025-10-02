@@ -3,7 +3,6 @@ package middleware
 
 import (
 	"blog-server/internal/cache"
-	"blog-server/pkg/logger"
 	"fmt"
 	"time"
 
@@ -33,9 +32,6 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 			zap.String("path", c.Path()),
 			zap.String("user_agent", string(c.Request().Header.UserAgent())),
 		)
-
-		ctx := logger.ToContext(c.UserContext(), reqLogger)
-		c.SetUserContext(ctx)
 
 		c.Locals(ContextLoggerKey, reqLogger)
 
