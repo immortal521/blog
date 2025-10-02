@@ -6,7 +6,6 @@ import (
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
-	"blog-server/pkg/validatorx"
 	"errors"
 	"time"
 
@@ -26,8 +25,8 @@ type AuthHandler struct {
 	validate *validator.Validate
 }
 
-func NewAuthHandler(authService service.IAuthService) IAuthHandler {
-	return &AuthHandler{svc: authService, validate: validatorx.Get()}
+func NewAuthHandler(authService service.IAuthService, validate *validator.Validate) IAuthHandler {
+	return &AuthHandler{svc: authService, validate: validate}
 }
 
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
