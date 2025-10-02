@@ -2,6 +2,7 @@
 package middleware
 
 import (
+	"blog-server/internal/cache"
 	"blog-server/pkg/logger"
 	"fmt"
 	"time"
@@ -76,7 +77,7 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 }
 
 // RateLimiter 速率限制中间件
-func RateLimiter(rdb *redis.Client) fiber.Handler {
+func RateLimiter(rc cache.RedisClient) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// 使用IP地址作为限流键
 		key := fmt.Sprintf("rate_limit:%s", c.IP())
@@ -90,7 +91,7 @@ func RateLimiter(rdb *redis.Client) fiber.Handler {
 		now := time.Now().Unix()
 
 		// 清除窗口外的请求记录
-		err := rdb.ZRemRangeByScore(ctx, key, "0", fmt.Sprintf("%d", now-int64(window.Seconds()))).Err()
+		err := rc.Raw().ZRemRangeByScore(ctx, key, "0", fmt.Sprintf("%d", now-int64(window.Seconds()))).Err()
 		if err != nil {
 			// 如果Redis出错，记录日志但不阻断请求
 			if logger, ok := c.Locals(ContextLoggerKey).(*zap.Logger); ok {
@@ -99,7 +100,7 @@ func RateLimiter(rdb *redis.Client) fiber.Handler {
 		}
 
 		// 获取当前窗口内的请求数
-		count, err := rdb.ZCard(ctx, key).Result()
+		count, err := rc.Raw().ZCard(ctx, key).Result()
 		if err != nil {
 			// 如果Redis出错，记录日志但不阻断请求
 			if logger, ok := c.Locals(ContextLoggerKey).(*zap.Logger); ok {
@@ -111,7 +112,7 @@ func RateLimiter(rdb *redis.Client) fiber.Handler {
 		}
 
 		// 记录当前请求
-		err = rdb.ZAdd(ctx, key, redis.Z{
+		err = rc.Raw().ZAdd(ctx, key, redis.Z{
 			Score:  float64(now),
 			Member: now,
 		}).Err()
@@ -123,7 +124,7 @@ func RateLimiter(rdb *redis.Client) fiber.Handler {
 		}
 
 		// 设置过期时间以自动清理
-		err = rdb.Expire(ctx, key, window).Err()
+		err = rc.Raw().Expire(ctx, key, window).Err()
 		if err != nil {
 			// 如果Redis出错，记录日志但不阻断请求
 			if logger, ok := c.Locals(ContextLoggerKey).(*zap.Logger); ok {

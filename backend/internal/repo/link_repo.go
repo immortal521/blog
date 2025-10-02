@@ -30,12 +30,11 @@ func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link
 }
 
 func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error {
-	err := gorm.G[entity.Link](db).Create(ctx, link)
-	if err == nil {
-		return nil
+	if err := gorm.G[entity.Link](db).Create(ctx, link); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return errs.ErrDuplicateURL
+		}
+		return err
 	}
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return errs.ErrDuplicateURL
-	}
-	return err
+	return nil
 }

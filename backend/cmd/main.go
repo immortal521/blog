@@ -63,7 +63,7 @@ func main() {
 		panic(err)
 	}
 
-	rdb := redisClient.Raw()
+	cache := redisClient
 	defer redisClient.Close()
 
 	linkRepo := repo.NewLinkRepo()
@@ -71,7 +71,7 @@ func main() {
 	linkHandler := handler.NewLinkHandler(linkService)
 
 	postRepo := repo.NewPostRepo()
-	postService := service.NewPostService(db, rdb, postRepo)
+	postService := service.NewPostService(db, cache, postRepo)
 	postHandler := handler.NewPostHandler(postService)
 
 	mailService, err := service.NewEmailService()
@@ -83,7 +83,7 @@ func main() {
 	userRepo := repo.NewUserRepo()
 
 	jwtService := service.NewJwtService()
-	authService := service.NewAuthService(db, rdb, userRepo, jwtService, mailService)
+	authService := service.NewAuthService(db, cache, userRepo, jwtService, mailService)
 	authHandler := handler.NewAuthHandler(authService)
 
 	api := app.Group("/api")

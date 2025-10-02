@@ -1,6 +1,7 @@
 package service
 
 import (
+	"blog-server/internal/cache"
 	"blog-server/internal/database"
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
@@ -23,12 +24,12 @@ type IPostService interface {
 
 type postService struct {
 	db       database.DB
-	rdb      *redis.Client
+	rc       cache.RedisClient
 	postRepo repo.IPostRepo
 }
 
-func NewPostService(db database.DB, rdb *redis.Client, postRepo repo.IPostRepo) IPostService {
-	return &postService{db: db, rdb: rdb, postRepo: postRepo}
+func NewPostService(db database.DB, rc cache.RedisClient, postRepo repo.IPostRepo) IPostService {
+	return &postService{db: db, rc: rc, postRepo: postRepo}
 }
 
 func (p *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
@@ -53,7 +54,7 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 		return &entity.Post{}, err
 	}
 
-	p.rdb.Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID))
+	p.rc.Raw().Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID))
 	return post, nil
 }
 
@@ -63,7 +64,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	var errs []error
 
 	for {
-		keys, next, err := p.rdb.Scan(ctx, cursor, "blog:post:view_count:*", 100).Result()
+		keys, next, err := p.rc.Raw().Scan(ctx, cursor, "blog:post:view_count:*", 100).Result()
 		if err != nil {
 			return err
 		}
@@ -75,7 +76,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 			continue
 		}
 
-		pipe := p.rdb.Pipeline()
+		pipe := p.rc.Raw().Pipeline()
 		cmds := make([]*redis.StringCmd, len(keys))
 
 		for i, key := range keys {

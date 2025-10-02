@@ -2,6 +2,7 @@
 package service
 
 import (
+	"blog-server/internal/cache"
 	"blog-server/internal/config"
 	"blog-server/internal/database"
 	"blog-server/internal/dto/request"
@@ -16,7 +17,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 )
 
 // AuthMailData represents the data required to send a captcha email.
@@ -46,7 +46,7 @@ type IAuthService interface {
 // AuthService implements the IAuthService interface.
 type AuthService struct {
 	db          database.DB
-	rdb         *redis.Client
+	rc          cache.RedisClient
 	cfg         *config.Config
 	userRepo    repo.IUserRepo
 	jwtService  IJwtService
@@ -54,10 +54,10 @@ type AuthService struct {
 }
 
 // NewAuthService creates and returns a new AuthService instance
-func NewAuthService(db database.DB, rdb *redis.Client, userRepo repo.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
+func NewAuthService(db database.DB, rc cache.RedisClient, userRepo repo.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
 	return &AuthService{
 		db:          db,
-		rdb:         rdb,
+		rc:          rc,
 		cfg:         config.Get(),
 		userRepo:    userRepo,
 		jwtService:  jwtService,
@@ -69,7 +69,7 @@ func NewAuthService(db database.DB, rdb *redis.Client, userRepo repo.IUserRepo, 
 func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error) {
 	email := dto.Email
 
-	cachedCaptcha := s.rdb.Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
+	cachedCaptcha := s.rc.Raw().Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
 
 	if !strings.EqualFold(cachedCaptcha, dto.Captcha) {
 		return nil, errs.ErrInvalidCaptcha
@@ -170,7 +170,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	captcha := util.GenerateCaptcha()
 	data.Captcha = captcha
 
-	if err = s.rdb.Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute).Err(); err != nil {
+	if err = s.rc.Raw().Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute).Err(); err != nil {
 		return fmt.Errorf("set captcha in redis: %w", err)
 	}
 
@@ -186,7 +186,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 // cacheRefreshToken stores the refresh token in Redis.
 func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
 	key := fmt.Sprintf("RefreshToken:%s", userUUID)
-	return s.rdb.Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err()
+	return s.rc.Raw().Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err()
 }
 
 // getCaptchaEmailMeta returns email metadata based on captcha type.
