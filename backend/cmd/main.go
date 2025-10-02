@@ -40,7 +40,7 @@ func providerFiberApp(cfg *config.Config, logger *zap.Logger) (*fiber.App, error
 
 	fiberCfg := fiber.Config{
 		EnableTrustedProxyCheck: true,
-		ErrorHandler:            handler.ErrorHandler,
+		ErrorHandler:            handler.ErrorHandler(logger),
 		TrustedProxies:          ips,
 	}
 
