@@ -2,19 +2,17 @@
 package middleware
 
 import (
-	"blog-server/internal/cache"
+	"blog-server/pkg/logger"
 	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
-	"go.uber.org/zap"
 )
 
 const ContextLoggerKey = "logger"
 
-func RequestLogger(log *zap.Logger) fiber.Handler {
+func RequestLogger(log logger.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// 为每个请求生成一个唯一 ID
 		reqID := uuid.New().String()
@@ -25,12 +23,12 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 		fmt.Println("c.IP():", c.IP())
 
 		// 基于全局 logger 创建一个带请求上下文的 logger
-		reqLogger := log.With(
-			zap.String("request_id", reqID),
-			zap.String("method", c.Method()),
-			zap.String("remote_ip", c.IP()),
-			zap.String("path", c.Path()),
-			zap.String("user_agent", string(c.Request().Header.UserAgent())),
+		reqLogger := log.WithFields(
+			logger.Any("request_id", reqID),
+			logger.String("method", c.Method()),
+			logger.String("remote_ip", c.IP()),
+			logger.String("path", c.Path()),
+			logger.String("user_agent", string(c.Request().Header.UserAgent())),
 		)
 
 		c.Locals(ContextLoggerKey, reqLogger)
@@ -43,15 +41,15 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 
 		// 根据状态码确定日志级别
 		statusCode := c.Response().StatusCode()
-		fields := []zap.Field{
-			zap.Int("status", statusCode),
-			zap.Duration("latency", latency),
-			zap.String("referer", string(c.Request().Header.Referer())),
+		fields := []logger.Field{
+			logger.Int("status", statusCode),
+			logger.Duration("latency", latency),
+			logger.String("referer", string(c.Request().Header.Referer())),
 		}
 
 		// 对于慢请求添加警告
 		if latency > time.Second*5 {
-			fields = append(fields, zap.Bool("slow_request", true))
+			fields = append(fields, logger.Bool("slow_request", true))
 		}
 
 		// 根据状态码记录不同级别的日志
@@ -65,7 +63,7 @@ func RequestLogger(log *zap.Logger) fiber.Handler {
 		}
 
 		if err != nil {
-			reqLogger.Error("Request processing error", zap.Error(err))
+			reqLogger.Error("Request processing error", logger.Error(err))
 		}
 
 		return err

@@ -1,12 +1,137 @@
 // Package logger
 package logger
 
-import "go.uber.org/zap"
+import (
+	"time"
 
-func NewLogger() *zap.Logger {
-	log, err := zap.NewDevelopment()
+	"go.uber.org/zap"
+)
+
+type Logger interface {
+	Info(msg string, fields ...Field)
+	Error(msg string, fields ...Field)
+	Debug(msg string, fields ...Field)
+	Warn(msg string, fields ...Field)
+
+	Fatal(msg string, fields ...Field)
+	Panic(msg string, fields ...Field)
+
+	// WithFields 用于附加上下文字段，返回新的 Logger
+	WithFields(fields ...Field) Logger
+
+	Sync() error
+}
+
+type fieldType int
+
+const (
+	fieldAny fieldType = iota
+	fieldError
+	fieldString
+	fieldInt
+	fieldInt64
+	fieldBool
+	fieldFloat64
+	fieldDuration
+	fieldTime
+)
+
+type Field struct {
+	Key  string
+	Type fieldType
+	Any  any
+	Err  error
+}
+
+type zapLogger struct {
+	l *zap.Logger
+}
+
+func Any(key string, value any) Field {
+	return Field{Key: key, Type: fieldAny, Any: value}
+}
+
+func Error(err error) Field {
+	return Field{Key: "error", Type: fieldError, Err: err}
+}
+
+func String(key, value string) Field {
+	return Field{Key: key, Type: fieldString, Any: value}
+}
+
+func Int(key string, value int) Field {
+	return Field{Key: key, Type: fieldInt, Any: value}
+}
+
+func Int64(key string, value int64) Field {
+	return Field{Key: key, Type: fieldInt64, Any: value}
+}
+
+func Bool(key string, value bool) Field {
+	return Field{Key: key, Type: fieldBool, Any: value}
+}
+
+func Float64(key string, value float64) Field {
+	return Field{Key: key, Type: fieldFloat64, Any: value}
+}
+
+func Duration(key string, value time.Duration) Field {
+	return Field{Key: key, Type: fieldDuration, Any: value}
+}
+
+func Time(key string, value time.Time) Field {
+	return Field{Key: key, Type: fieldTime, Any: value}
+}
+
+func (z *zapLogger) Fatal(msg string, fields ...Field) {
+	z.l.Fatal(msg, convertFields(fields)...)
+}
+
+func (z *zapLogger) Panic(msg string, fields ...Field) {
+	z.l.Panic(msg, convertFields(fields)...)
+}
+
+func (z *zapLogger) WithFields(fields ...Field) Logger {
+	return &zapLogger{l: z.l.With(convertFields(fields)...)}
+}
+
+func (z *zapLogger) Debug(msg string, fields ...Field) {
+	z.l.Info(msg, convertFields(fields)...)
+}
+
+func (z *zapLogger) Error(msg string, fields ...Field) {
+	z.l.Error(msg, convertFields(fields)...)
+}
+
+func (z *zapLogger) Info(msg string, fields ...Field) {
+	z.l.Info(msg, convertFields(fields)...)
+}
+
+func (z *zapLogger) Sync() error {
+	return z.l.Sync()
+}
+
+func (z *zapLogger) Warn(msg string, fields ...Field) {
+	z.l.Warn(msg, convertFields(fields)...)
+}
+
+func NewLogger() Logger {
+	l, err := zap.NewDevelopment()
 	if err != nil {
 		panic("logger initialization failed: " + err.Error())
 	}
-	return log
+	return &zapLogger{l: l}
+}
+
+func convertFields(fields []Field) []zap.Field {
+	zf := make([]zap.Field, 0, len(fields))
+	for _, f := range fields {
+		switch f.Type {
+		case fieldError:
+			zf = append(zf, zap.Error(f.Err))
+		default:
+			zf = append(zf, zap.Any(f.Key, f.Any))
+		}
+	}
+	return zf
 }

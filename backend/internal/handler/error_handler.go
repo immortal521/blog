@@ -3,13 +3,13 @@ package handler
 
 import (
 	"blog-server/internal/dto/response"
+	"blog-server/pkg/logger"
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
-	"go.uber.org/zap"
 )
 
-func ErrorHandler(logger *zap.Logger) fiber.ErrorHandler {
+func ErrorHandler(log logger.Logger) fiber.ErrorHandler {
 	return func(c *fiber.Ctx, err error) error {
 		code := fiber.StatusInternalServerError
 		msg := "Internal Server Error"
@@ -21,7 +21,7 @@ func ErrorHandler(logger *zap.Logger) fiber.ErrorHandler {
 			msg = e.Message
 		}
 
-		logger.Error(err.Error())
+		log.Error(err.Error())
 
 		if err := c.Status(code).JSON(response.Error(code, msg)); err != nil {
 			return c.Status(code).SendString(msg)

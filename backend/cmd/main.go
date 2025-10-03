@@ -17,21 +17,19 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 func provideConfig() (*config.Config, error) {
 	return config.Load("./config.yml")
 }
 
-func providerFiberApp(cfg *config.Config, logger *zap.Logger) (*fiber.App, error) {
+func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error) {
 	var ips []string
 	if cfg.App.Environment == "production" {
 		cfIPs, err := util.FetchCloudflareIPs()
 		if err != nil {
-			logger.Error("fetch cloudflare ips failed", zap.Error(err))
+			log.Error("fetch cloudflare ips failed", logger.Error(err))
 			return nil, err
 		}
 		ips = append(ips, cfIPs...)
@@ -40,12 +38,12 @@ func providerFiberApp(cfg *config.Config, logger *zap.Logger) (*fiber.App, error
 
 	fiberCfg := fiber.Config{
 		EnableTrustedProxyCheck: true,
-		ErrorHandler:            handler.ErrorHandler(logger),
+		ErrorHandler:            handler.ErrorHandler(log),
 		TrustedProxies:          ips,
 	}
 
 	app := fiber.New(fiberCfg)
-	app.Use(middleware.RequestLogger(logger))
+	app.Use(middleware.RequestLogger(log))
 
 	return app, nil
 }
@@ -70,19 +68,19 @@ func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
 	})
 }
 
-func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, logger *zap.Logger) {
+func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log logger.Logger) {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func() {
-				logger.Info("Server is starting and listening", zap.String("address", cfg.Server.GetAddr()))
+				log.Info("Server is starting and listening", logger.String("address", cfg.Server.GetAddr()))
 				if err := app.Listen(cfg.Server.GetAddr()); err != nil {
-					logger.Fatal("Server startup failed", zap.Error(err))
+					log.Fatal("Server startup failed", logger.Error(err))
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info("Shutting down server gracefully...")
+			log.Info("Shutting down server gracefully...")
 			timeout := cfg.Server.GracefulShutdown
 			if timeout <= 0 {
 				timeout = 5 * time.Second
@@ -91,7 +89,7 @@ func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log
 			defer cancel()
 
 			if err := app.ShutdownWithContext(shutdownCtx); err != nil {
-				logger.Error("Server shutdown failed", zap.Error(err))
+				log.Error("Server shutdown failed", logger.Error(err))
 			} else {
 				log.Info("Server has been shut down successfully.")
 			}
