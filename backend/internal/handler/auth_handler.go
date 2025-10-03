@@ -6,10 +6,10 @@ import (
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
+	"blog-server/pkg/validatorx"
 	"errors"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -22,10 +22,10 @@ type IAuthHandler interface {
 
 type AuthHandler struct {
 	svc      service.IAuthService
-	validate *validator.Validate
+	validate validatorx.Validator
 }
 
-func NewAuthHandler(authService service.IAuthService, validate *validator.Validate) IAuthHandler {
+func NewAuthHandler(authService service.IAuthService, validate validatorx.Validator) IAuthHandler {
 	return &AuthHandler{svc: authService, validate: validate}
 }
 

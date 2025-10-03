@@ -5,9 +5,8 @@ import (
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
+	"blog-server/pkg/validatorx"
 	"errors"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,10 +17,10 @@ type ILinkHandler interface {
 }
 type LinkHandler struct {
 	svc      service.ILinkService
-	validate *validator.Validate
+	validate validatorx.Validator
 }
 
-func NewLinkHandler(svc service.ILinkService, validate *validator.Validate) ILinkHandler {
+func NewLinkHandler(svc service.ILinkService, validate validatorx.Validator) ILinkHandler {
 	return &LinkHandler{svc: svc, validate: validate}
 }
 
