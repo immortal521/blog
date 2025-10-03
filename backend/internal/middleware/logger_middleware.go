@@ -9,12 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
-const ContextLoggerKey = "logger"
-
 func RequestLogger(log logger.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// 为每个请求生成一个唯一 ID
 		reqID := uuid.New().String()
+
+		c.Set("X-Request-ID", reqID)
 
 		// 基于全局 logger 创建一个带请求上下文的 logger
 		reqLogger := log.WithFields(
@@ -25,8 +25,6 @@ func RequestLogger(log logger.Logger) fiber.Handler {
 			logger.String("user_agent", string(c.Request().Header.UserAgent())),
 		)
 
-		c.Locals(ContextLoggerKey, reqLogger)
-
 		start := time.Now()
 		err := c.Next() // 执行后续中间件和处理器
 
@@ -35,9 +33,17 @@ func RequestLogger(log logger.Logger) fiber.Handler {
 
 		// 根据状态码确定日志级别
 		statusCode := c.Response().StatusCode()
+		respSize := c.Response().Header.ContentLength()
+
+		if respSize < 0 {
+			respSize = len(c.Response().Body())
+		}
+
 		fields := []logger.Field{
 			logger.Int("status", statusCode),
+			logger.Int("response_size", respSize),
 			logger.Duration("latency", latency),
+			logger.String("original_url", c.OriginalURL()),
 			logger.String("referer", string(c.Request().Header.Referer())),
 		}
 
