@@ -13,6 +13,7 @@ import (
 	"blog-server/pkg/util"
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -41,6 +42,7 @@ type IAuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
 	Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error)
 	Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error)
+	HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error)
 }
 
 // AuthService implements the IAuthService interface.
@@ -181,6 +183,23 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	}
 
 	return nil
+}
+
+func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error) {
+	userRole, err := s.userRepo.GetRoleByUUID(ctx, s.db.Conn(), uuid)
+	if err != nil {
+		return false, err
+	}
+
+	if userRole == nil {
+		return false, errs.ErrUserNotFound
+	}
+
+	if slices.Contains(roles, *userRole) {
+		return true, nil
+	}
+
+	return true, nil
 }
 
 // cacheRefreshToken stores the refresh token in Redis.

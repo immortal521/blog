@@ -14,6 +14,7 @@ type IUserRepo interface {
 	CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) (*entity.User, error)
 	ExistsByEmail(ctx context.Context, db *gorm.DB, email string) (bool, error)
 	ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, error)
+	GetRoleByUUID(ctx context.Context, db *gorm.DB, uuid string) (*entity.UserRole, error)
 }
 
 type userRepo struct{}
@@ -61,6 +62,17 @@ func (u *userRepo) ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, 
 		return false, err
 	}
 	return true, nil
+}
+
+func (u *userRepo) GetRoleByUUID(ctx context.Context, db *gorm.DB, uuid string) (*entity.UserRole, error) {
+	role, err := gorm.G[*entity.UserRole](db).Where("uuid = ?", uuid).Take(ctx)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errs.ErrUserNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return role, nil
 }
 
 func NewUserRepo() IUserRepo {
