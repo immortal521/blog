@@ -24,11 +24,11 @@ type IPostService interface {
 
 type postService struct {
 	db       database.DB
-	rc       cache.RedisClient
+	rc       cache.CacheClient
 	postRepo repo.IPostRepo
 }
 
-func NewPostService(db database.DB, rc cache.RedisClient, postRepo repo.IPostRepo) IPostService {
+func NewPostService(db database.DB, rc cache.CacheClient, postRepo repo.IPostRepo) IPostService {
 	return &postService{db: db, rc: rc, postRepo: postRepo}
 }
 

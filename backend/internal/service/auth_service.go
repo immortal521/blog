@@ -46,7 +46,7 @@ type IAuthService interface {
 // AuthService implements the IAuthService interface.
 type AuthService struct {
 	db          database.DB
-	rc          cache.RedisClient
+	rc          cache.CacheClient
 	cfg         *config.Config
 	userRepo    repo.IUserRepo
 	jwtService  IJwtService
@@ -54,7 +54,7 @@ type AuthService struct {
 }
 
 // NewAuthService creates and returns a new AuthService instance
-func NewAuthService(db database.DB, rc cache.RedisClient, userRepo repo.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
+func NewAuthService(db database.DB, rc cache.CacheClient, userRepo repo.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
 	return &AuthService{
 		db:          db,
 		rc:          rc,

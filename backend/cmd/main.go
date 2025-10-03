@@ -99,7 +99,7 @@ func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log
 	})
 }
 
-func cleanupResources(ls fx.Lifecycle, db database.DB, rc cache.RedisClient) {
+func cleanupResources(ls fx.Lifecycle, db database.DB, rc cache.CacheClient) {
 	ls.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			db.Close()
@@ -114,7 +114,7 @@ func main() {
 		logger.NewLogger,
 		provideConfig,
 		database.NewDB,
-		cache.NewRedisClient,
+		cache.NewCacheClient,
 		validatorx.NewValidator,
 		providerFiberApp,
 

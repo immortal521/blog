@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisClient interface {
+type CacheClient interface {
 	Raw() *redis.Client
 	Close() error
 }
@@ -27,7 +27,7 @@ func (c *client) Close() error {
 	return c.rdb.Close()
 }
 
-func NewRedisClient(cfg *config.Config) (RedisClient, error) {
+func NewCacheClient(cfg *config.Config) (CacheClient, error) {
 	rcfg := cfg.Redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:         fmt.Sprintf("%s:%d", rcfg.Host, rcfg.Port),
