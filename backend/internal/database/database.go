@@ -1,6 +1,5 @@
-// Package databasev2 provides a GORM-based interface for interacting with PostgreSQL databases.
+// Package database provides a GORM-based interface for interacting with PostgreSQL databases.
 // It includes transaction management and automatic migration capabilities.
-
 package database
 
 import (

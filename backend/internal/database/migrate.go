@@ -4,6 +4,7 @@ import (
 	"blog-server/internal/entity"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // AutoMigrate 自动迁移数据库表结构。
@@ -17,7 +18,9 @@ import (
 //
 // 如果迁移过程中发生错误，则会返回该错误。
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+	return db.Session(&gorm.Session{
+		Logger: db.Logger.LogMode(logger.Silent),
+	}).AutoMigrate(
 		&entity.User{},
 		&entity.Link{},
 		&entity.LinkCategory{},
