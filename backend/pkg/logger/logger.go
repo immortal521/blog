@@ -3,8 +3,6 @@ package logger
 
 import (
 	"time"
-
-	"go.uber.org/zap"
 )
 
 type Logger interface {
@@ -43,10 +41,6 @@ type Field struct {
 	Err  error
 }
 
-type zapLogger struct {
-	l *zap.Logger
-}
-
 func Any(key string, value any) Field {
 	return Field{Key: key, Type: fieldAny, Any: value}
 }
@@ -81,57 +75,4 @@ func Duration(key string, value time.Duration) Field {
 
 func Time(key string, value time.Time) Field {
 	return Field{Key: key, Type: fieldTime, Any: value}
-}
-
-func (z *zapLogger) Fatal(msg string, fields ...Field) {
-	z.l.Fatal(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) Panic(msg string, fields ...Field) {
-	z.l.Panic(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) WithFields(fields ...Field) Logger {
-	return &zapLogger{l: z.l.With(convertFields(fields)...)}
-}
-
-func (z *zapLogger) Debug(msg string, fields ...Field) {
-	z.l.Info(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) Error(msg string, fields ...Field) {
-	z.l.Error(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) Info(msg string, fields ...Field) {
-	z.l.Info(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) Sync() error {
-	return z.l.Sync()
-}
-
-func (z *zapLogger) Warn(msg string, fields ...Field) {
-	z.l.Warn(msg, convertFields(fields)...)
-}
-
-func NewLogger() Logger {
-	l, err := zap.NewDevelopment()
-	if err != nil {
-		panic("logger initialization failed: " + err.Error())
-	}
-	return &zapLogger{l: l}
-}
-
-func convertFields(fields []Field) []zap.Field {
-	zf := make([]zap.Field, 0, len(fields))
-	for _, f := range fields {
-		switch f.Type {
-		case fieldError:
-			zf = append(zf, zap.Error(f.Err))
-		default:
-			zf = append(zf, zap.Any(f.Key, f.Any))
-		}
-	}
-	return zf
 }

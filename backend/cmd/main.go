@@ -72,7 +72,7 @@ func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func() {
-				log.Info("Server is starting and listening", logger.String("address", cfg.Server.GetAddr()))
+				log.Info("Server is starting")
 				if err := app.Listen(cfg.Server.GetAddr()); err != nil {
 					log.Fatal("Server startup failed", logger.Error(err))
 				}
