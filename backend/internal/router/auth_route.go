@@ -13,4 +13,5 @@ func RegisterAuthRoutes(r fiber.Router, h handler.IAuthHandler) {
 	group.Post("/register", h.Register)
 	group.Post("/login", h.Login)
 	group.Post("/logout", h.Logout)
+	group.Post("/refresh", h.Refresh)
 }

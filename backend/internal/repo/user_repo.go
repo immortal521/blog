@@ -14,6 +14,7 @@ type IUserRepo interface {
 	CreateUser(ctx context.Context, db *gorm.DB, user *entity.User) (*entity.User, error)
 	ExistsByEmail(ctx context.Context, db *gorm.DB, email string) (bool, error)
 	ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, error)
+	ExistsByUUID(ctx context.Context, db *gorm.DB, uuid string) (bool, error)
 	GetRoleByUUID(ctx context.Context, db *gorm.DB, uuid string) (*entity.UserRole, error)
 }
 
@@ -55,6 +56,17 @@ func (u *userRepo) ExistsByEmail(ctx context.Context, db *gorm.DB, email string)
 
 func (u *userRepo) ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, error) {
 	_, err := gorm.G[*entity.User](db).Where("id = ?", id).Take(ctx)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (u *userRepo) ExistsByUUID(ctx context.Context, db *gorm.DB, uuid string) (bool, error) {
+	_, err := gorm.G[*entity.User](db).Where("uuid = ?", uuid).Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}

@@ -18,6 +18,7 @@ type IAuthHandler interface {
 	Register(c *fiber.Ctx) error
 	Login(c *fiber.Ctx) error
 	Logout(c *fiber.Ctx) error
+	Refresh(c *fiber.Ctx) error
 }
 
 type AuthHandler struct {
@@ -91,6 +92,21 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 
 	res := response.Success(result)
 	return c.JSON(res)
+}
+
+func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
+	token := c.Cookies("refreshToken")
+	if token == "" {
+		return errs.Unauthorized("missing refresh token")
+	}
+	newTokens, err := h.svc.RefreshAccessToken(c.UserContext(), token)
+	if err != nil {
+		return err
+	}
+
+	setRefreshTokenCookie(c, newTokens.RefreshToken)
+
+	return c.JSON(response.Success(newTokens))
 }
 
 func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {

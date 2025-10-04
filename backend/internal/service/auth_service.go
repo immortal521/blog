@@ -43,6 +43,7 @@ type IAuthService interface {
 	Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error)
 	Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error)
 	HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error)
+	RefreshAccessToken(context context.Context, token string) (*response.RefreshRes, error)
 }
 
 // AuthService implements the IAuthService interface.
@@ -183,6 +184,41 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	}
 
 	return nil
+}
+
+func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*response.RefreshRes, error) {
+	claims, err := s.jwtService.ParseToken(token)
+	if err != nil {
+		return nil, err
+	}
+	uuid := claims.UserID
+
+	existed, err := s.userRepo.ExistsByUUID(ctx, s.db.Conn(), uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	if !existed {
+		return nil, errs.ErrUserNotFound
+	}
+
+	cacheRefreshToken := s.rc.Raw().Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid)).Val()
+
+	if !strings.EqualFold(token, cacheRefreshToken) {
+		return nil, errs.ErrInvalidToken
+	}
+
+	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	s.cacheRefreshToken(ctx, uuid, refreshToken)
+
+	return &response.RefreshRes{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
 }
 
 func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error) {

@@ -10,3 +10,8 @@ type LoginRes struct {
 	Username     string          `json:"username"`
 	Role         entity.UserRole `json:"role"`
 }
+
+type RefreshRes struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"-"`
+}
