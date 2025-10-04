@@ -12,7 +12,4 @@ func RegisterPostRoutes(r fiber.Router, am *middleware.AuthMiddleware, h handler
 	group.Get("/", h.GetPosts)
 	group.Get("/meta", h.GetPostIds)
 	group.Get("/:id", h.GetPost)
-
-	needAuthGroup := r.Group("/posts", am.Handler())
-	needAuthGroup.Post("/test", h.GetPosts)
 }
