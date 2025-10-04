@@ -1,5 +1,13 @@
 import { ofetch, type FetchError, type FetchOptions } from "ofetch";
 
+interface RefreshRes {
+  code: number;
+  msg: string;
+  data: {
+    accessToken: string;
+  };
+}
+
 /**
  * Flag indicating whether the Access Token is currently being refreshed
  */
@@ -96,12 +104,13 @@ export function useClientApi() {
     if (isRefreshing) return;
     isRefreshing = true;
     try {
-      const res = await $baseFetch<{ accessToken: string }>("/auth/refresh", {
+      const res = await $baseFetch<RefreshRes>("/auth/refresh", {
         method: "POST",
         credentials: "include",
       });
+
       // Update the token in Pinia store
-      useAuthStore().setAccessToken(res.accessToken);
+      useAuthStore().setAccessToken(res.data.accessToken);
     } finally {
       isRefreshing = false;
       // Resolve all pending requests
