@@ -2,9 +2,6 @@
 const { isVisible } = useLoadingBar();
 
 useWindowWidthCookie();
-onMounted(() => {
-  useThemeStore();
-});
 </script>
 
 <template>
