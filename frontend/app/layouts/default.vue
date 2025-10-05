@@ -1,7 +1,13 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+useHead({
+  bodyAttrs: {
+    class: "with-bg",
+  },
+});
+</script>
 
 <template>
-  <div>
+  <div class="default-layout">
     <ReadProgress />
     <SiteUtilityBar />
     <BaseHeader />
