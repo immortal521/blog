@@ -54,9 +54,8 @@ export function applyBaseThemeMode(mode: ThemeMode) {
  */
 export function withViewTransition(applyFn: () => void, direction: boolean = true) {
   if (typeof document !== "undefined" && document.startViewTransition) {
-    const transition = document.startViewTransition(async () => {
+    const transition = document.startViewTransition(() => {
       applyFn();
-      await nextTick();
     });
 
     transition.ready
@@ -73,7 +72,8 @@ export function withViewTransition(applyFn: () => void, direction: boolean = tru
           },
           {
             duration: 400,
-            easing: "ease-in-out",
+            easing: "ease-in",
+            fill: "both",
             pseudoElement: direction
               ? "::view-transition-new(root)"
               : "::view-transition-old(root)",
