@@ -73,7 +73,8 @@ export function withViewTransition(applyFn: () => void, direction: boolean = tru
           },
           {
             duration: 400,
-            easing: "ease-in-out",
+            easing: "ease-in",
+            fill: "both",
             pseudoElement: direction
               ? "::view-transition-new(root)"
               : "::view-transition-old(root)",
