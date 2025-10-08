@@ -48,6 +48,7 @@
     "@iconify-json/ri": "^1.2.5",
     "@iconify-json/streamline-logos": "^1.2.0",
     "@iconify-json/typcn": "^1.2.2",
+    "@iconify-json/weui": "^1.2.4",
     "@types/hast": "^3.0.4",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash-es": "^4.17.12",

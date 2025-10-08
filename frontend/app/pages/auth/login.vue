@@ -2,20 +2,39 @@
 definePageMeta({
   layout: "auth-layout",
 });
+
+const { login } = useAuthStore();
+
+const formData = ref({
+  email: "",
+  password: "",
+});
 </script>
 
 <template>
   <div class="main">
     <div class="login-form-container">
       <h2>欢迎回来</h2>
-      <form class="login-form" @submit.prevent="">
+      <form class="login-form" @submit.prevent="login(formData.email, formData.password)">
         <div class="input-box">
           <label for="email">邮箱</label>
-          <input id="email" type="text" placeholder="邮箱" />
+          <BaseInput
+            id="email"
+            v-model="formData.email"
+            class="input"
+            type="text"
+            placeholder="邮箱"
+          />
         </div>
         <div class="input-box">
           <label for="password">密码</label>
-          <input id="password" type="password" placeholder="密码" />
+          <BaseInput
+            id="password"
+            v-model="formData.password"
+            class="input"
+            type="password"
+            placeholder="密码"
+          />
         </div>
         <button class="login-button" type="submit">登录</button>
       </form>
@@ -56,24 +75,16 @@ definePageMeta({
     width: 6rem;
     font-size: 1.75rem;
   }
+}
 
-  input {
-    display: inline-block;
-    width: 100%;
-    height: 40px;
-    padding: 10px 12px;
-    margin-left: 1rem;
-    color: var(--text-color-base);
-    outline: none;
-    font-weight: 700;
-    border-radius: 5px;
-    border: 1px solid var(--border-color-card);
-    background-color: var(--bg-card-base);
-
-    &:focus {
-      border: 1px solid var(--color-primary-base);
-    }
-  }
+.input {
+  width: 100%;
+  height: 40px;
+  color: var(--text-color-base);
+  margin-left: 1rem;
+  font-weight: 700;
+  border-radius: 8px;
+  background-color: var(--bg-card-base);
 }
 
 .login-button {
