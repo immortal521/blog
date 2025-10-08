@@ -27,7 +27,13 @@ watch(show, () => {
 /**
  * 表单数据
  */
-const form = ref({
+interface LinkFormData {
+  name: string; // 友链名称
+  url: string; // 站点链接
+  description: string; // 站点简介
+  avatar: string;
+}
+const form = ref<LinkFormData>({
   name: "", // 友链名称
   url: "", // 站点链接
   description: "", // 站点简介
@@ -75,12 +81,17 @@ async function handleSubmit() {
       method: "post",
       body: form.value,
     });
-    // 可选：清空表单
-    Object.keys(form.value).forEach((k) => ((form as any)[k] = ""));
-    // 可选：自动关闭
+
+    form.value = {
+      name: "",
+      avatar: "",
+      description: "",
+      url: "",
+    };
+
     show.value = false;
-  } catch (e: any) {
-    errorMsg.value = e.message || "提交失败，请稍后重试";
+  } catch (e) {
+    console.warn(e);
   } finally {
     loading.value = false;
   }
@@ -91,8 +102,8 @@ async function handleSubmit() {
   <Teleport to="body">
     <Transition name="friend-link-form">
       <div v-if="show" class="friend-link-form">
-        <div class="content" ref="content">
-          <form @submit.prevent="handleSubmit" class="flex flex-col gap-3">
+        <div ref="content" class="content">
+          <form @submit.prevent="handleSubmit">
             <h2 class="title">申请友链</h2>
 
             <label class="label">

@@ -13,11 +13,13 @@ const { title, summary = "", cover = "", date = "1970-01-01", author = "" } = de
 const postCardRef = useTemplateRef<HTMLElement>("post-card");
 const isVisible = ref(false);
 
+console.log(date, author);
+
 useAddClassOnIntersect(postCardRef, "show");
 </script>
 
 <template>
-  <div class="post-card" :class="{ show: isVisible }" ref="post-card">
+  <div ref="post-card" class="post-card" :class="{ show: isVisible }">
     <NuxtLinkLocale :to="url" class="post-card-link">
       <div class="cover">
         <NuxtImg :src="cover" />
