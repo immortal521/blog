@@ -92,10 +92,6 @@ export function getInitialMode(): ThemeMode {
   const match = document.cookie.match(/theme-mode=(light|dark)/);
   if (match) return match[1] as ThemeMode;
 
-  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    return "dark";
-  }
-
   return "light";
 }
 

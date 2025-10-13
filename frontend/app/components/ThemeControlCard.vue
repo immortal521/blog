@@ -1,10 +1,11 @@
 <script setup lang="ts">
+const mode = storeToRefs(useThemeStore()).mode;
 const isShow = ref(true);
 
 const primaryColorList = ["#7c85ff", "#3B82F6", "#7C3AED", "#10B981", "#F59E0B", "	#D9777F"];
 
 const isDark = computed(() => {
-  return useThemeStore().mode === "dark";
+  return mode.value === "dark";
 });
 
 const setThemeMode = (mode: ThemeMode) => {
