@@ -75,11 +75,11 @@ const togglePasswordVisibility = () => {
   width: 100%;
   color: inherit;
   border-radius: inherit;
-  border: 2px solid var(--border-color-base);
+  border: 1px solid var(--border-color-base);
   transition: border 0.2s ease-in-out;
 
   &:focus-within {
-    border: 2px solid var(--color-primary-base);
+    border: 1px solid var(--color-primary-base);
     box-shadow: 0 0 0 1px var(--color-primary-base);
   }
 
@@ -88,7 +88,7 @@ const togglePasswordVisibility = () => {
     display: flex;
     align-items: center;
     padding: 8px 0; // 统一垂直填充，保证高度
-    color: var(--color-text-secondary, #909399);
+    color: var(--color-text-secondary);
     font-size: 14px;
   }
 
