@@ -86,20 +86,21 @@ export function withViewTransition(applyFn: () => void, direction: boolean = tru
     applyFn();
   }
 }
+
 export function getInitialMode(): ThemeMode {
-  if (typeof window === "undefined") return "light";
+  if (import.meta.server) return "light";
 
-  const match = document.cookie.match(/theme-mode=(light|dark)/);
-  if (match) return match[1] as ThemeMode;
+  const themeMode = useCookie<ThemeMode>("theme-mode", {
+    default: () => "light",
+  });
 
-  return "light";
+  return themeMode.value;
 }
 
 export function getInitialPrimaryColor(): string {
-  if (typeof window === "undefined") return "#99a2ff";
+  if (import.meta.server) return "#99a2ff";
 
-  const match = document.cookie.match(/theme-primary-color=([^;]+)/);
-  if (match) return decodeURIComponent(match[1] as string);
+  const color = useCookie<string>("theme-primary-color");
 
-  return "#99a2ff";
+  return color.value ? decodeURIComponent(color.value) : "#99a2ff";
 }

@@ -23,7 +23,9 @@ export const useThemeStore = defineStore("theme", () => {
     withViewTransition(() => {
       applyBaseThemeMode(newMode);
       applyThemeColorsToCSSVars(newColors);
-      document.cookie = `theme-mode=${newMode}; path=/`;
+      useCookie("theme-mode", {
+        expires: new Date(Date.now() + 356 * 24 * 60 * 60 * 1000),
+      }).value = newMode;
     }, newMode === "light");
   };
 
@@ -38,7 +40,9 @@ export const useThemeStore = defineStore("theme", () => {
     withViewTransition(() => {
       if (import.meta.client) {
         applyThemeColorsToCSSVars(newColors);
-        document.cookie = `theme-primary-color=${newColor}; path=/`;
+        useCookie("theme-primary-color", {
+          expires: new Date(Date.now() + 356 * 24 * 60 * 60 * 1000),
+        }).value = newColor;
       }
     });
   };
