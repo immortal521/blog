@@ -74,7 +74,6 @@ const togglePasswordVisibility = () => {
   align-items: center;
   width: 100%;
   color: inherit;
-  border-radius: inherit;
   border: 1px solid var(--border-color-base);
   transition: border 0.2s ease-in-out;
 
