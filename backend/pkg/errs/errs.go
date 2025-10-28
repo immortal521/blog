@@ -3,6 +3,11 @@ package errs
 
 import "github.com/gofiber/fiber/v2"
 
+// NoContent 204 No Content
+func NoContent(msg string) error {
+	return fiber.NewError(fiber.StatusNoContent, msg)
+}
+
 // BadRequest 400 Bad Request
 func BadRequest(msg string) error {
 	return fiber.NewError(fiber.StatusBadRequest, msg)

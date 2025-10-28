@@ -48,12 +48,18 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 	return app, nil
 }
 
-func registerRoutes(app *fiber.App, linkHandler handler.ILinkHandler, postHandler handler.IPostHandler, authHandler handler.IAuthHandler, am *middleware.AuthMiddleware) {
+func registerRoutes(app *fiber.App,
+	linkHandler handler.ILinkHandler,
+	postHandler handler.IPostHandler,
+	authHandler handler.IAuthHandler,
+	rssHandler handler.IRssHandler,
+	am *middleware.AuthMiddleware) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 	router.RegisterLinkRoutes(v1, linkHandler)
 	router.RegisterPostRoutes(v1, am, postHandler)
 	router.RegisterAuthRoutes(v1, authHandler)
+	router.RegisterRssRoutes(v1, rssHandler)
 }
 
 func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
@@ -137,6 +143,7 @@ func main() {
 		handler.NewAuthHandler,
 		handler.NewPostHandler,
 		handler.NewLinkHandler,
+		handler.NewRssHandler,
 	)
 
 	invoke := fx.Invoke(
