@@ -10,6 +10,10 @@ const backTop = () => {
 // TODO: 跳转用户设置界面逻辑, 双 Token 刷新机制
 // Navigation logic to the user settings page, with a dual-token refresh mechanism
 const toUserSetting = () => {};
+
+const copyRSSFeedUrl = () => {
+  navigator.clipboard.writeText(window.location.origin + "/api/v1/rss");
+};
 </script>
 
 <template>
@@ -19,6 +23,7 @@ const toUserSetting = () => {};
       :title="$t('tooltip.backToTop')"
       @click="backTop"
     />
+    <ActionButton :title="$t('tooltip.rss')" icon="ion:logo-rss" @click="copyRSSFeedUrl" />
     <PanelButton animation="right" :title="$t('tooltip.contect')" icon="ion:mail">
       <ContectGroup />
     </PanelButton>
