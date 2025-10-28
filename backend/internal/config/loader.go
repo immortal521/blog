@@ -59,6 +59,8 @@ func Load(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
+	cfg.App.Domain = strings.TrimSuffix(cfg.App.Domain, "/")
+
 	configInstance = cfg
 
 	// 热更新
@@ -176,6 +178,8 @@ func setupConfigWatch() {
 			log.Printf("Reloaded config validation failed: %v", err)
 			return
 		}
+
+		newCfg.App.Domain = strings.TrimSuffix(newCfg.App.Domain, "/")
 
 		// 原子替换
 		configMutex.Lock()

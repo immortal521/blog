@@ -15,6 +15,7 @@ type ILinkHandler interface {
 	GetLinks(c *fiber.Ctx) error
 	ApplyForALinks(c *fiber.Ctx) error
 }
+
 type LinkHandler struct {
 	svc      service.ILinkService
 	validate validatorx.Validator

@@ -18,6 +18,7 @@ type RssChannel struct {
 
 type RssItem struct {
 	Title       string  `xml:"title"`
+	Content     string  `xml:"content"`
 	Link        string  `xml:"link"`
 	GUID        string  `xml:"guid"`
 	PubDate     string  `xml:"pubDate"`

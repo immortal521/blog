@@ -17,6 +17,7 @@ import (
 
 type IPostService interface {
 	GetPosts(ctx context.Context) ([]*entity.Post, error)
+	GetPostsWithContent(ctx context.Context) ([]*entity.Post, error)
 	GetPostsMeta(ctx context.Context) []*entity.Post
 	GetPostByID(ctx context.Context, id uint) (*entity.Post, error)
 	FlushViewCountToDB(ctx context.Context) error
@@ -34,6 +35,14 @@ func NewPostService(db database.DB, rc cache.CacheClient, postRepo repo.IPostRep
 
 func (p *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
 	posts, err := p.postRepo.GetAllPosts(ctx, p.db.Conn())
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
+}
+
+func (p *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
+	posts, err := p.postRepo.GetAllPostsWithContent(ctx, p.db.Conn())
 	if err != nil {
 		return nil, err
 	}

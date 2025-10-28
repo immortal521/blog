@@ -3,7 +3,7 @@ app:
   version: 1.0.0
   environment: production
   debug: false
-  domain: localhost:8000 # domain
+  domain: "${APP_DOMAIN}"
   corsorigins:
     - "localhost:8000"
 server:

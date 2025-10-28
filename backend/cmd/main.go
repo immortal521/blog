@@ -138,6 +138,7 @@ func main() {
 		service.NewJwtService,
 		service.NewLinkService,
 		service.NewEmailService,
+		service.NewRssService,
 
 		// handlers
 		handler.NewAuthHandler,
