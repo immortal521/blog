@@ -16,6 +16,9 @@
     "userSetting": "User Setting",
     "rss": "RSS Feed"
   },
+  "message": {
+    "rssCopied": "RSS subscription link has been copied."
+  },
   "friendLink": {
     "title": "Friend Links",
     "requestLink": "Submit a Link"

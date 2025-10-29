@@ -8,9 +8,11 @@ useWindowWidthCookie();
   <div>
     <NuxtRouteAnnouncer />
     <LoadingBar :is-visible="isVisible" />
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <MessageProvider>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </MessageProvider>
   </div>
 </template>
 

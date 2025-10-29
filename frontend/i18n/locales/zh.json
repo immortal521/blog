@@ -20,6 +20,9 @@
     "userSetting": "用户设置",
     "rss": "RSS 订阅"
   },
+  "message": {
+    "rssCopied": "RSS 订阅链接已复制"
+  },
   "friendLink": {
     "title": "友情链接",
     "requestLink": "提交链接"

@@ -20,6 +20,9 @@
     "userSetting": "ユーザー設定",
     "rss": "RSS フィード"
   },
+  "message": {
+    "rssCopied": "RSS 購読リンクがコピーされました"
+  },
   "friendLink": {
     "title": "フレンドリンク",
     "requestLink": "リンクを送信"

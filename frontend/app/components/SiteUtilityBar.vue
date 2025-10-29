@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { ActionButton, PanelButton } from "@/components/FloatActionGroup";
+
+const message = useMessage();
+
+const { t } = useI18n();
+
 const backTop = () => {
   window.scrollTo({
     top: 0,
@@ -11,8 +16,9 @@ const backTop = () => {
 // Navigation logic to the user settings page, with a dual-token refresh mechanism
 const toUserSetting = () => {};
 
-const copyRSSFeedUrl = () => {
-  navigator.clipboard.writeText(window.location.origin + "/api/v1/rss");
+const copyRSSFeedUrl = async () => {
+  await navigator.clipboard.writeText(window.location.origin + "/api/v1/rss");
+  message.success(t("message.rssCopied"), { keepAliveOnHover: true });
 };
 </script>
 
