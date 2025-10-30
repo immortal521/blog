@@ -88,6 +88,24 @@ export default defineNuxtConfig({
     },
   },
 
+  icon: {
+    serverBundle: {
+      collections: [
+        "codicon",
+        "fluent",
+        "hugeicons",
+        "icon-park-solid",
+        "iconamoon",
+        "ion",
+        "mingcute",
+        "ri",
+        "streamline-logos",
+        "typcn",
+        "weui",
+      ],
+    },
+  },
+
   image: {},
 
   // 使用的模块
