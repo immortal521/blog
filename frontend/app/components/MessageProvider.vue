@@ -134,7 +134,7 @@ const beforeLeave = (el: Element) => {
   <slot />
   <Teleport defer to="body">
     <div class="message-container">
-      <TransitionGroup name="message-list" tag="div" @before-leave="beforeLeave">
+      <TransitionGroup name="message-list" @before-leave="beforeLeave">
         <div
           v-for="msg in messages"
           :key="msg.id"
@@ -167,12 +167,9 @@ const beforeLeave = (el: Element) => {
   top: 20px;
   pointer-events: none;
   z-index: 10000;
-
-  [name="message-list"] {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .message {
