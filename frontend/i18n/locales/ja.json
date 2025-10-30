@@ -23,6 +23,9 @@
   "message": {
     "rssCopied": "RSS 購読リンクがコピーされました"
   },
+  "submission": {
+    "friendLink": "申請が正常に送信されました！"
+  },
   "friendLink": {
     "title": "フレンドリンク",
     "requestLink": "リンクを送信"

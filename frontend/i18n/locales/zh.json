@@ -23,6 +23,9 @@
   "message": {
     "rssCopied": "RSS 订阅链接已复制"
   },
+  "submission": {
+    "friendLink": "申请提交成功！"
+  },
   "friendLink": {
     "title": "友情链接",
     "requestLink": "提交链接"

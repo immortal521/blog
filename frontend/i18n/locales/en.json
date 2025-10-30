@@ -19,6 +19,9 @@
   "message": {
     "rssCopied": "RSS subscription link has been copied."
   },
+  "submission": {
+    "friendLink": "Submission Successful!"
+  },
   "friendLink": {
     "title": "Friend Links",
     "requestLink": "Submit a Link"

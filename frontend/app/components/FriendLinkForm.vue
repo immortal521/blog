@@ -63,6 +63,9 @@ function validate() {
   return "";
 }
 
+const message = useMessage();
+const { t } = useI18n();
+
 /**
  * 提交处理
  */
@@ -72,11 +75,11 @@ async function handleSubmit() {
   const err = validate();
   if (err) {
     errorMsg.value = err;
+    message.error(err);
     return;
   }
   loading.value = true;
   try {
-    // 根据需要修改提交地址
     await useFetch("/api/v1/links/apply-link", {
       method: "post",
       body: form.value,
@@ -90,6 +93,7 @@ async function handleSubmit() {
     };
 
     show.value = false;
+    message.success(t("submission.friendLink"));
   } catch (e) {
     console.warn(e);
   } finally {
@@ -133,15 +137,12 @@ async function handleSubmit() {
 <style lang="less" scoped>
 .friend-link-form-enter-active,
 .friend-link-form-leave-active {
-  transition:
-    scale 0.5s ease-in-out,
-    opacity 0.5s ease-in-out;
+  transition: scale 0.5s ease-in-out;
 }
 
 .friend-link-form-enter-from,
 .friend-link-form-leave-to {
-  opacity: 0;
-  scale: 0.1;
+  scale: 0;
 }
 
 .friend-link-form {
