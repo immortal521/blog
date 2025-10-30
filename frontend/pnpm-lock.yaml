@@ -90,6 +90,9 @@ importers:
       '@iconify-json/hugeicons':
         specifier: ^1.2.17
         version: 1.2.17
+      '@iconify-json/icon-park-solid':
+        specifier: ^1.2.4
+        version: 1.2.4
       '@iconify-json/iconamoon':
         specifier: ^1.2.2
         version: 1.2.2
@@ -590,6 +593,9 @@ packages:
 
   '@iconify-json/hugeicons@1.2.17':
     resolution: {integrity: sha512-Yp+XzYfWoSuE4HTSrVGbIobNooYfIOQAczgzpLcJGGhkkGed8pVtR8K0UZEg2ZEdrtObatcCcTVrnuOwlnJqMA==}
+
+  '@iconify-json/icon-park-solid@1.2.4':
+    resolution: {integrity: sha512-030MChSP6lCY7N+U5J5R7YguHTGcm7qQEI/ivBjk77El/i8yJatoj568cwwXGM8c6HEU/kIxEE4m3O/6w0WBGg==}
 
   '@iconify-json/iconamoon@1.2.2':
     resolution: {integrity: sha512-Xn7YeSDniPgutPr0qil/iQwQelq975OYQ/i2twGjcK4DjGOXBrBC+6q45WtVuQbFfXzM7bgijv4yVnxy0OqUdQ==}
@@ -5899,6 +5905,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/hugeicons@1.2.17':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/icon-park-solid@1.2.4':
     dependencies:
       '@iconify/types': 2.0.0
 
