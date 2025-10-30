@@ -127,7 +127,6 @@ const beforeLeave = (el: Element) => {
   const top = el.offsetTop;
   el.style.position = "absolute";
   el.style.top = `${top}px`;
-  el.style.width = "100%";
 };
 </script>
 
