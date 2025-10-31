@@ -4,16 +4,18 @@ interface Props {
   summary?: string;
   cover?: string;
   date?: string;
-  author?: string;
+  // author?: string;
   url: string;
 }
 
-const { title, summary = "", cover = "", date = "1970-01-01", author = "" } = defineProps<Props>();
+const { title, summary = "", cover = "", date = "1970-01-01" } = defineProps<Props>();
+
+const updatedAt = computed(() => {
+  return `上次更新于 ${formatDate(date, "YYYY-MM-DD")}`;
+});
 
 const postCardRef = useTemplateRef<HTMLElement>("post-card");
 const isVisible = ref(false);
-
-console.log(date, author);
 
 useAddClassOnIntersect(postCardRef, "show");
 </script>
@@ -25,11 +27,9 @@ useAddClassOnIntersect(postCardRef, "show");
         <NuxtImg :src="cover" />
       </div>
 
-      <!-- 文本部分 -->
-      <div class="content">
-        <h2 class="title" :title="title">{{ title }}</h2>
-        <p class="summary" :title="summary">{{ summary }}</p>
-      </div>
+      <div class="content-card date">{{ updatedAt }}</div>
+      <div class="content-card title" :title="title">{{ title }}</div>
+      <div class="summary" :title="summary">{{ summary }}</div>
     </NuxtLinkLocale>
   </div>
 </template>
@@ -44,90 +44,105 @@ useAddClassOnIntersect(postCardRef, "show");
   transition:
     opacity 0.5s ease-out,
     transform 0.5s ease-out;
-}
 
-.post-card.show {
-  opacity: 1;
-  transform: translateY(0);
+  &.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .post-card-link {
   display: block;
   position: relative;
+  width: 100%;
   height: 100%;
   border-radius: 10px;
   overflow: hidden;
-  width: 100%;
   background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
-  transition: transform 0.3s ease-in-out;
+  transition: color 0.5s ease-in-out;
 
   .cover {
-    height: 180px;
+    height: calc(100% - 65px);
     width: 100%;
+    border-radius: 10px;
     overflow: hidden;
+    transition:
+      transform 0.5s ease,
+      height 0.5s ease;
 
     img {
-      object-fit: cover;
       width: 100%;
       height: 100%;
+      object-fit: cover;
     }
   }
 
-  .content {
-    position: relative;
+  .date,
+  .title {
+    position: absolute;
+    padding: 5px 10px;
+    background: var(--bg-card-title);
+    border: 1px solid var(--border-color-base);
+    border-radius: 5px;
+  }
+
+  .date {
+    top: 20px;
+    left: 20px;
+    font-size: 1.2rem;
+  }
+
+  .title {
+    bottom: 85px;
+    left: 20px;
+    width: max-content;
+    max-width: 90%;
+    font-size: 1.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: bottom 0.5s ease;
+  }
+
+  .summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
     width: 100%;
-    height: 60px;
-    padding-top: 15px;
-
-    .title {
-      position: absolute;
-      top: -30px;
-      left: 20px;
-      width: max-content;
-      max-width: 90%;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      background: var(--bg-card-title);
-      border: 1px solid var(--border-color-base);
-      border-radius: 5px;
-      padding: 10px 20px;
-      font-size: 2rem;
-    }
-
-    .summary {
-      display: -webkit-box; /* 关键：将元素作为弹性伸缩盒子 */
-      -webkit-box-orient: vertical; /* 关键：垂直排列子元素 */
-      -webkit-line-clamp: 2; /* 关键：限制在两行 */
-      line-clamp: 2;
-      overflow: hidden; /* 超出隐藏 */
-      text-overflow: ellipsis; /* 溢出文本省略号 */
-      position: relative;
-      width: 100%;
-      // 字符间距
-      letter-spacing: 2px;
-      height: 55px;
-      font-size: 1.5rem;
-      line-height: 27.5px;
-      padding: 5px 10px;
-      bottom: 0;
-    }
+    height: 55px;
+    font-size: 1.5rem;
+    line-height: 27.5px;
+    letter-spacing: 2px;
+    padding: 5px 10px;
   }
 
   &:hover {
-    transform: translateY(-5px);
+    .cover {
+      transform: scale(1.1);
+      height: 100%;
+    }
+    .title {
+      bottom: 20px;
+    }
   }
 }
+
 @media (max-width: 768px) {
   .post-card-link {
-    .content {
-      .title {
-        font-size: 1.5rem;
-        top: -20px;
-        left: 10px;
-        padding: 5px 10px;
-      }
+    .title {
+      font-size: 1.5rem;
+      left: 10px;
+      bottom: 75px;
+      padding: 5px 8px;
+    }
+    .date {
+      top: 10px;
+      left: 10px;
+      font-size: 1rem;
+      padding: 3px 8px;
     }
   }
 }
