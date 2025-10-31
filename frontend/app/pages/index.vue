@@ -22,6 +22,7 @@ const posts = computed(() => data.value?.data ?? []);
           :cover="post.cover"
           :url="localePath('/blog/' + post.id)"
           :title="post.title"
+          :date="post.updatedAt"
           :summary="post.summary"
         />
       </div>
