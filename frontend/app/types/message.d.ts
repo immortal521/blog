@@ -1,10 +1,13 @@
 type MessageType = "success" | "error" | "info" | "warning" | "default";
 
-declare interface MessageOptions {
+type MessageSizeType = "small" | "medium" | "large";
+
+interface MessageOptions {
   duration?: number;
   keepAliveOnHover?: boolean;
   icon?: MessageIconProps | null;
   closable?: boolean;
+  size?: MessageSizeType;
 }
 
 interface MessageIconProps {

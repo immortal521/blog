@@ -4,13 +4,15 @@ interface Props {
   keepAliveOnHover?: boolean;
   max?: number;
   closable?: boolean;
+  size?: MessageSizeType;
 }
 
 const {
-  max,
-  duration: defaultDuration = 2000,
-  keepAliveOnHover: defaultKeepAliveOnHover = false,
-  closable: defaultClosable = false,
+  max = undefined,
+  duration = 2000,
+  keepAliveOnHover = false,
+  closable = false,
+  size = "medium",
 } = defineProps<Props>();
 
 interface Message {
@@ -23,6 +25,7 @@ interface Message {
   timer?: ReturnType<typeof setTimeout>;
   remainTime?: number;
   startTime?: number;
+  size: MessageSizeType;
 }
 
 const messageIconMap: Record<MessageType, MessageIconProps> = {
@@ -34,10 +37,11 @@ const messageIconMap: Record<MessageType, MessageIconProps> = {
 };
 
 const defaultOptions: Required<MessageOptions> = {
-  duration: defaultDuration,
-  keepAliveOnHover: defaultKeepAliveOnHover,
+  duration,
+  keepAliveOnHover,
   icon: null,
-  closable: defaultClosable,
+  closable,
+  size,
 };
 
 let seed = 0;
@@ -53,6 +57,7 @@ const create = (type: MessageType, text: string, options?: MessageOptions) => {
     keepAliveOnHover: merged.keepAliveOnHover,
     icon: merged.icon,
     closable: merged.closable,
+    size: merged.size,
   };
 
   if (max && messages.value.length >= max) removeOldestMessage();
@@ -126,7 +131,7 @@ const beforeLeave = (el: Element) => {
   if (!(el instanceof HTMLElement)) return;
   const top = el.offsetTop;
   el.style.position = "absolute";
-  el.style.top = `${top}px`;
+  el.style.top = `${top - 20}px`;
 };
 </script>
 
@@ -138,7 +143,7 @@ const beforeLeave = (el: Element) => {
         <div
           v-for="msg in messages"
           :key="msg.id"
-          :class="['message', `message-${msg.type}`]"
+          :class="['message', `message--${msg.type}`, `message--${msg.size}`]"
           @mouseenter="msg.keepAliveOnHover && pauseTimer(msg)"
           @mouseleave="msg.keepAliveOnHover && resumeTimer(msg)"
         >
@@ -148,12 +153,12 @@ const beforeLeave = (el: Element) => {
               :style="{ color: msg.icon?.color || messageIconMap[msg.type].color }"
             />
           </div>
-          <span class="msg-text">
+          <span class="content">
             {{ msg.text }}
           </span>
-          <div v-if="msg.closable" class="close-btn" @click="destroy(msg.id)">
+          <button v-if="msg.closable" class="close-btn" @click="destroy(msg.id)">
             <Icon name="material-symbols:close" size="20" />
-          </div>
+          </button>
         </div>
       </TransitionGroup>
     </div>
@@ -163,6 +168,7 @@ const beforeLeave = (el: Element) => {
 <style lang="less" scoped>
 .message-container {
   position: fixed;
+  inset: 0;
   width: 100vw;
   top: 20px;
   pointer-events: none;
@@ -173,24 +179,26 @@ const beforeLeave = (el: Element) => {
 }
 
 .message {
-  position: relative;
   display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-card-base);
+  border: 2px solid;
+  position: relative;
   width: max-content;
   max-width: 600px;
-  margin: 5px 0;
-  padding: 10px;
-  border: 2px solid var(--border-color-base);
   border-radius: 10px;
-  background-color: var(--bg-card-base);
+  padding: 8px 12px;
+  margin: 5px 0;
   color: var(--text-color-base);
   backdrop-filter: blur(15px);
   overflow-wrap: break-word;
   pointer-events: auto;
   box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
 
   .icon,
   .close-btn {
-    width: 20px;
     flex-shrink: 0;
     display: flex;
     justify-content: center;
@@ -199,40 +207,58 @@ const beforeLeave = (el: Element) => {
 
   .close-btn {
     cursor: pointer;
+    border: none;
+    color: var(--text-color-base);
+    background-color: transparent;
+    padding: 2px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
   }
 
-  .msg-text {
-    max-width: 520px;
-    font-size: 1.8rem;
-    margin: 0 10px;
+  .content {
+    flex: 1;
+    font-size: inherit;
   }
 
-  &.message-default {
+  &--default {
     border-color: var(--border-color-base);
   }
-  &.message-success {
+  &--success {
     border-color: var(--color-success);
     .icon {
       color: var(--color-success);
     }
   }
-  &.message-info {
+  &--info {
     border-color: var(--color-info);
     .icon {
       color: var(--color-info);
     }
   }
-  &.message-error {
+  &--error {
     border-color: var(--color-danger);
     .icon {
       color: var(--color-danger);
     }
   }
-  &.message-warning {
+  &--warning {
     border-color: var(--color-warning);
     .icon {
       color: var(--color-warning);
     }
+  }
+
+  &--small {
+    font-size: 1.4rem;
+    padding: 6px 10px;
+  }
+  &--medium {
+    font-size: 1.6rem;
+    padding: 8px 12px;
+  }
+  &--large {
+    font-size: 1.8rem;
+    padding: 10px 14px;
   }
 }
 
