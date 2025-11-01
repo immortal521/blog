@@ -4,7 +4,6 @@ interface Props {
   summary?: string;
   cover?: string;
   date?: string;
-  // author?: string;
   url: string;
 }
 
@@ -27,8 +26,11 @@ useAddClassOnIntersect(postCardRef, "show");
         <NuxtImg :src="cover" />
       </div>
 
-      <div class="content-card date">{{ updatedAt }}</div>
-      <div class="content-card title" :title="title">{{ title }}</div>
+      <div class="date">
+        <Icon name="fluent:clock-12-regular" />
+        <span>{{ updatedAt }}</span>
+      </div>
+      <div class="title" :title="title">{{ title }}</div>
       <div class="summary" :title="summary">{{ summary }}</div>
     </NuxtLinkLocale>
   </div>
@@ -67,6 +69,7 @@ useAddClassOnIntersect(postCardRef, "show");
     width: 100%;
     border-radius: 10px;
     overflow: hidden;
+    background: var(--bg-card-base);
     transition:
       transform 0.5s ease,
       height 0.5s ease;
@@ -81,7 +84,7 @@ useAddClassOnIntersect(postCardRef, "show");
   .date,
   .title {
     position: absolute;
-    padding: 5px 10px;
+    padding: 4px 8px;
     background: var(--bg-card-title);
     border: 1px solid var(--border-color-base);
     border-radius: 5px;
@@ -91,6 +94,9 @@ useAddClassOnIntersect(postCardRef, "show");
     top: 20px;
     left: 20px;
     font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
   .title {
