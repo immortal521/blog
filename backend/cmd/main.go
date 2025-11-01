@@ -34,6 +34,7 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 		}
 		ips = append(ips, cfIPs...)
 	}
+	ips = append(ips, "127.0.0.1")
 
 	fiberCfg := fiber.Config{
 		EnableTrustedProxyCheck: true,

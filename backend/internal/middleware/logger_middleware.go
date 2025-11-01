@@ -3,7 +3,6 @@ package middleware
 
 import (
 	"blog-server/pkg/logger"
-	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,16 +15,6 @@ func RequestLogger(log logger.Logger) fiber.Handler {
 		reqID := uuid.New().String()
 
 		c.Set("X-Request-ID", reqID)
-
-		log.Debug(strconv.FormatInt(time.Now().UnixMilli(), 10))
-		log.Debug("Request started", logger.String("ip", c.IP()))
-		log.Debug("Request started", logger.Any("ips", c.IPs()))
-		log.Debug("Request started", logger.Any("RemoteIP", c.Context().RemoteIP()))
-		log.Debug("Request started", logger.Any("RemoteAddr:", c.Context().RemoteAddr()))
-		log.Debug("Request started", logger.Any("Hostname:", c.Hostname()))
-		for k, v := range c.Request().Header.All() {
-			log.Debug("Request started", logger.Any(string(k), string(v)))
-		}
 
 		// 基于全局 logger 创建一个带请求上下文的 logger
 		reqLogger := log.WithFields(
