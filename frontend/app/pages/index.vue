@@ -13,8 +13,9 @@ const posts = computed(() => data.value?.data ?? []);
 <template>
   <div>
     <WelcomePanel />
-    <ContentPanel :spacer="false">
+    <ContentPanel :spacer="false" class="content-panel">
       <div class="post-list">
+        <h1 class="title">Article</h1>
         <PostCard
           v-for="(post, index) in posts"
           :key="post.id"
@@ -31,6 +32,28 @@ const posts = computed(() => data.value?.data ?? []);
 </template>
 
 <style lang="less" scoped>
+.content-panel {
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.8);
+}
+
+.title {
+  position: relative;
+  color: var(--color-primary-base);
+  font-weight: 500;
+
+  &::after {
+    position: absolute;
+    content: "";
+    width: 80px;
+    height: 6px;
+    left: 0;
+    bottom: 0;
+    border-radius: 5px;
+    background-color: var(--color-primary-base);
+  }
+}
+
 .post-list {
   max-width: 800px;
   margin: 0 auto;
