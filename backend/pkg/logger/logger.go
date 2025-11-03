@@ -14,6 +14,13 @@ type Logger interface {
 	Fatal(msg string, fields ...Field)
 	Panic(msg string, fields ...Field)
 
+	Infof(format string, args ...any)
+	Errorf(format string, args ...any)
+	Debugf(format string, args ...any)
+	Warnf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
+
 	// WithFields 用于附加上下文字段，返回新的 Logger
 	WithFields(fields ...Field) Logger
 

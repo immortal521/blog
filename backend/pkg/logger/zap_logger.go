@@ -72,36 +72,34 @@ func NewLogger(cfg *config.Config) Logger {
 	return &zapLogger{l: l}
 }
 
-func (z *zapLogger) Fatal(msg string, fields ...Field) {
-	z.l.Fatal(msg, convertFields(fields)...)
+func (z *zapLogger) log(level zapcore.Level, msg string, fields ...Field) {
+	z.l.Log(level, msg, convertFields(fields)...)
 }
 
-func (z *zapLogger) Panic(msg string, fields ...Field) {
-	z.l.Panic(msg, convertFields(fields)...)
+func (z *zapLogger) logf(level zapcore.Level, format string, args ...any) {
+	z.l.Log(level, fmt.Sprintf(format, args...))
 }
+
+func (z *zapLogger) Debug(msg string, fields ...Field) { z.log(zap.DebugLevel, msg, fields...) }
+func (z *zapLogger) Info(msg string, fields ...Field)  { z.log(zap.InfoLevel, msg, fields...) }
+func (z *zapLogger) Warn(msg string, fields ...Field)  { z.log(zap.WarnLevel, msg, fields...) }
+func (z *zapLogger) Error(msg string, fields ...Field) { z.log(zap.ErrorLevel, msg, fields...) }
+func (z *zapLogger) Fatal(msg string, fields ...Field) { z.log(zap.FatalLevel, msg, fields...) }
+func (z *zapLogger) Panic(msg string, fields ...Field) { z.log(zap.PanicLevel, msg, fields...) }
+
+func (z *zapLogger) Debugf(format string, args ...any) { z.logf(zap.DebugLevel, format, args...) }
+func (z *zapLogger) Infof(format string, args ...any)  { z.logf(zap.InfoLevel, format, args...) }
+func (z *zapLogger) Warnf(format string, args ...any)  { z.logf(zap.WarnLevel, format, args...) }
+func (z *zapLogger) Errorf(format string, args ...any) { z.logf(zap.ErrorLevel, format, args...) }
+func (z *zapLogger) Fatalf(format string, args ...any) { z.logf(zap.FatalLevel, format, args...) }
+func (z *zapLogger) Panicf(format string, args ...any) { z.logf(zap.PanicLevel, format, args...) }
 
 func (z *zapLogger) WithFields(fields ...Field) Logger {
 	return &zapLogger{l: z.l.With(convertFields(fields)...)}
 }
 
-func (z *zapLogger) Debug(msg string, fields ...Field) {
-	z.l.Info(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) Error(msg string, fields ...Field) {
-	z.l.Error(msg, convertFields(fields)...)
-}
-
-func (z *zapLogger) Info(msg string, fields ...Field) {
-	z.l.Info(msg, convertFields(fields)...)
-}
-
 func (z *zapLogger) Sync() error {
 	return z.l.Sync()
-}
-
-func (z *zapLogger) Warn(msg string, fields ...Field) {
-	z.l.Warn(msg, convertFields(fields)...)
 }
 
 func convertFields(fields []Field) []zap.Field {
