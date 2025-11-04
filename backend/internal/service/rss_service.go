@@ -27,7 +27,7 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	posts, err := r.postRepo.GetAllPosts(ctx, r.db.Conn())
 
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	if len(posts) == 0 {

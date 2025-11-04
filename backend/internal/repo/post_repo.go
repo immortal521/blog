@@ -31,7 +31,16 @@ func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post
 			db.Select("username")
 			return nil
 		}).
-		Select("posts.id", "posts.title", "posts.summary", "posts.cover", "posts.read_time_minutes", "posts.view_count", "posts.published_at", "posts.updated_at").
+		Select(
+			"posts.id",
+			"posts.title",
+			"posts.summary",
+			"posts.cover",
+			"posts.read_time_minutes",
+			"posts.view_count",
+			"posts.published_at",
+			"posts.updated_at",
+		).
 		Where("status = ?", entity.PostPublished).
 		Find(ctx)
 	if err != nil {
@@ -46,7 +55,17 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 			db.Select("username")
 			return nil
 		}).
-		Select("posts.id", "posts.title", "posts.summary", "posts.content", "posts.cover", "posts.read_time_minutes", "posts.view_count", "posts.published_at", "posts.updated_at").
+		Select(
+			"posts.id",
+			"posts.title",
+			"posts.summary",
+			"posts.content",
+			"posts.cover",
+			"posts.read_time_minutes",
+			"posts.view_count",
+			"posts.published_at",
+			"posts.updated_at",
+		).
 		Where("status = ?", entity.PostPublished).
 		Find(ctx)
 	if err != nil {
@@ -56,7 +75,9 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 }
 
 func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
-	posts, err := gorm.G[*entity.Post](db).Select("id", "updated_at").Find(ctx)
+	posts, err := gorm.G[*entity.Post](db).
+		Select("id", "updated_at").
+		Find(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +90,16 @@ func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*enti
 			db.Select("username")
 			return nil
 		}).
-		Select("posts.id", "posts.title", "posts.summary", "posts.content", "posts.cover", "posts.read_time_minutes", "posts.view_count", "posts.published_at", "posts.updated_at").
+		Select("posts.id",
+			"posts.title",
+			"posts.summary",
+			"posts.content",
+			"posts.cover",
+			"posts.read_time_minutes",
+			"posts.view_count",
+			"posts.published_at",
+			"posts.updated_at",
+		).
 		Where("status = ?", entity.PostPublished).
 		Where("posts.id = ?", id).
 		First(ctx)
@@ -77,7 +107,7 @@ func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*enti
 		return post, nil
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &entity.Post{}, errs.ErrPostNotFound
+		return nil, errs.ErrPostNotFound
 	}
 	return &entity.Post{}, err
 }

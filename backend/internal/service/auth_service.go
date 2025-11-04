@@ -74,7 +74,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 
 	cachedCaptcha := s.rc.Raw().Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
 
-	if !strings.EqualFold(cachedCaptcha, dto.Captcha) {
+	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(dto.Captcha)) {
 		return nil, errs.ErrInvalidCaptcha
 	}
 
@@ -89,11 +89,12 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 		Password: hashPassword,
 		Username: util.GenerateUsername(),
 	}
+
 	var newUser *entity.User
 
 	err = s.db.Trans(func(txCtx *database.TxContext) error {
 		newUser, err = s.userRepo.CreateUser(ctx, txCtx.GetTx(), user)
-		return err
+		return fmt.Errorf("register user failed: %w", err)
 	})
 	if err != nil {
 		return nil, err
@@ -101,11 +102,11 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return nil, err
+		return nil, errs.ErrTokenGeneration
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cache refresh token failed for user %s: %w", user.UUID, err)
 	}
 
 	result := &response.LoginRes{
@@ -124,7 +125,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, s.db.Conn(), dto.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get user failed by email %s: %w", dto.Email, err)
 	}
 	if !util.VerifyPassword(dto.Password, user.Password) {
 		return nil, errs.ErrPasswordWrong
@@ -158,7 +159,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 		return fmt.Errorf("check user existence: %w", err)
 	}
 	if userIsExist {
-		return errs.ErrUserExists
+		return fmt.Errorf("sent captcha failed to %s: %w", to, errs.ErrUserExists)
 	}
 
 	if captchaType == "" {
@@ -180,7 +181,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	templateName := "captcha.html" // 指定要使用的模板文件
 	err = s.mailService.Send(to, data.Subject, templateName, data)
 	if err != nil {
-		return err
+		return fmt.Errorf("send captcha email to %s: %w", to, err)
 	}
 
 	return nil
@@ -189,13 +190,13 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*response.RefreshRes, error) {
 	claims, err := s.jwtService.ParseToken(token)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse token failed: %w", err)
 	}
 	uuid := claims.UserID
 
 	existed, err := s.userRepo.ExistsByUUID(ctx, s.db.Conn(), uuid)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("check user existence for uuid %s: %w", uuid, err)
 	}
 
 	if !existed {
@@ -210,10 +211,12 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*re
 
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(uuid)
 	if err != nil {
-		return nil, err
+		return nil, errs.ErrTokenGeneration
 	}
 
-	s.cacheRefreshToken(ctx, uuid, refreshToken)
+	if err := s.cacheRefreshToken(ctx, uuid, refreshToken); err != nil {
+		return nil, err
+	}
 
 	return &response.RefreshRes{
 		AccessToken:  accessToken,
@@ -241,19 +244,23 @@ func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.
 // cacheRefreshToken stores the refresh token in Redis.
 func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
 	key := fmt.Sprintf("RefreshToken:%s", userUUID)
-	return s.rc.Raw().Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err()
+	if err := s.rc.Raw().Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err(); err != nil {
+		return fmt.Errorf("cache refresh token for user %s: %w", userUUID, err)
+	}
+	return nil
 }
 
 // getCaptchaEmailMeta returns email metadata based on captcha type.
-func getCaptchaEmailMeta(t CaptchaType) (AuthMailData, error) {
+func getCaptchaEmailMeta(t CaptchaType) (*AuthMailData, error) {
 	data, ok := captchaMetaMap[t]
 	if !ok {
-		return AuthMailData{}, fmt.Errorf("unknown captcha type: %s", t)
+		return nil, fmt.Errorf("get captcha email meta: unknown captcha type %s", t)
 	}
-	return data, nil
+	copyData := *data
+	return &copyData, nil
 }
 
-var captchaMetaMap = map[CaptchaType]AuthMailData{
+var captchaMetaMap = map[CaptchaType]*AuthMailData{
 	Register: {
 		Subject: "【Immortal's Blog】邮箱验证",
 		Title:   "请验证您的注册邮箱",
