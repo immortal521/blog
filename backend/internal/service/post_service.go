@@ -5,6 +5,8 @@ import (
 	"blog-server/internal/database"
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
+	"blog-server/pkg/errs"
+	"blog-server/pkg/logger"
 	"errors"
 
 	"context"
@@ -24,34 +26,28 @@ type IPostService interface {
 }
 
 type postService struct {
+	log      logger.Logger
 	db       database.DB
 	rc       cache.CacheClient
 	postRepo repo.IPostRepo
 }
 
-func NewPostService(db database.DB, rc cache.CacheClient, postRepo repo.IPostRepo) IPostService {
-	return &postService{db: db, rc: rc, postRepo: postRepo}
+func NewPostService(log logger.Logger, db database.DB, rc cache.CacheClient, postRepo repo.IPostRepo) IPostService {
+	return &postService{log: log, db: db, rc: rc, postRepo: postRepo}
 }
 
 func (p *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
-	posts, err := p.postRepo.GetAllPosts(ctx, p.db.Conn())
-	if err != nil {
-		return nil, err
-	}
-	return posts, nil
+	return p.postRepo.GetAllPosts(ctx, p.db.Conn())
 }
 
 func (p *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
-	posts, err := p.postRepo.GetAllPostsWithContent(ctx, p.db.Conn())
-	if err != nil {
-		return nil, err
-	}
-	return posts, nil
+	return p.postRepo.GetAllPostsWithContent(ctx, p.db.Conn())
 }
 
 func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
 	posts, err := p.postRepo.GetPostsMeta(ctx, p.db.Conn())
 	if err != nil {
+		p.log.Error("get posts meta failed", logger.Error(err))
 		return []*entity.Post{}
 	}
 	return posts
@@ -60,28 +56,34 @@ func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
 func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
 	post, err := p.postRepo.GetPostByID(ctx, p.db.Conn(), id)
 	if err != nil {
-		return &entity.Post{}, err
+		return nil, err
 	}
 
-	p.rc.Raw().Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID))
+	go func(postID uint) {
+		if err := p.rc.Raw().Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID)).Err(); err != nil {
+			p.log.Error("incr post view count failed", logger.Error(err))
+		}
+	}(post.ID)
+
 	return post, nil
 }
 
 func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	const batchSize = 1000
 	var cursor uint64
-	var errs []error
+	var allErrors []error
 
 	for {
 		keys, next, err := p.rc.Raw().Scan(ctx, cursor, "blog:post:view_count:*", 100).Result()
 		if err != nil {
-			return err
+			return errs.New(errs.CodeCacheError, "Failed to scan Redis keys for post view count", err)
 		}
 		cursor = next
+
+		if len(keys) == 0 && cursor == 0 {
+			break
+		}
 		if len(keys) == 0 {
-			if cursor == 0 {
-				break
-			}
 			continue
 		}
 
@@ -93,7 +95,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 
 		if _, err = pipe.Exec(ctx); err != nil && !errors.Is(err, redis.Nil) {
-			errs = append(errs, fmt.Errorf("pipeline exec failed: %w", err))
+			allErrors = append(allErrors, fmt.Errorf("pipeline exec failed: %w", err))
 			continue
 		}
 
@@ -123,7 +125,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 
 		if len(updates) > 0 {
 			if err := p.postRepo.UpdateViewCounts(ctx, p.db.Conn(), updates); err != nil {
-				errs = append(errs, fmt.Errorf("db update failed: %w", err))
+				allErrors = append(allErrors, fmt.Errorf("db update failed: %w", err))
 			}
 		}
 
@@ -131,8 +133,8 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 			break
 		}
 	}
-	if len(errs) > 0 {
-		return fmt.Errorf("flush completed with %d errors: %v", len(errs), errs)
+	if len(allErrors) > 0 {
+		return errs.New(errs.CodeInternalError, fmt.Sprintf("Flush completed with %d errors", len(allErrors)), fmt.Errorf("%v", allErrors))
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"blog-server/internal/dto/response"
 	"blog-server/internal/service"
+	"blog-server/pkg/errs"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -62,7 +63,7 @@ func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
 func (h *postHandler) GetPost(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return err
+		return errs.New(errs.CodeInvalidParam, "Invalid post ID", err)
 	}
 	post, err := h.svc.GetPostByID(c.UserContext(), uint(id))
 	if err != nil {
