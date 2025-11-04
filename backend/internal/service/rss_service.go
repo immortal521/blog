@@ -5,7 +5,6 @@ import (
 	"blog-server/internal/database"
 	"blog-server/internal/dto/response"
 	"blog-server/internal/repo"
-	"blog-server/pkg/errs"
 	"context"
 	"encoding/xml"
 	"sort"
@@ -25,13 +24,8 @@ type rssService struct {
 
 func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	posts, err := r.postRepo.GetAllPosts(ctx, r.db.Conn())
-
 	if err != nil {
 		return nil, err
-	}
-
-	if len(posts) == 0 {
-		return []byte{}, errs.NoContent("No posts available")
 	}
 
 	sort.Slice(posts, func(i int, j int) bool {
@@ -39,6 +33,13 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	})
 
 	items := make([]response.RssItem, len(posts))
+	var pubDate string
+
+	if len(posts) == 0 {
+		pubDate = time.Now().Format(time.RFC1123Z)
+	} else {
+		pubDate = posts[0].UpdatedAt.Format(time.RFC1123Z)
+	}
 
 	for i, post := range posts {
 		link := r.cfg.Domain + "/blog/" + strconv.Itoa(int(post.ID))
@@ -46,7 +47,7 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 			Title:       post.Title,
 			Link:        link,
 			GUID:        link,
-			PubDate:     post.UpdatedAt.Format(time.RFC1123Z),
+			PubDate:     pubDate,
 			Description: post.Summary,
 		}
 	}
