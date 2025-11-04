@@ -6,7 +6,6 @@ import (
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
-	"errors"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -30,6 +29,7 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
 	linkDTOs := make([]response.LinkResponse, len(links))
 	for i, link := range links {
 		linkDTOs[i] = response.LinkResponse{
@@ -41,6 +41,7 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 			SortOrder:   link.SortOrder,
 		}
 	}
+
 	result := response.Success(linkDTOs)
 	return c.JSON(result)
 }
@@ -48,19 +49,17 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
 	req := new(request.CreateLinkReq)
 	if err := c.BodyParser(req); err != nil {
-		return err
+		return errs.New(errs.CodeInvalidParam, "Failed to parse request body", err)
 	}
 
 	if (len(req.URL) == 0) || (len(req.Name) == 0) {
-		return errs.BadRequest("url or name is empty")
+		return errs.New(errs.CodeInvalidParam, "URL or name is empty", nil)
 	}
 
 	err := h.svc.CreateLink(c.UserContext(), req)
-	if err == nil {
-		return c.JSON(response.Success(""))
+	if err != nil {
+		return err
 	}
-	if errors.Is(err, errs.ErrDuplicateURL) {
-		return errs.Conflict(err.Error())
-	}
-	return err
+
+	return c.JSON(response.Success(""))
 }

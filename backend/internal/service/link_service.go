@@ -6,7 +6,6 @@ import (
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
 	"context"
-	"fmt"
 )
 
 type ILinkService interface {
@@ -24,11 +23,7 @@ func NewLinkService(db database.DB, linkRepo repo.ILinkRepo) ILinkService {
 }
 
 func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
-	links, err := s.linkRepo.GetAllLinks(ctx, s.db.Conn())
-	if err != nil {
-		return nil, fmt.Errorf("get all enabled links failed: %w", err)
-	}
-	return links, nil
+	return s.linkRepo.GetAllLinks(ctx, s.db.Conn())
 }
 
 func (s *linkService) CreateLink(ctx context.Context, dto *request.CreateLinkReq) error {
@@ -38,9 +33,5 @@ func (s *linkService) CreateLink(ctx context.Context, dto *request.CreateLinkReq
 		Avatar:      dto.Avatar,
 		URL:         dto.URL,
 	}
-	err := s.linkRepo.CreateLink(ctx, s.db.Conn(), &link)
-	if err != nil {
-		return fmt.Errorf("create link failed: %w", err)
-	}
-	return nil
+	return s.linkRepo.CreateLink(ctx, s.db.Conn(), &link)
 }
