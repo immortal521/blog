@@ -3,28 +3,21 @@ package handler
 
 import (
 	"blog-server/internal/dto/response"
+	"blog-server/pkg/errs"
 	"blog-server/pkg/logger"
-	"errors"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func ErrorHandler(log logger.Logger) fiber.ErrorHandler {
 	return func(c *fiber.Ctx, err error) error {
-		code := fiber.StatusInternalServerError
-		msg := "Internal Server Error"
+		appErr := errs.ToAppError(err)
+		httpCode := errs.MapToHTTPStatus(appErr.Code)
 
-		// 如果是 Fiber 错误
-		var e *fiber.Error
-		if errors.As(err, &e) {
-			code = e.Code
-			msg = e.Message
-		}
+		log.Error(appErr.FormatStack())
 
-		log.Error(err.Error())
-
-		if err := c.Status(code).JSON(response.Error(code, msg)); err != nil {
-			return c.Status(code).SendString(msg)
+		if err := c.Status(httpCode).JSON(response.Error(appErr.Code, appErr.Msg)); err != nil {
+			return c.Status(httpCode).SendString(appErr.Msg)
 		}
 
 		return nil
