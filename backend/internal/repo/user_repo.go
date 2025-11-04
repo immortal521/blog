@@ -24,10 +24,10 @@ func (u *userRepo) CreateUser(ctx context.Context, db *gorm.DB, user *entity.Use
 	result := gorm.WithResult()
 	err := gorm.G[entity.User](db, result).Create(ctx, user)
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, errs.ErrUserExists
+		return nil, errs.New(errs.CodeUserAlreadyExists, "user already exists", err)
 	}
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return user, nil
 }
@@ -35,10 +35,10 @@ func (u *userRepo) CreateUser(ctx context.Context, db *gorm.DB, user *entity.Use
 func (u *userRepo) GetUserByEmail(ctx context.Context, db *gorm.DB, email string) (*entity.User, error) {
 	user, err := gorm.G[*entity.User](db).Where("email = ?", email).Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errs.ErrUserNotFound
+		return nil, errs.New(errs.CodeUserNotFound, "user not found", err)
 	}
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return user, nil
 }
@@ -49,7 +49,7 @@ func (u *userRepo) ExistsByEmail(ctx context.Context, db *gorm.DB, email string)
 		return false, nil
 	}
 	if err != nil {
-		return false, err
+		return false, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return true, nil
 }
@@ -60,7 +60,7 @@ func (u *userRepo) ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, 
 		return false, nil
 	}
 	if err != nil {
-		return false, err
+		return false, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return true, nil
 }
@@ -71,7 +71,7 @@ func (u *userRepo) ExistsByUUID(ctx context.Context, db *gorm.DB, uuid string) (
 		return false, nil
 	}
 	if err != nil {
-		return false, err
+		return false, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return true, nil
 }
@@ -79,10 +79,10 @@ func (u *userRepo) ExistsByUUID(ctx context.Context, db *gorm.DB, uuid string) (
 func (u *userRepo) GetRoleByUUID(ctx context.Context, db *gorm.DB, uuid string) (*entity.UserRole, error) {
 	role, err := gorm.G[*entity.UserRole](db).Where("uuid = ?", uuid).Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errs.ErrUserNotFound
+		return nil, errs.New(errs.CodeUserAlreadyExists, "user already exists", err)
 	}
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return role, nil
 }

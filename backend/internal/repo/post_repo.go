@@ -44,7 +44,7 @@ func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post
 		Where("status = ?", entity.PostPublished).
 		Find(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return posts, nil
 }
@@ -69,7 +69,7 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 		Where("status = ?", entity.PostPublished).
 		Find(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return posts, nil
 }
@@ -79,7 +79,7 @@ func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Pos
 		Select("id", "updated_at").
 		Find(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return posts, nil
 }
@@ -107,9 +107,9 @@ func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*enti
 		return post, nil
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errs.ErrPostNotFound
+		return nil, errs.New(errs.CodeResourceNotFound, "post not found", err)
 	}
-	return &entity.Post{}, err
+	return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 }
 
 func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates map[uint]int64) error {
@@ -127,7 +127,11 @@ func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates ma
 		ids = append(ids, id)
 	}
 	caseBuilder.WriteString("ELSE 0 END")
-	return db.Model(&entity.Post{}).
+	err := db.Model(&entity.Post{}).
 		Where("id IN (?)", ids).
 		UpdateColumn("view_count", gorm.Expr(caseBuilder.String(), idArgs...)).Error
+	if err != nil {
+		return errs.New(errs.CodeDatabaseError, "database error", err)
+	}
+	return nil
 }

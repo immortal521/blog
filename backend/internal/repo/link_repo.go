@@ -24,7 +24,7 @@ func NewLinkRepo() ILinkRepo {
 func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
 	links, err := gorm.G[*entity.Link](db).Where("enabled = ?", true).Find(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return links, nil
 }
@@ -32,9 +32,9 @@ func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link
 func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error {
 	if err := gorm.G[entity.Link](db).Create(ctx, link); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return errs.ErrDuplicateURL
+			return errs.New(errs.CodeConflict, "link already exists", err)
 		}
-		return err
+		return errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return nil
 }
