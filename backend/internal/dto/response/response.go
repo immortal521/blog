@@ -19,9 +19,11 @@ type Page[T any] struct {
 	Data  []T  `json:"data"`
 }
 
+const CodeSuccess = 0
+
 func Success[T any](data T) *Response[T] {
 	return &Response[T]{
-		Code: 200,
+		Code: CodeSuccess,
 		Msg:  "success",
 		Data: data,
 	}
@@ -29,7 +31,7 @@ func Success[T any](data T) *Response[T] {
 
 func SuccessWithMsg[T any](msg string, data T) *Response[T] {
 	return &Response[T]{
-		Code: 200,
+		Code: CodeSuccess,
 		Msg:  msg,
 		Data: data,
 	}
