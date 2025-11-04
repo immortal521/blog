@@ -3,7 +3,6 @@ package errs
 import "net/http"
 
 const (
-	// ===== 通用错误 =====
 	CodeOK               = 0    // 一切正常
 	CodeInternalError    = 1000 // 未知内部错误
 	CodeUnauthorized     = 1001 // 未登录或 token 无效
@@ -12,28 +11,24 @@ const (
 	CodeInvalidSignature = 1004 // 签名错误
 	CodeNotImplemented   = 1005 // 功能未实现
 
-	// ===== 用户相关 =====
 	CodeUserNotFound      = 2000 // 用户不存在
 	CodeUserAlreadyExists = 2001 // 用户已存在
 	CodeInvalidPassword   = 2002 // 密码错误
 	CodeUserDisabled      = 2003 // 用户已禁用
 	CodeTokenExpired      = 2004 // Token 过期
 
-	// ===== 资源相关 =====
 	CodeResourceNotFound      = 3000 // 资源不存在
 	CodeResourceAlreadyExists = 3001 // 资源已存在
 	CodeConflict              = 3002 // 操作冲突（如版本冲突）
 	CodeResourceLocked        = 3003 // 资源被锁定或占用
 	CodeNoContent             = 3004
 
-	// ===== 参数与校验 =====
 	CodeInvalidParam      = 4000 // 参数错误
 	CodeMissingParam      = 4001 // 缺少必要参数
 	CodeValidationFailed  = 4002 // 参数验证不通过
 	CodeUnsupportedFormat = 4003 // 不支持的格式
 	CodeOutOfRange        = 4004 // 数值或分页越界
 
-	// ===== 系统与外部依赖 =====
 	CodeDatabaseError    = 5000 // 数据库错误
 	CodeCacheError       = 5001 // Redis 或缓存错误
 	CodeNetworkError     = 5002 // 网络请求失败
