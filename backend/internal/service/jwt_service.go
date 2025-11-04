@@ -47,7 +47,7 @@ func (j *JwtService) generateTokenWithExpires(userUUID string, expires time.Dura
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString([]byte(j.cfg.Secret))
 	if err != nil {
-		return "", errs.ErrTokenGeneration
+		return "", errs.New(errs.CodeInternalError, "Failed to generate JWT token", err)
 	}
 	return signed, nil
 }
@@ -78,13 +78,17 @@ func (j *JwtService) GenerateAllTokens(userUUID string) (accessToken, refreshTok
 func (j *JwtService) ValidateToken(tokenStr string) (bool, error) {
 	_, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, errs.New(
+				errs.CodeInvalidSignature,
+				fmt.Sprintf("Unexpected signing method: %v", token.Header["alg"]),
+				nil,
+			)
 		}
 		return []byte(j.cfg.Secret), nil
 	})
 
 	if err != nil {
-		return false, err
+		return false, errs.New(errs.CodeUnauthorized, "Token validation failed", err)
 	}
 	return true, nil
 }
@@ -93,12 +97,16 @@ func (j *JwtService) ParseToken(tokenString string) (*Claims, error) {
 	// 用 HMAC 校验签名
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, errs.New(
+				errs.CodeInvalidSignature,
+				fmt.Sprintf("Unexpected signing method: %v", token.Header["alg"]),
+				nil,
+			)
 		}
 		return []byte(j.cfg.Secret), nil
 	})
 	if err != nil {
-		return nil, errs.Unauthorized("invalid or expired token")
+		return nil, errs.New(errs.CodeUnauthorized, "Invalid or expired token", err)
 	}
 
 	// 提取 claims
@@ -106,5 +114,5 @@ func (j *JwtService) ParseToken(tokenString string) (*Claims, error) {
 		return claims, nil
 	}
 
-	return nil, errs.Unauthorized("invalid token")
+	return nil, errs.New(errs.CodeUnauthorized, "Invalid token", nil)
 }
