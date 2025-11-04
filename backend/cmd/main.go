@@ -26,7 +26,7 @@ func provideConfig() (*config.Config, error) {
 
 func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error) {
 	var ips []string
-	if cfg.App.Environment == "production" {
+	if cfg.App.Environment == config.EnvProd {
 		cfIPs, err := util.FetchCloudflareIPs()
 		if err != nil {
 			log.Error("fetch cloudflare ips failed", logger.Error(err))
@@ -38,7 +38,7 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 
 	fiberCfg := fiber.Config{
 		EnableTrustedProxyCheck: true,
-		ErrorHandler:            handler.ErrorHandler(log),
+		ErrorHandler:            handler.ErrorHandler(log, cfg),
 		TrustedProxies:          ips,
 		ProxyHeader:             fiber.HeaderXForwardedFor,
 	}

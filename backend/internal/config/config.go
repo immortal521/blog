@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	EnvProd = "production"
+	EnvDev  = "development"
+)
+
 type Config struct {
 	App      AppConfig      `mapstructure:"app"`
 	Server   ServerConfig   `mapstructure:"server"`
