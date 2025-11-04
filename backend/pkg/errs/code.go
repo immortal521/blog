@@ -24,6 +24,7 @@ const (
 	CodeResourceAlreadyExists = 3001 // 资源已存在
 	CodeConflict              = 3002 // 操作冲突（如版本冲突）
 	CodeResourceLocked        = 3003 // 资源被锁定或占用
+	CodeNoContent             = 3004
 
 	// ===== 参数与校验 =====
 	CodeInvalidParam      = 4000 // 参数错误

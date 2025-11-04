@@ -17,6 +17,10 @@ type AppError struct {
 }
 
 func New(code int, msg string, err error) *AppError {
+	if ae, ok := err.(*AppError); ok {
+		return ae
+	}
+
 	pcs := make([]uintptr, 32)
 	n := runtime.Callers(2, pcs)
 	pcs = pcs[:n]
