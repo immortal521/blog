@@ -13,11 +13,16 @@ func ErrorHandler(log logger.Logger) fiber.ErrorHandler {
 	return func(c *fiber.Ctx, err error) error {
 		appErr := errs.ToAppError(err)
 		httpCode := errs.MapToHTTPStatus(appErr.Code)
+		msg := appErr.Msg
+
+		if httpCode == 500 {
+			msg = "Internal Server Error"
+		}
 
 		log.Error(appErr.FormatStack())
 
-		if err := c.Status(httpCode).JSON(response.Error(appErr.Code, appErr.Msg)); err != nil {
-			return c.Status(httpCode).SendString(appErr.Msg)
+		if err := c.Status(httpCode).JSON(response.Error(appErr.Code, msg)); err != nil {
+			return c.Status(httpCode).SendString(msg)
 		}
 
 		return nil
