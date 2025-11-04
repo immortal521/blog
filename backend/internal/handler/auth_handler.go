@@ -7,7 +7,6 @@ import (
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
-	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -34,23 +33,15 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	req := new(request.RegisterReq)
 
 	if err := c.BodyParser(req); err != nil {
-		return errs.BadRequest("invalid request")
+		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errs.BadRequest("invalid")
+		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
 	}
 
 	result, err := h.svc.Register(c.UserContext(), req)
-	switch {
-	case errors.Is(err, errs.ErrInvalidCaptcha):
-		return errs.BadRequest(err.Error())
-	case errors.Is(err, errs.ErrUserExists):
-		return errs.Conflict(err.Error())
-	case errors.Is(err, errs.ErrTokenGeneration):
-		// 用户已注册成功，但登录失败
-		return c.JSON(response.SuccessWithMsg("Register success", "Register success"))
-	case err != nil:
+	if err != nil {
 		return err
 	}
 
@@ -97,7 +88,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
 	token := c.Cookies("refreshToken")
 	if token == "" {
-		return errs.Unauthorized("missing refresh token")
+		return errs.New(errs.CodeUnauthorized, "Missing refresh token", nil)
 	}
 	newTokens, err := h.svc.RefreshAccessToken(c.UserContext(), token)
 	if err != nil {
@@ -112,26 +103,28 @@ func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
 func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 	req := new(request.GetCaptchaReq)
 
+	// ===== 请求体解析 =====
 	if err := c.BodyParser(req); err != nil {
-		return errs.BadRequest("invalid request")
+		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
 	}
 
+	// ===== 参数校验 =====
 	if err := h.validate.Struct(req); err != nil {
-		return errs.BadRequest("invalid")
+		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
 	}
 
+	// 默认类型
 	if req.Type == "" {
 		req.Type = string(service.Register)
 	}
 
+	// ===== 调用 Service 发送验证码 =====
 	err := h.svc.SendCaptchaMail(c.UserContext(), req.Email, service.CaptchaType(req.Type))
-	if errors.Is(err, errs.ErrUserExists) {
-		return errs.Conflict(err.Error())
-	}
 	if err != nil {
 		return err
 	}
 
+	// ===== 成功响应 =====
 	return c.JSON(response.SuccessWithMsg("Captcha sent successfully", "Captcha sent successfully"))
 }
 

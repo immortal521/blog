@@ -72,15 +72,16 @@ func NewAuthService(db database.DB, rc cache.CacheClient, userRepo repo.IUserRep
 func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error) {
 	email := dto.Email
 
+	// ===== 验证码检查 =====
 	cachedCaptcha := s.rc.Raw().Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
-
 	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(dto.Captcha)) {
-		return nil, errs.ErrInvalidCaptcha
+		return nil, errs.New(errs.CodeInvalidParam, "Invalid captcha", errs.ErrInvalidCaptcha)
 	}
 
+	// ===== 密码加密 =====
 	hashPassword, err := util.HashPassword(dto.Password)
 	if err != nil {
-		return nil, err
+		return nil, errs.New(errs.CodeInternalError, "Hash password failed", err)
 	}
 
 	user := &entity.User{
@@ -92,21 +93,28 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 
 	var newUser *entity.User
 
+	// ===== 创建用户事务 =====
 	err = s.db.Trans(func(txCtx *database.TxContext) error {
 		newUser, err = s.userRepo.CreateUser(ctx, txCtx.GetTx(), user)
-		return fmt.Errorf("register user failed: %w", err)
+		if err != nil {
+			return errs.New(errs.CodeDatabaseError, "Create user failed", err)
+		}
+		return nil
 	})
 	if err != nil {
-		return nil, err
+		// ❗Trans 返回的 err 已经是 AppError 或普通 error，直接向上返回
+		return nil, errs.New(errs.CodeInternalError, "Register transaction failed", err)
 	}
 
+	// ===== 生成 JWT Token =====
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return nil, errs.ErrTokenGeneration
+		return nil, errs.New(errs.CodeInternalError, "Token generation failed", errs.ErrTokenGeneration)
 	}
 
+	// ===== 缓存 Refresh Token =====
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return nil, fmt.Errorf("cache refresh token failed for user %s: %w", user.UUID, err)
+		return nil, errs.New(errs.CodeCacheError, "Cache refresh token failed", err)
 	}
 
 	result := &response.LoginRes{
@@ -154,34 +162,38 @@ func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*respon
 
 // SendCaptchaMail generates a captcha, stores it in Redis, and sends an email.
 func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {
-	userIsExist, err := s.userRepo.ExistsByEmail(ctx, s.db.Conn(), to)
+	// ===== 检查用户是否存在 =====
+	userExists, err := s.userRepo.ExistsByEmail(ctx, s.db.Conn(), to)
 	if err != nil {
-		return fmt.Errorf("check user existence: %w", err)
+		return err
 	}
-	if userIsExist {
-		return fmt.Errorf("sent captcha failed to %s: %w", to, errs.ErrUserExists)
+	if userExists {
+		return errs.New(errs.CodeConflict, fmt.Sprintf("Sent captcha failed to %s: user exists", to), errs.ErrUserExists)
 	}
 
+	// 默认类型
 	if captchaType == "" {
 		captchaType = Register
 	}
 
+	// ===== 获取邮件模板数据 =====
 	data, err := getCaptchaEmailMeta(captchaType)
 	if err != nil {
 		return err
 	}
 
+	// ===== 生成验证码并缓存 =====
 	captcha := util.GenerateCaptcha()
 	data.Captcha = captcha
 
-	if err = s.rc.Raw().Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute).Err(); err != nil {
-		return fmt.Errorf("set captcha in redis: %w", err)
+	if err := s.rc.Raw().Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute).Err(); err != nil {
+		return errs.New(errs.CodeCacheError, "Set captcha in Redis failed", err)
 	}
 
-	templateName := "captcha.html" // 指定要使用的模板文件
-	err = s.mailService.Send(to, data.Subject, templateName, data)
-	if err != nil {
-		return fmt.Errorf("send captcha email to %s: %w", to, err)
+	// ===== 发送邮件 =====
+	templateName := "captcha.html"
+	if err := s.mailService.Send(to, data.Subject, templateName, data); err != nil {
+		return err
 	}
 
 	return nil
@@ -190,17 +202,16 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*response.RefreshRes, error) {
 	claims, err := s.jwtService.ParseToken(token)
 	if err != nil {
-		return nil, fmt.Errorf("parse token failed: %w", err)
+		return nil, err
 	}
 	uuid := claims.UserID
 
 	existed, err := s.userRepo.ExistsByUUID(ctx, s.db.Conn(), uuid)
 	if err != nil {
-		return nil, fmt.Errorf("check user existence for uuid %s: %w", uuid, err)
+		return nil, err
 	}
-
 	if !existed {
-		return nil, errs.ErrUserNotFound
+		return nil, errs.New(errs.CodeUserNotFound, "User not found", nil)
 	}
 
 	cacheRefreshToken := s.rc.Raw().Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid)).Val()
@@ -211,7 +222,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*re
 
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(uuid)
 	if err != nil {
-		return nil, errs.ErrTokenGeneration
+		return nil, err
 	}
 
 	if err := s.cacheRefreshToken(ctx, uuid, refreshToken); err != nil {
@@ -231,21 +242,24 @@ func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.
 	}
 
 	if userRole == nil {
-		return false, errs.ErrUserNotFound
+		return false, errs.New(errs.CodeUserNotFound, "User not found", nil)
 	}
 
 	if slices.Contains(roles, *userRole) {
 		return true, nil
 	}
-
-	return true, nil
+	return false, nil
 }
 
 // cacheRefreshToken stores the refresh token in Redis.
 func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
 	key := fmt.Sprintf("RefreshToken:%s", userUUID)
 	if err := s.rc.Raw().Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err(); err != nil {
-		return fmt.Errorf("cache refresh token for user %s: %w", userUUID, err)
+		return errs.New(
+			errs.CodeCacheError,
+			fmt.Sprintf("Failed to cache refresh token for user %s", userUUID),
+			err,
+		)
 	}
 	return nil
 }
@@ -254,7 +268,11 @@ func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, re
 func getCaptchaEmailMeta(t CaptchaType) (*AuthMailData, error) {
 	data, ok := captchaMetaMap[t]
 	if !ok {
-		return nil, fmt.Errorf("get captcha email meta: unknown captcha type %s", t)
+		return nil, errs.New(
+			errs.CodeInvalidParam,
+			fmt.Sprintf("Unknown captcha type: %s", t),
+			nil,
+		)
 	}
 	copyData := *data
 	return &copyData, nil
