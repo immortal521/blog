@@ -27,11 +27,11 @@ func (r *RoleMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userUUID, ok := GetUserUUID(c)
 		if !ok || userUUID == "" {
-			return errs.Unauthorized("missing user uuid")
+			return errs.New(errs.CodeUnauthorized, "missing user uuid", nil)
 		}
 		ok, err := r.authService.HasRole(c.UserContext(), userUUID)
 		if errors.Is(err, errs.ErrUserNotFound) || !ok {
-			return errs.Unauthorized("user not found")
+			return errs.New(errs.CodeUnauthorized, "user not found", err)
 		}
 
 		return c.Next()

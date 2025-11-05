@@ -67,11 +67,11 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	req := new(request.LoginReq)
 
 	if err := c.BodyParser(req); err != nil {
-		return errs.BadRequest("invalid request")
+		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errs.BadRequest("parameter validation failed")
+		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
 	}
 
 	result, err := h.svc.Login(c.UserContext(), req)

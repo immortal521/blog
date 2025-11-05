@@ -28,25 +28,25 @@ func (a *AuthMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return errs.Unauthorized("missing authorization header")
+			return errs.New(errs.CodeUnauthorized, "missing authorization header", nil)
 		}
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			return errs.Unauthorized("invalid authorization header")
+			return errs.New(errs.CodeUnauthorized, "invalid authorization header", nil)
 		}
 		token := parts[1]
 		if token == "" {
-			return errs.Unauthorized("empty token")
+			return errs.New(errs.CodeUnauthorized, "empty token", nil)
 		}
 
 		claims, err := a.jwtService.ParseToken(token)
 		if err != nil {
-			return err // ParseToken 已返回 Unauthorized
+			return err
 		}
 
 		// 验证 UUID 格式
 		if _, err := uuid.Parse(claims.UserID); err != nil {
-			return errs.Unauthorized("invalid user id in token")
+			return errs.New(errs.CodeUnauthorized, "invalid user id in token", nil)
 		}
 
 		c.Locals(ContextUserIDKey, claims.UserID)
