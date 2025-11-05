@@ -21,7 +21,11 @@ import (
 )
 
 func provideConfig() (*config.Config, error) {
-	return config.Load("./config.yml")
+	_, err := config.Load("./config.yml")
+	if err != nil {
+		return nil, err
+	}
+	return config.Get(), nil
 }
 
 func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error) {
