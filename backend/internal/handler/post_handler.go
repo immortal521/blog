@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"blog-server/internal/dto/response"
+	"blog-server/internal/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"strconv"

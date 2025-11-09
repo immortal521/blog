@@ -2,9 +2,9 @@ package service
 
 import (
 	"blog-server/internal/database"
-	"blog-server/internal/dto/request"
 	"blog-server/internal/entity"
 	"blog-server/internal/repo"
+	"blog-server/internal/request"
 	"context"
 )
 

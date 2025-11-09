@@ -3,7 +3,7 @@ package handler
 
 import (
 	"blog-server/internal/config"
-	"blog-server/internal/dto/response"
+	"blog-server/internal/response"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/logger"
 
