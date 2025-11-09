@@ -1,5 +1,5 @@
 // Package util
-package util
+package utils
 
 func GenerateCaptcha() string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

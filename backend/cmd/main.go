@@ -11,7 +11,7 @@ import (
 	"blog-server/internal/scheduler"
 	"blog-server/internal/service"
 	"blog-server/pkg/logger"
-	"blog-server/pkg/util"
+	"blog-server/pkg/utils"
 	"blog-server/pkg/validatorx"
 	"context"
 	"time"
@@ -31,7 +31,7 @@ func provideConfig() (*config.Config, error) {
 func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error) {
 	var ips []string
 	if cfg.App.Environment == config.EnvProd {
-		cfIPs, err := util.FetchCloudflareIPs()
+		cfIPs, err := utils.FetchCloudflareIPs()
 		if err != nil {
 			log.Error("fetch cloudflare ips failed", logger.Error(err))
 			return nil, err

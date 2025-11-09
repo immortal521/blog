@@ -69,7 +69,6 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 }
 
 func (p *postService) FlushViewCountToDB(ctx context.Context) error {
-	const batchSize = 1000
 	var cursor uint64
 	var allErrors []error
 

@@ -10,7 +10,7 @@ import (
 	"blog-server/internal/request"
 	"blog-server/internal/response"
 	"blog-server/pkg/errs"
-	"blog-server/pkg/util"
+	"blog-server/pkg/utils"
 	"context"
 	"fmt"
 	"slices"
@@ -79,7 +79,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 	}
 
 	// ===== 密码加密 =====
-	hashPassword, err := util.HashPassword(dto.Password)
+	hashPassword, err := utils.HashPassword(dto.Password)
 	if err != nil {
 		return nil, errs.New(errs.CodeInternalError, "Hash password failed", err)
 	}
@@ -88,7 +88,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 		UUID:     uuid.New(),
 		Email:    dto.Email,
 		Password: hashPassword,
-		Username: util.GenerateUsername(),
+		Username: utils.GenerateUsername(),
 	}
 
 	var newUser *entity.User
@@ -135,7 +135,7 @@ func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*respon
 	if err != nil {
 		return nil, fmt.Errorf("get user failed by email %s: %w", dto.Email, err)
 	}
-	if !util.VerifyPassword(dto.Password, user.Password) {
+	if !utils.VerifyPassword(dto.Password, user.Password) {
 		return nil, errs.ErrPasswordWrong
 	}
 
@@ -183,7 +183,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	}
 
 	// ===== 生成验证码并缓存 =====
-	captcha := util.GenerateCaptcha()
+	captcha := utils.GenerateCaptcha()
 	data.Captcha = captcha
 
 	if err := s.rc.Raw().Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute).Err(); err != nil {
