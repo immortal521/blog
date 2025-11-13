@@ -75,7 +75,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 	// ===== 验证码检查 =====
 	cachedCaptcha := s.rc.Raw().Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
 	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(dto.Captcha)) {
-		return nil, errs.New(errs.CodeInvalidParam, "Invalid captcha", errs.ErrInvalidCaptcha)
+		return nil, errs.New(errs.CodeInvalidParam, "Invalid captcha", nil)
 	}
 
 	// ===== 密码加密 =====
@@ -109,7 +109,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 	// ===== 生成 JWT Token =====
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return nil, errs.New(errs.CodeInternalError, "Token generation failed", errs.ErrTokenGeneration)
+		return nil, err
 	}
 
 	// ===== 缓存 Refresh Token =====
@@ -133,15 +133,15 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, s.db.Conn(), dto.Email)
 	if err != nil {
-		return nil, fmt.Errorf("get user failed by email %s: %w", dto.Email, err)
+		return nil, err
 	}
 	if !utils.VerifyPassword(dto.Password, user.Password) {
-		return nil, errs.ErrPasswordWrong
+		return nil, errs.New(errs.CodeInvalidParam, "Invalid password", nil)
 	}
 
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return nil, errs.ErrTokenGeneration
+		return nil, err
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
@@ -168,7 +168,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 		return err
 	}
 	if userExists {
-		return errs.New(errs.CodeConflict, fmt.Sprintf("Sent captcha failed to %s: user exists", to), errs.ErrUserExists)
+		return errs.New(errs.CodeConflict, fmt.Sprintf("Sent captcha failed to %s: user exists", to), nil)
 	}
 
 	// 默认类型
@@ -217,7 +217,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*re
 	cacheRefreshToken := s.rc.Raw().Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid)).Val()
 
 	if !strings.EqualFold(token, cacheRefreshToken) {
-		return nil, errs.ErrInvalidToken
+		return nil, errs.New(errs.CodeUnauthorized, "Invalid token", nil)
 	}
 
 	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(uuid)
