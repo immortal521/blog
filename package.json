@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "husky",
     "fmt:go": "cd backend && go fmt ./...",
-    "lint:go": "cd backend && golangci-lint run --color always ./...",
+    "lint:go": "cd backend && golangci-lint run ./...",
     "fmt:go:staged": "cd backend && go fmt ./... && golangci-lint run --fix ./...",
     "dev:frontend": "cd frontend && pnpm dev",
     "dev:backend": "cd backend && go run ./cmd"
@@ -20,8 +20,9 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "backend/**/*.go": [
-      "fmt:go:staged"
+    "backend": [
+      "go fmt ./...",
+      "golangci-lint run ./..."
     ]
   },
   "devDependencies": {
