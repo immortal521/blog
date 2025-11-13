@@ -5,7 +5,9 @@
   "packageManager": "pnpm@10.15.0",
   "scripts": {
     "prepare": "husky",
-    "fmt:go": "cd backend && go fmt ./... && golint",
+    "fmt:go": "cd backend && go fmt ./...",
+    "lint:go": "cd backend && golangci-lint run --color always ./...",
+    "fmt:go:staged": "cd backend && go fmt ./... && golangci-lint run --fix ./...",
     "dev:frontend": "cd frontend && pnpm dev",
     "dev:backend": "cd backend && go run ./cmd"
   },
@@ -19,7 +21,7 @@
       "prettier --write"
     ],
     "backend/**/*.go": [
-      "pnpm fmt:go"
+      "fmt:go:staged"
     ]
   },
   "devDependencies": {
