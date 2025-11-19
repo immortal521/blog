@@ -1,10 +1,11 @@
 package service
 
 import (
-	"blog-server/internal/config"
-	"blog-server/pkg/errs"
 	"fmt"
 	"time"
+
+	"blog-server/internal/config"
+	"blog-server/pkg/errs"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -86,7 +87,6 @@ func (j *JwtService) ValidateToken(tokenStr string) (bool, error) {
 		}
 		return []byte(j.cfg.Secret), nil
 	})
-
 	if err != nil {
 		return false, errs.New(errs.CodeUnauthorized, "Token validation failed", err)
 	}
