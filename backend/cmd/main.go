@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"blog-server/internal/cache"
@@ -61,9 +60,10 @@ func registerRoutes(
 	postHandler handler.IPostHandler,
 	authHandler handler.IAuthHandler,
 	rssHandler handler.IRssHandler,
+	modelHandler handler.IModelHandler,
 	am *middleware.AuthMiddleware,
 ) {
-	api := e.Group("/api")
+	api := app.Group("/api")
 	v1 := api.Group("/v1")
 
 	// 路由注册
@@ -71,10 +71,7 @@ func registerRoutes(
 	router.RegisterPostRoutes(v1, am, postHandler)
 	router.RegisterAuthRoutes(v1, authHandler)
 	router.RegisterRssRoutes(v1, rssHandler)
-
-	for _, r := range e.Routes() {
-		fmt.Println(r.Method, r.Path)
-	}
+	router.RegisterModelRoutes(v1, modelHandler)
 }
 
 func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
@@ -154,12 +151,14 @@ func main() {
 		service.NewLinkService,
 		service.NewEmailService,
 		service.NewRssService,
+		service.NewModelService,
 
 		// handlers
 		handler.NewAuthHandler,
 		handler.NewPostHandler,
 		handler.NewLinkHandler,
 		handler.NewRssHandler,
+		handler.NewModelHandler,
 	)
 
 	invoke := fx.Invoke(

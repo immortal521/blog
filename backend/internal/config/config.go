@@ -19,6 +19,7 @@ type Config struct {
 	JWT      JWTConfig      `mapstructure:"jwt"`
 	Log      LogConfig      `mapstructure:"log"`
 	Email    EmailConfig    `mapstructure:"email"`
+	LLM      LLM            `mapstructure:"llm"`
 }
 
 type AppConfig struct {
@@ -107,4 +108,8 @@ type EmailConfig struct {
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 	From     string `mapstructure:"from"`
+}
+
+type LLM struct {
+	APIKey string `mapstructure:"apikey"`
 }

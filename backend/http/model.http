@@ -1,0 +1,21 @@
+### 
+
+
+### 
+
+GET localhost:8000/api/v1/model/sse?sessionId=f3ee420d-7f60-4aba-a3d3-bf73e332da03 HTTP/1.1
+
+
+### 
+
+POST localhost:8000/api/v1/model/summary HTTP/1.1
+Content-Type: application/json
+
+{
+  "content": "gpt-3.5-turbo"
+}
+
+
+### 
+
+GET localhost:8000/api/v1/posts HTTP/1.1

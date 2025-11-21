@@ -132,7 +132,7 @@ func setDefaults() {
 func loadFromFile(configPath string) error {
 	dir := filepath.Dir(configPath)
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		_ = os.MkdirAll(dir, 0755)
+		_ = os.MkdirAll(dir, 0o755)
 		defaultCfg := &Config{}
 		if err := v.Unmarshal(defaultCfg); err != nil {
 			return err
@@ -152,7 +152,7 @@ func writeDefaultConfig(path string, cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0o644)
 }
 
 // setupConfigWatch 文件变动热更新
