@@ -3,10 +3,10 @@ package router
 import (
 	"blog-server/internal/handler"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
-func RegisterRssRoutes(r fiber.Router, h handler.IRssHandler) {
+func RegisterRssRoutes(r *echo.Group, h handler.IRssHandler) {
 	group := r.Group("/rss")
-	group.Get("/", h.Subscribe)
+	group.GET("", h.Subscribe)
 }

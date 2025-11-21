@@ -1,23 +1,25 @@
 package handler
 
 import (
+	"net/http"
+	"time"
+
 	"blog-server/internal/config"
 	"blog-server/internal/request"
 	"blog-server/internal/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
-	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
 type IAuthHandler interface {
-	SendCaptcha(c *fiber.Ctx) error
-	Register(c *fiber.Ctx) error
-	Login(c *fiber.Ctx) error
-	Logout(c *fiber.Ctx) error
-	Refresh(c *fiber.Ctx) error
+	SendCaptcha(c echo.Context) error
+	Register(c echo.Context) error
+	Login(c echo.Context) error
+	Logout(c echo.Context) error
+	Refresh(c echo.Context) error
 }
 
 type AuthHandler struct {
@@ -29,10 +31,10 @@ func NewAuthHandler(authService service.IAuthService, validate validatorx.Valida
 	return &AuthHandler{svc: authService, validate: validate}
 }
 
-func (h *AuthHandler) Register(c *fiber.Ctx) error {
+func (h *AuthHandler) Register(c echo.Context) error {
 	req := new(request.RegisterReq)
 
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
 	}
 
@@ -40,7 +42,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
 	}
 
-	result, err := h.svc.Register(c.UserContext(), req)
+	result, err := h.svc.Register(c.Request().Context(), req)
 	if err != nil {
 		return err
 	}
@@ -48,25 +50,25 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	setRefreshTokenCookie(c, result.RefreshToken)
 
 	res := response.Success(result)
-	return c.JSON(res)
+	return c.JSON(http.StatusOK, res)
 }
 
-func (h *AuthHandler) Logout(c *fiber.Ctx) error {
-	c.Cookie(&fiber.Cookie{
+func (h *AuthHandler) Logout(c echo.Context) error {
+	c.SetCookie(&http.Cookie{
 		Name:     "refreshToken",
 		Value:    "",
 		Expires:  time.Now().Add(-time.Hour),
-		HTTPOnly: true,
+		HttpOnly: true,
 		Secure:   true,
 	})
 
-	return c.JSON(response.SuccessWithMsg("logout success", "logout success"))
+	return c.JSON(http.StatusOK, response.SuccessWithMsg("logout success", "logout success"))
 }
 
-func (h *AuthHandler) Login(c *fiber.Ctx) error {
+func (h *AuthHandler) Login(c echo.Context) error {
 	req := new(request.LoginReq)
 
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
 	}
 
@@ -74,7 +76,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
 	}
 
-	result, err := h.svc.Login(c.UserContext(), req)
+	result, err := h.svc.Login(c.Request().Context(), req)
 	if err != nil {
 		return err
 	}
@@ -82,33 +84,31 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	setRefreshTokenCookie(c, result.RefreshToken)
 
 	res := response.Success(result)
-	return c.JSON(res)
+	return c.JSON(http.StatusOK, res)
 }
 
-func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
-	token := c.Cookies("refreshToken")
-	if token == "" {
+func (h *AuthHandler) Refresh(c echo.Context) error {
+	token, err := c.Cookie("refreshToken")
+	if err != nil || token.Value == "" {
 		return errs.New(errs.CodeUnauthorized, "Missing refresh token", nil)
 	}
-	newTokens, err := h.svc.RefreshAccessToken(c.UserContext(), token)
+	newTokens, err := h.svc.RefreshAccessToken(c.Request().Context(), token.Value)
 	if err != nil {
 		return err
 	}
 
 	setRefreshTokenCookie(c, newTokens.RefreshToken)
 
-	return c.JSON(response.Success(newTokens))
+	return c.JSON(http.StatusOK, response.Success(newTokens))
 }
 
-func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
+func (h *AuthHandler) SendCaptcha(c echo.Context) error {
 	req := new(request.GetCaptchaReq)
 
-	// ===== 请求体解析 =====
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
 	}
 
-	// ===== 参数校验 =====
 	if err := h.validate.Struct(req); err != nil {
 		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
 	}
@@ -119,22 +119,25 @@ func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 	}
 
 	// ===== 调用 Service 发送验证码 =====
-	err := h.svc.SendCaptchaMail(c.UserContext(), req.Email, service.CaptchaType(req.Type))
+	err := h.svc.SendCaptchaMail(c.Request().Context(), req.Email, service.CaptchaType(req.Type))
 	if err != nil {
 		return err
 	}
 
 	// ===== 成功响应 =====
-	return c.JSON(response.SuccessWithMsg("Captcha sent successfully", "Captcha sent successfully"))
+	return c.JSON(http.StatusOK, response.SuccessWithMsg("Captcha sent successfully", "Captcha sent successfully"))
 }
 
-func setRefreshTokenCookie(c *fiber.Ctx, value string) {
+func setRefreshTokenCookie(c echo.Context, value string) {
 	maxAge := config.Get().JWT.RefreshExpiration
-	c.Cookie(&fiber.Cookie{
+
+	cookie := &http.Cookie{
 		Name:     "refreshToken",
 		Value:    value,
 		Expires:  time.Now().Add(maxAge),
-		HTTPOnly: true,
+		HttpOnly: true,
 		Secure:   true,
-	})
+	}
+
+	c.SetCookie(cookie)
 }

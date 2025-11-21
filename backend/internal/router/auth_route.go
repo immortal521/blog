@@ -4,14 +4,14 @@ package router
 import (
 	"blog-server/internal/handler"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
-func RegisterAuthRoutes(r fiber.Router, h handler.IAuthHandler) {
+func RegisterAuthRoutes(r *echo.Group, h handler.IAuthHandler) {
 	group := r.Group("/auth")
-	group.Post("/captcha", h.SendCaptcha)
-	group.Post("/register", h.Register)
-	group.Post("/login", h.Login)
-	group.Post("/logout", h.Logout)
-	group.Post("/refresh", h.Refresh)
+	group.POST("/captcha", h.SendCaptcha)
+	group.POST("/register", h.Register)
+	group.POST("/login", h.Login)
+	group.POST("/logout", h.Logout)
+	group.POST("/refresh", h.Refresh)
 }

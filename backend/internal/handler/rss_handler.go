@@ -3,26 +3,29 @@ package handler
 import (
 	"blog-server/internal/service"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
 type IRssHandler interface {
-	Subscribe(c *fiber.Ctx) error
+	Subscribe(c echo.Context) error
 }
 
 type rssHandler struct {
 	svc service.IRssService
 }
 
-func (r *rssHandler) Subscribe(c *fiber.Ctx) error {
-	data, err := r.svc.GenerateRSSFeedXML(c.UserContext())
+func (r *rssHandler) Subscribe(c echo.Context) error {
+	data, err := r.svc.GenerateRSSFeedXML(c.Request().Context())
 	if err != nil {
 		return err
 	}
 
-	c.Type("xml")
-	c.Append("Content-Disposition", "attachment; filename=rss.xml")
-	return c.Send(data)
+	c.Response().Header().Set(echo.HeaderContentType, "application/xml")
+	c.Response().Header().Set(echo.HeaderContentDisposition, `attachment; filename="rss.xml"`)
+
+	// 写入数据
+	_, err = c.Response().Write(data)
+	return err
 }
 
 func NewRssHandler(svc service.IRssService) IRssHandler {

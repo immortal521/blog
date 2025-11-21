@@ -3,11 +3,11 @@ package router
 import (
 	"blog-server/internal/handler"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
-func RegisterLinkRoutes(r fiber.Router, h handler.ILinkHandler) {
+func RegisterLinkRoutes(r *echo.Group, h handler.ILinkHandler) {
 	group := r.Group("/links")
-	group.Get("/", h.GetLinks)
-	group.Post("/apply-link", h.ApplyForALinks)
+	group.GET("", h.GetLinks)
+	group.POST("/apply-link", h.ApplyForALinks)
 }
