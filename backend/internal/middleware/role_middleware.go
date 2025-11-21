@@ -5,7 +5,7 @@ import (
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -22,17 +22,22 @@ func NewRoleMiddleware(authSerevice service.IAuthService) *RoleMiddleware {
 	}
 }
 
-func (r *RoleMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		userUUID, ok := GetUserUUID(c)
-		if !ok || userUUID == "" {
-			return errs.New(errs.CodeUnauthorized, "missing user uuid", nil)
-		}
-		ok, err := r.authService.HasRole(c.UserContext(), userUUID)
-		if err != nil || !ok {
-			return errs.New(errs.CodeUnauthorized, "user not found", err)
-		}
+func (r *RoleMiddleware) Handler(roles ...entity.UserRole) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// 从上下文获取用户 UUID
+			userUUID, ok := GetUserUUID(c)
+			if !ok || userUUID == "" {
+				return errs.New(errs.CodeUnauthorized, "missing user uuid", nil)
+			}
 
-		return c.Next()
+			// 调用服务层验证用户角色
+			hasRole, err := r.authService.HasRole(c.Request().Context(), userUUID)
+			if err != nil || !hasRole {
+				return errs.New(errs.CodeUnauthorized, "user not found or role not allowed", err)
+			}
+
+			return next(c)
+		}
 	}
 }

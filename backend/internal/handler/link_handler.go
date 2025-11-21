@@ -1,18 +1,20 @@
 package handler
 
 import (
+	"net/http"
+
 	"blog-server/internal/request"
 	"blog-server/internal/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
 type ILinkHandler interface {
-	GetLinks(c *fiber.Ctx) error
-	ApplyForALinks(c *fiber.Ctx) error
+	GetLinks(c echo.Context) error
+	ApplyForALinks(c echo.Context) error
 }
 
 type LinkHandler struct {
@@ -24,8 +26,8 @@ func NewLinkHandler(svc service.ILinkService, validate validatorx.Validator) ILi
 	return &LinkHandler{svc: svc, validate: validate}
 }
 
-func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
-	links, err := h.svc.GetLinks(c.UserContext())
+func (h *LinkHandler) GetLinks(c echo.Context) error {
+	links, err := h.svc.GetLinks(c.Request().Context())
 	if err != nil {
 		return err
 	}
@@ -43,12 +45,12 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	}
 
 	result := response.Success(linkDTOs)
-	return c.JSON(result)
+	return c.JSON(http.StatusOK, result)
 }
 
-func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
+func (h *LinkHandler) ApplyForALinks(c echo.Context) error {
 	req := new(request.CreateLinkReq)
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errs.New(errs.CodeInvalidParam, "Failed to parse request body", err)
 	}
 
@@ -56,10 +58,10 @@ func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
 		return errs.New(errs.CodeInvalidParam, "URL or name is empty", nil)
 	}
 
-	err := h.svc.CreateLink(c.UserContext(), req)
+	err := h.svc.CreateLink(c.Request().Context(), req)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(response.Success(""))
+	return c.JSON(http.StatusOK, response.Success(""))
 }

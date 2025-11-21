@@ -1,18 +1,20 @@
 package handler
 
 import (
+	"net/http"
+	"strconv"
+
 	"blog-server/internal/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
-	"strconv"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
 type IPostHandler interface {
-	GetPosts(c *fiber.Ctx) error
-	GetPost(c *fiber.Ctx) error
-	GetPostIds(c *fiber.Ctx) error
+	GetPosts(c echo.Context) error
+	GetPost(c echo.Context) error
+	GetPostIds(c echo.Context) error
 }
 
 type postHandler struct {
@@ -23,11 +25,12 @@ func NewPostHandler(svc service.IPostService) IPostHandler {
 	return &postHandler{svc: svc}
 }
 
-func (h *postHandler) GetPosts(c *fiber.Ctx) error {
-	posts, err := h.svc.GetPosts(c.UserContext())
+func (h *postHandler) GetPosts(c echo.Context) error {
+	posts, err := h.svc.GetPosts(c.Request().Context())
 	if err != nil {
 		return err
 	}
+
 	postDTOs := make([]response.PostListRes, len(posts))
 	for i, post := range posts {
 		postDTOs[i] = response.PostListRes{
@@ -44,12 +47,12 @@ func (h *postHandler) GetPosts(c *fiber.Ctx) error {
 	}
 
 	result := response.Success(postDTOs)
-	return c.JSON(result)
+	return c.JSON(http.StatusOK, result)
 }
 
-func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
-	metas := h.svc.GetPostsMeta(c.UserContext())
-	var metasDTO = make([]response.PostMetaRes, len(metas))
+func (h *postHandler) GetPostIds(c echo.Context) error {
+	metas := h.svc.GetPostsMeta(c.Request().Context())
+	metasDTO := make([]response.PostMetaRes, len(metas))
 	for i, meta := range metas {
 		metasDTO[i] = response.PostMetaRes{
 			ID:        meta.ID,
@@ -57,18 +60,20 @@ func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
 		}
 	}
 	result := response.Success(metasDTO)
-	return c.JSON(result)
+	return c.JSON(http.StatusOK, result)
 }
 
-func (h *postHandler) GetPost(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
+func (h *postHandler) GetPost(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return errs.New(errs.CodeInvalidParam, "Invalid post ID", err)
 	}
-	post, err := h.svc.GetPostByID(c.UserContext(), uint(id))
+
+	post, err := h.svc.GetPostByID(c.Request().Context(), uint(id))
 	if err != nil {
 		return err
 	}
+
 	result := response.Success(response.PostRes{
 		ID:              post.ID,
 		Title:           post.Title,
@@ -80,5 +85,6 @@ func (h *postHandler) GetPost(c *fiber.Ctx) error {
 		PublishedAt:     post.PublishedAt,
 		Author:          post.User.Username,
 	})
-	return c.JSON(result)
+
+	return c.JSON(http.StatusOK, result)
 }

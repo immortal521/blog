@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"blog-server/internal/cache"
 	"blog-server/internal/config"
 	"blog-server/internal/database"
@@ -11,12 +15,9 @@ import (
 	"blog-server/internal/scheduler"
 	"blog-server/internal/service"
 	"blog-server/pkg/logger"
-	"blog-server/pkg/utils"
 	"blog-server/pkg/validatorx"
-	"context"
-	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
 )
 
@@ -28,43 +29,52 @@ func provideConfig() (*config.Config, error) {
 	return config.Get(), nil
 }
 
-func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error) {
-	var ips []string
-	if cfg.App.Environment == config.EnvProd {
-		cfIPs, err := utils.FetchCloudflareIPs()
-		if err != nil {
-			log.Error("fetch cloudflare ips failed", logger.Error(err))
-			return nil, err
-		}
-		ips = append(ips, cfIPs...)
-	}
-	ips = append(ips, "127.0.0.1")
+func providerEchoApp(cfg *config.Config, log logger.Logger) (*echo.Echo, error) {
+	// var ips []string
+	// if cfg.App.Environment == config.EnvProd {
+	// 	cfIPs, err := utils.FetchCloudflareIPs()
+	// 	if err != nil {
+	// 		log.Error("fetch cloudflare ips failed", logger.Error(err))
+	// 		return nil, err
+	// 	}
+	// 	ips = append(ips, cfIPs...)
+	// }
+	// ips = append(ips, "127.0.0.1")
 
-	fiberCfg := fiber.Config{
-		EnableTrustedProxyCheck: true,
-		ErrorHandler:            handler.ErrorHandler(log, cfg),
-		TrustedProxies:          ips,
-		ProxyHeader:             fiber.HeaderXForwardedFor,
-	}
+	e := echo.New()
 
-	app := fiber.New(fiberCfg)
-	app.Use(middleware.RequestLogger(log))
+	// 设置全局错误处理器
+	e.HTTPErrorHandler = handler.ErrorHandler(log, cfg)
 
-	return app, nil
+	// 设置请求日志中间件
+	e.Use(middleware.RequestLogger(log))
+
+	// // 信任代理（Echo 通过 RealIP 支持 X-Forwarded-For）
+	// e.IPExtractor = echo.ExtractIPFromXFFHeader(ips...)
+
+	return e, nil
 }
 
-func registerRoutes(app *fiber.App,
+func registerRoutes(
+	e *echo.Echo,
 	linkHandler handler.ILinkHandler,
 	postHandler handler.IPostHandler,
 	authHandler handler.IAuthHandler,
 	rssHandler handler.IRssHandler,
-	am *middleware.AuthMiddleware) {
-	api := app.Group("/api")
+	am *middleware.AuthMiddleware,
+) {
+	api := e.Group("/api")
 	v1 := api.Group("/v1")
+
+	// 路由注册
 	router.RegisterLinkRoutes(v1, linkHandler)
 	router.RegisterPostRoutes(v1, am, postHandler)
 	router.RegisterAuthRoutes(v1, authHandler)
 	router.RegisterRssRoutes(v1, rssHandler)
+
+	for _, r := range e.Routes() {
+		fmt.Println(r.Method, r.Path)
+	}
 }
 
 func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
@@ -79,12 +89,12 @@ func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
 	})
 }
 
-func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log logger.Logger) {
+func runServerLifecycle(lc fx.Lifecycle, app *echo.Echo, cfg *config.Config, log logger.Logger) {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func() {
 				log.Info("Server is starting")
-				if err := app.Listen(cfg.Server.GetAddr()); err != nil {
+				if err := app.Start(cfg.Server.GetAddr()); err != nil {
 					log.Fatal("Server startup failed", logger.Error(err))
 				}
 			}()
@@ -99,7 +109,7 @@ func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log
 			shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
 
-			if err := app.ShutdownWithContext(shutdownCtx); err != nil {
+			if err := app.Shutdown(shutdownCtx); err != nil {
 				log.Error("Server shutdown failed", logger.Error(err))
 			} else {
 				log.Info("Server has been shut down successfully.")
@@ -127,7 +137,7 @@ func main() {
 		database.NewDB,
 		cache.NewCacheClient,
 		validatorx.NewValidator,
-		providerFiberApp,
+		providerEchoApp,
 
 		scheduler.NewScheduler,
 		middleware.NewAuthMiddleware,

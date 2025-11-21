@@ -4,12 +4,12 @@ import (
 	"blog-server/internal/handler"
 	"blog-server/internal/middleware"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/labstack/echo/v4"
 )
 
-func RegisterPostRoutes(r fiber.Router, am *middleware.AuthMiddleware, h handler.IPostHandler) {
+func RegisterPostRoutes(r *echo.Group, am *middleware.AuthMiddleware, h handler.IPostHandler) {
 	group := r.Group("/posts")
-	group.Get("/", h.GetPosts)
-	group.Get("/meta", h.GetPostIds)
-	group.Get("/:id", h.GetPost)
+	group.GET("", h.GetPosts)
+	group.GET("/meta", h.GetPostIds)
+	group.GET("/:id", h.GetPost)
 }
