@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -25,7 +26,7 @@ func NewModelService(cfg *config.Config) IModelService {
 }
 
 func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-chan string, <-chan error) {
-	textCh := make(chan string) // 加缓冲避免阻塞
+	textCh := make(chan string, 10) // 加缓冲
 	errCh := make(chan error, 1)
 
 	go func() {
@@ -39,68 +40,59 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			"stream":     true,
 		}
 
-		apiKey := s.cfg.LLM.APIKey
-
 		body, _ := json.Marshal(payload)
-		req, err := http.NewRequestWithContext(ctx, "POST", "https://models.inference.ai.azure.com/chat/completions", bytes.NewBuffer(body))
+		req, err := http.NewRequestWithContext(ctx, "POST",
+			"https://models.inference.ai.azure.com/chat/completions", bytes.NewBuffer(body))
 		if err != nil {
+			log.Printf("[GenerateSummary] request creation error: %v", err)
 			errCh <- err
 			return
 		}
-		req.Header.Set("Authorization", "Bearer "+apiKey)
+		req.Header.Set("Authorization", "Bearer "+s.cfg.LLM.APIKey)
 		req.Header.Set("Content-Type", "application/json")
 
-		client := &http.Client{Timeout: 0} // SSE 不超时
+		client := &http.Client{Timeout: 0}
 		resp, err := client.Do(req)
 		if err != nil {
+			log.Printf("[GenerateSummary] request error: %v", err)
 			errCh <- err
 			return
 		}
-		defer func() {
-			_ = resp.Body.Close()
-		}()
+		defer resp.Body.Close()
+
+		log.Printf("[GenerateSummary] started streaming response")
 
 		scanner := bufio.NewScanner(resp.Body)
 		buf := make([]byte, 0, 1024*1024)
 		scanner.Buffer(buf, 1024*1024)
-
-		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-			if atEOF && len(data) == 0 {
-				return 0, nil, nil
-			}
-			if i := bytes.Index(data, []byte("\n\n")); i >= 0 {
-				return i + 2, data[:i], nil
-			}
-			if atEOF {
-				return len(data), data, nil
-			}
-			return 0, nil, nil
-		})
 
 		doneRegexp := regexp.MustCompile(`data:\s*\[DONE\]`)
 
 		for scanner.Scan() {
 			select {
 			case <-ctx.Done():
+				log.Printf("[GenerateSummary] context canceled")
 				return
 			default:
 			}
 
-			chunk := strings.TrimSpace(scanner.Text())
-			if !strings.HasPrefix(chunk, "data:") {
-				// 忽略非 data 行 (如果 API 返回了其他行)
+			line := strings.TrimSpace(scanner.Text())
+			if !strings.HasPrefix(line, "data:") {
 				continue
 			}
-
-			jsonStr := strings.TrimSpace(strings.TrimPrefix(chunk, "data:"))
-
-			if doneRegexp.MatchString(chunk) {
+			if doneRegexp.MatchString(line) {
+				log.Printf("[GenerateSummary] stream finished")
 				return
+			}
+
+			jsonStr := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
+			if jsonStr == "" {
+				continue
 			}
 
 			var respChunk map[string]any
 			if err := json.Unmarshal([]byte(jsonStr), &respChunk); err != nil {
-				// 可以在这里通过 errCh 返回 JSON 解析错误
+				log.Printf("[GenerateSummary] json parse error: %v, data: %s", err, jsonStr)
 				continue
 			}
 
@@ -116,7 +108,6 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			if !ok {
 				continue
 			}
-
 			content, ok := delta["content"].(string)
 			if !ok || content == "" {
 				continue
@@ -124,12 +115,15 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 
 			select {
 			case <-ctx.Done():
+				log.Printf("[GenerateSummary] context canceled during sending")
 				return
 			case textCh <- content:
+				log.Printf("[GenerateSummary] sent chunk: %s", content)
 			}
 		}
 
 		if err := scanner.Err(); err != nil {
+			log.Printf("[GenerateSummary] scanner error: %v", err)
 			errCh <- err
 		}
 	}()

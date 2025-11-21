@@ -55,7 +55,7 @@ func providerEchoApp(cfg *config.Config, log logger.Logger) (*echo.Echo, error) 
 }
 
 func registerRoutes(
-	e *echo.Echo,
+	app *echo.Echo,
 	linkHandler handler.ILinkHandler,
 	postHandler handler.IPostHandler,
 	authHandler handler.IAuthHandler,
