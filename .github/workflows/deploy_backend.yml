@@ -25,6 +25,7 @@ jobs:
       EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
 
     steps:
       # Checkout code
