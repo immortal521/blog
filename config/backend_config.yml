@@ -58,3 +58,5 @@ email:
   username: "${EMAIL_USERNAME}"
   password: "${EMAIL_PASSWORD}"
   from: "${EMAIL_FROM}"
+llm:
+  apikey: "${MODEL_API_KEY}"
