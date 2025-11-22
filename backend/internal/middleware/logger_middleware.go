@@ -2,8 +2,9 @@
 package middleware
 
 import (
-	"blog-server/pkg/logger"
 	"time"
+
+	"blog-server/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -35,9 +36,10 @@ func RequestLogger(log logger.Logger) fiber.Handler {
 		statusCode := c.Response().StatusCode()
 		respSize := c.Response().Header.ContentLength()
 
-		if respSize < 0 {
-			respSize = len(c.Response().Body())
-		}
+		//
+		// if respSize < 0 {
+		// 	respSize = len(c.Response().Body())
+		// }
 
 		fields := []logger.Field{
 			logger.Int("status", statusCode),

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"time"
+
 	"blog-server/internal/cache"
 	"blog-server/internal/config"
 	"blog-server/internal/database"
@@ -13,8 +16,6 @@ import (
 	"blog-server/pkg/logger"
 	"blog-server/pkg/utils"
 	"blog-server/pkg/validatorx"
-	"context"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/fx"
@@ -51,20 +52,6 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 	app.Use(middleware.RequestLogger(log))
 
 	return app, nil
-}
-
-func registerRoutes(app *fiber.App,
-	linkHandler handler.ILinkHandler,
-	postHandler handler.IPostHandler,
-	authHandler handler.IAuthHandler,
-	rssHandler handler.IRssHandler,
-	am *middleware.AuthMiddleware) {
-	api := app.Group("/api")
-	v1 := api.Group("/v1")
-	router.RegisterLinkRoutes(v1, linkHandler)
-	router.RegisterPostRoutes(v1, am, postHandler)
-	router.RegisterAuthRoutes(v1, authHandler)
-	router.RegisterRssRoutes(v1, rssHandler)
 }
 
 func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
@@ -144,16 +131,18 @@ func main() {
 		service.NewLinkService,
 		service.NewEmailService,
 		service.NewRssService,
+		service.NewModelService,
 
 		// handlers
 		handler.NewAuthHandler,
 		handler.NewPostHandler,
 		handler.NewLinkHandler,
 		handler.NewRssHandler,
+		handler.NewModelHandler,
 	)
 
 	invoke := fx.Invoke(
-		registerRoutes,
+		router.RegisterRoutes,
 		runServerLifecycle,
 		runJobsLifecycle,
 		cleanupResources,
