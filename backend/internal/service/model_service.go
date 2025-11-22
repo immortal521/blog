@@ -28,15 +28,12 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 	errCh := make(chan error, 1)
 
 	go func() {
-		defer func() {
-			textCh <- "__EOF__"
-			close(textCh)
-		}()
+		defer close(textCh)
 		defer close(errCh)
 
 		payload := map[string]any{
 			"model":      "gpt-4.1-mini",
-			"messages":   []map[string]string{{"role": "user", "content": "请帮我总结这篇文章：" + content}},
+			"messages":   []map[string]string{{"role": "user", "content": "请帮我总结这篇文章(以纯文本格式返回)：" + content}},
 			"max_tokens": 8000,
 			"stream":     true,
 		}
@@ -81,7 +78,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			}
 			if doneRegexp.MatchString(line) {
 				s.log.Info("[GenerateSummary] stream finished")
-				// textCh <- "[DONE]"
+				textCh <- "[DONE]"
 				return
 			}
 

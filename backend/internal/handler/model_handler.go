@@ -97,8 +97,8 @@ func (h *modelHandler) stream(c *fiber.Ctx, sessionID string) error {
 				}
 
 			case text := <-session.TextCh:
-				if text == "__EOF__" {
-					// _, _ = fmt.Fprintf(w, "data: %s\n\n", text)
+				if text == "[DONE]" {
+					_, _ = fmt.Fprintf(w, "event: done\ndata: %s\n\n", text)
 					return
 				}
 				if text == "" {
