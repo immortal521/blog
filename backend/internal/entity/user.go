@@ -30,7 +30,7 @@ func (r UserRole) MarshalJSON() ([]byte, error) {
 type User struct {
 	*gorm.Model
 
-	UUID     uuid.UUID `gorm:"type:bytea;not null;unique"`
+	UUID     uuid.UUID `gorm:"type:uuid;not null;unique"`
 	Avatar   *string   `gorm:"type:varchar(255)"`
 	Email    string    `gorm:"type:varchar(100);not null;unique"`
 	Password string    `gorm:"type:varchar(255);not null" json:"-"`
