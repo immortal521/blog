@@ -28,7 +28,7 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
     background: #786bcf;
     animation: change-bar 2.25s infinite;
 
-    &:before {
+    &::before {
       position: absolute;
       height: 3px;
       background-color: inherit;
@@ -46,6 +46,7 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
 .loading-bar-leave-active {
   transition: all 0.4s;
 }
+
 .loading-bar-enter-from,
 .loading-bar-leave-to {
   opacity: 0;
@@ -55,18 +56,23 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
   0% {
     background-color: #786bcf;
   }
+
   33.3% {
     background-color: #786bcf;
   }
+
   33.33% {
     background-color: #78e0f5;
   }
+
   66.6% {
     background-color: #78e0f5;
   }
+
   66.66% {
     background-color: #fc6fb1;
   }
+
   99.9% {
     background-color: #fc6fb1;
   }
@@ -76,9 +82,11 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
   0% {
     transform: scaleX(0);
   }
+
   99.9% {
     transform: scaleX(1);
   }
+
   100% {
     transform: scaleX(0);
   }

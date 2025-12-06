@@ -95,15 +95,13 @@ const togglePasswordVisibility = () => {
     padding-left: 10px;
     padding-right: 8px;
   }
+
   .base-input-field {
     flex-grow: 1;
-
     border: none;
     outline: none;
-
     padding: 8px;
     margin: 0;
-
     color: inherit;
     background-color: transparent;
   }

@@ -154,6 +154,10 @@ onClickOutside(dropdown, (event) => {
       border-radius: 10px 10px 0 0;
       border-bottom: 1px solid var(--text-color-muted);
 
+      &:active {
+        color: var(--color-primary-active);
+      }
+
       &:hover {
         border-bottom: 1px solid var(--color-primary-base);
         color: var(--color-primary-base);
@@ -166,10 +170,6 @@ onClickOutside(dropdown, (event) => {
 
       &:hover:deep(.svg-icon) {
         color: var(--color-primary-base);
-      }
-
-      &:active {
-        color: var(--color-primary-active);
       }
 
       .icon {

@@ -47,5 +47,3 @@ const copyRSSFeedUrl = async () => {
     />
   </FloatActionGroup>
 </template>
-
-<style lang="less" scoped></style>

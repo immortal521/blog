@@ -69,8 +69,7 @@ const { src = "", title = "" } = defineProps<Props>();
   overflow: hidden;
   text-overflow: ellipsis;
   text-wrap: nowrap;
-
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 5px rgb(0 0 0 / 50%);
 
   &::before {
     position: absolute;
@@ -83,7 +82,7 @@ const { src = "", title = "" } = defineProps<Props>();
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .article-cover {
     height: 280px;
   }

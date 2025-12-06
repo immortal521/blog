@@ -108,7 +108,7 @@ watch(() => props.markdown, renderMarkdown, { immediate: true });
   border-radius: 4px;
   line-height: 1.4;
   white-space: break-spaces;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 :deep(table) {

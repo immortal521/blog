@@ -223,26 +223,34 @@ const beforeLeave = (el: Element) => {
   &--default {
     border-color: var(--border-color-base);
   }
+
   &--success {
     border-color: var(--color-success);
+
     .icon {
       color: var(--color-success);
     }
   }
+
   &--info {
     border-color: var(--color-info);
+
     .icon {
       color: var(--color-info);
     }
   }
+
   &--error {
     border-color: var(--color-danger);
+
     .icon {
       color: var(--color-danger);
     }
   }
+
   &--warning {
     border-color: var(--color-warning);
+
     .icon {
       color: var(--color-warning);
     }
@@ -252,10 +260,12 @@ const beforeLeave = (el: Element) => {
     font-size: 1.4rem;
     padding: 6px 10px;
   }
+
   &--medium {
     font-size: 1.6rem;
     padding: 8px 12px;
   }
+
   &--large {
     font-size: 1.8rem;
     padding: 10px 14px;

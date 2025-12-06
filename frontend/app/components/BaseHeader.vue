@@ -57,7 +57,7 @@ onUnmounted(() => {
     background-color: var(--bg-nav-hover);
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: 100%;
     left: 0;
     top: 0;

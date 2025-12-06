@@ -71,6 +71,7 @@ const summarize = async () => {
 .msgs-leave-active {
   transition: all 0.5s ease;
 }
+
 .msgs-enter-from,
 .msgs-leave-to {
   opacity: 0;

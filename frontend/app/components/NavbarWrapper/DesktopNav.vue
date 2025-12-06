@@ -73,6 +73,10 @@ const items = computed<MenuItem[]>(() => {
         transition: width 0.3s ease-in-out;
       }
 
+      &:active {
+        color: var(--color-primary-active);
+      }
+
       &:hover {
         color: var(--color-primary-base);
       }
@@ -89,9 +93,6 @@ const items = computed<MenuItem[]>(() => {
         color: var(--color-primary-base);
       }
 
-      &:active {
-        color: var(--color-primary-active);
-      }
       &:active::after {
         background-color: var(--color-primary-active);
       }

@@ -7,5 +7,3 @@ definePageMeta({
 <template>
   <div>admin</div>
 </template>
-
-<style lang="less" scoped></style>

@@ -9,5 +9,3 @@ const { height = 0 } = defineProps<SpacerProps>();
 <template>
   <div class="spacer" :style="{ height: `${height}px` }"></div>
 </template>
-
-<style lang="less" scoped></style>

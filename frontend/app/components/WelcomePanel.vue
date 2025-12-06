@@ -114,7 +114,6 @@ const handleDownArrowClick = () => {
   cursor: pointer;
   transform: translateX(-50%);
   color: var(--bg-nav-base);
-
   animation: bounce 2.5s infinite ease-in-out;
 }
 
@@ -123,6 +122,7 @@ const handleDownArrowClick = () => {
   100% {
     transform: translate(-50%, 0);
   }
+
   50% {
     transform: translate(-50%, 10px);
   }

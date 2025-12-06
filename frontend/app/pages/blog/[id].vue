@@ -55,7 +55,7 @@ useHead({
   animation: article-show 1s ease-in-out;
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .content {
     padding: 0 20px;
   }
@@ -66,6 +66,7 @@ useHead({
     opacity: 0;
     transform: translateY(32px);
   }
+
   100% {
     opacity: 1;
   }

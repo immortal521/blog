@@ -52,7 +52,7 @@ onClickOutside(panelContent, (event) => {
   align-items: center;
   border: 1px solid var(--border-color-nav);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .panel-content {

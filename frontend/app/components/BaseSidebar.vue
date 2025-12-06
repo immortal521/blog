@@ -87,7 +87,6 @@ defineExpose({
 
 .sidebar-content {
   opacity: 1;
-
   transition: opacity 0.3s ease-in-out;
 }
 
@@ -135,6 +134,7 @@ defineExpose({
 .menu-item-lable-leave-active {
   transition: opacity 0.4s;
 }
+
 .menu-item-lable-enter-from,
 .menu-item-lable-leave-to {
   opacity: 0;

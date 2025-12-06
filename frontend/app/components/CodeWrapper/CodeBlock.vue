@@ -70,9 +70,9 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   position: relative;
   font-size: 1.5rem;
   line-height: 1.5;
-  padding: 3rem 3rem 1.5rem 0rem;
+  padding: 3rem 3rem 1.5rem 0;
   border-radius: var(--radius-card, 0.5rem);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
   overflow: hidden;
   transition: all 0.3s ease-in-out;
   margin-top: 20px;
@@ -82,7 +82,7 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   & code::-webkit-scrollbar-thumb {
     height: 2px;
     width: 2px;
-    background-color: #00000000;
+    background-color: #0000;
     transition: background 0.3s ease-in-out;
   }
 
@@ -143,7 +143,7 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   counter-increment: line-number;
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .code-header {
     opacity: 1;
   }

@@ -130,13 +130,14 @@ useAddClassOnIntersect(postCardRef, "show");
       transform: scale(1.1);
       height: 100%;
     }
+
     .title {
       bottom: 20px;
     }
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .post-card-link {
     .title {
       font-size: 1.5rem;
@@ -144,6 +145,7 @@ useAddClassOnIntersect(postCardRef, "show");
       bottom: 75px;
       padding: 5px 8px;
     }
+
     .date {
       top: 10px;
       left: 10px;

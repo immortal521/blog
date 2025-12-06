@@ -34,7 +34,7 @@ const posts = computed(() => data.value?.data ?? []);
 <style lang="less" scoped>
 .content-panel {
   border-radius: 10px 10px 0 0;
-  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 -4px 8px rgb(0 0 0 / 8%);
 }
 
 .title {

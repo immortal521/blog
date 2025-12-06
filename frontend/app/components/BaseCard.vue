@@ -12,7 +12,6 @@
   border: 2px solid var(--border-color-card);
   box-shadow: var(--shadow-card-base);
   border-radius: var(--radius-card);
-
   transition:
     box-shadow 0.2s ease-in-out,
     background 0.2s ease-in-out,

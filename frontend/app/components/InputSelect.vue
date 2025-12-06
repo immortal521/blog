@@ -161,7 +161,7 @@ onClickOutside(selectRef, close);
   min-width: 100%;
   max-height: 150px;
   overflow-y: auto;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
   z-index: 1000;
   padding: 0;
   list-style: none;
@@ -178,6 +178,7 @@ onClickOutside(selectRef, close);
     opacity 0.3s ease-in-out,
     top 0.3s ease-in-out;
 }
+
 .fade-down-enter-from,
 .fade-down-leave-to {
   opacity: 0;
@@ -190,6 +191,7 @@ onClickOutside(selectRef, close);
     opacity 0.3s ease-in-out,
     bottom 0.3s ease-in-out;
 }
+
 .fade-up-enter-from,
 .fade-up-leave-to {
   opacity: 0;
@@ -202,7 +204,6 @@ onClickOutside(selectRef, close);
   font-weight: 500;
   font-size: 1em;
   color: var(--text-color-base);
-
   transition:
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
