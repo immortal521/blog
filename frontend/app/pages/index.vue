@@ -15,7 +15,7 @@ const posts = computed(() => data.value?.data ?? []);
     <WelcomePanel />
     <ContentPanel :spacer="false" class="content-panel">
       <div class="post-list">
-        <h1 class="title">Article</h1>
+        <h1 v-if="posts.length > 0" class="title">Article</h1>
         <PostCard
           v-for="(post, index) in posts"
           :key="post.id"

@@ -137,12 +137,15 @@ async function handleSubmit() {
 <style lang="less" scoped>
 .friend-link-form-enter-active,
 .friend-link-form-leave-active {
-  transition: scale 0.5s ease-in-out;
+  transition:
+    scale 0.3s ease-in-out,
+    opacity 0.2s ease-in-out;
 }
 
 .friend-link-form-enter-from,
 .friend-link-form-leave-to {
-  scale: 0;
+  scale: 0.3;
+  opacity: 0;
 }
 
 .friend-link-form {
