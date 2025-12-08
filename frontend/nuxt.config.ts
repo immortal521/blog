@@ -39,6 +39,10 @@ export default defineNuxtConfig({
     autoLastmod: true, // 自动生成最后修改时间，方便爬虫
   },
 
+  experimental: {
+    typescriptPlugin: true,
+  },
+
   // TypeScript 配置
   typescript: {
     typeCheck: true,

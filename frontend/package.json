@@ -41,6 +41,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@dxup/unimport": "^0.1.2",
     "@iconify-json/codicon": "^1.2.35",
     "@iconify-json/fluent": "^1.2.35",
     "@iconify-json/hugeicons": "^1.2.19",
