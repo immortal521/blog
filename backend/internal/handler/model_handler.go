@@ -94,8 +94,8 @@ func (h *modelHandler) stream(c *fiber.Ctx, sessionID string) error {
 				if err != nil {
 					_, _ = fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
 					_ = w.Flush()
+					return
 				}
-
 			case text := <-session.TextCh:
 				if text == "[DONE]" {
 					_, _ = fmt.Fprintf(w, "event: done\ndata: %s\n\n", text)

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -52,6 +53,12 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		resp, err := client.Do(req)
 		if err != nil {
 			errCh <- errs.New(errs.CodeInternalError, "llm request error", err)
+			return
+		}
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			err = errs.New(errs.CodeInternalError, "llm request error", fmt.Errorf("status code: %d", resp.StatusCode))
+			errCh <- err
+			s.log.Errorf("llm request error %v", err)
 			return
 		}
 		defer func() {
