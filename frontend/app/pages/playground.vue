@@ -60,10 +60,11 @@ const summarize = async () => {
 
 <style lang="less" scoped>
 .container {
-  width: 100vw;
-  height: 100vh;
-  padding: 100px;
+  width: 98vw;
+  height: 90vh;
   display: flex;
+  margin: 0 auto;
+  padding-top: 100px;
   flex-direction: column;
 }
 
