@@ -56,13 +56,14 @@ export default defineNuxtConfig({
   },
 
   fonts: {
+    provider: "bunny",
     families: [
-      { name: "Open Sans", provider: "google" },
+      { name: "Open Sans", provider: "bunny" },
       {
         name: "Noto Sans SC",
-        provider: "google",
+        provider: "bunny",
       },
-      { name: "Caveat", provider: "google" },
+      { name: "Caveat", provider: "bunny" },
     ],
   },
 
