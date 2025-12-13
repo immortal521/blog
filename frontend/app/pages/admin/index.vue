@@ -6,9 +6,24 @@ definePageMeta({
 });
 
 const menuItems = ref<MenuItem[]>([
-  { icon: undefined, label: "Dashboard", to: "/admin" },
-  { icon: undefined, label: "links", to: "/admin/links" },
-  { icon: undefined, label: "post", to: "/admin/posts" },
+  {
+    icon: undefined,
+    label: "Dashboard",
+    to: "/admin",
+    key: "",
+  },
+  {
+    icon: undefined,
+    label: "links",
+    to: "/admin/links",
+    key: "",
+  },
+  {
+    icon: undefined,
+    label: "post",
+    to: "/admin/posts",
+    key: "",
+  },
 ]);
 
 const width = useCookie("windowWidth");

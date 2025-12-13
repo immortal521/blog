@@ -1,6 +1,10 @@
-interface MenuItem {
-  icon: IconName | Component;
-  label: string;
+interface MenuItem extends SidebarItem {
   to: string;
   children?: MenuItem;
+}
+
+interface SidebarItem {
+  key: string;
+  label: string;
+  icon: IconName | Component;
 }
