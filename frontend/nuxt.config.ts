@@ -22,6 +22,7 @@ export default defineNuxtConfig({
       charset: "utf-8",
       viewport: "width=device-width, initial-scale=1, maximum-scale=1",
       link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+      script: [{}],
     },
     pageTransition: { name: "page", mode: "out-in" },
   },
@@ -35,6 +36,7 @@ export default defineNuxtConfig({
   // Sitemap 配置
   sitemap: {
     sources: ["/api/sitemap"],
+    exclude: ["/admin/**", "/playground"],
     // cacheMaxAgeSeconds: 6 * 60 * 60, // 6小时缓存，可按需开启
     autoLastmod: true, // 自动生成最后修改时间，方便爬虫
   },
