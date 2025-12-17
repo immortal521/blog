@@ -1,6 +1,4 @@
 <script setup lang="ts">
-const localePath = useLocalePath();
-
 const { data } = await useFetch<{
   data: Post[];
 }>("/api/v1/posts", {
@@ -21,7 +19,7 @@ const posts = computed(() => data.value?.data ?? []);
           :key="post.id"
           :index="index"
           :cover="post.cover"
-          :url="localePath('/blog/' + post.id)"
+          :url="'/blog/' + post.id"
           :title="post.title"
           :date="post.updatedAt"
           :summary="post.summary"
