@@ -1,7 +1,5 @@
 <script setup lang="ts">
 const { isVisible } = useLoadingBar();
-
-useWindowWidthCookie();
 </script>
 
 <template>

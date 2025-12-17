@@ -7,6 +7,7 @@ const { t } = useI18n();
 const items = computed<MenuItem[]>(() => {
   return navLinks.map((item) => {
     return {
+      key: item.to,
       icon: item.icon,
       label: t(item.labelKey),
       to: item.to,

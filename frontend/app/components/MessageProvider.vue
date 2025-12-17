@@ -136,33 +136,35 @@ const beforeLeave = (el: Element) => {
 </script>
 
 <template>
-  <slot />
-  <Teleport defer to="body">
-    <div class="message-container">
-      <TransitionGroup name="message-list" @before-leave="beforeLeave">
-        <div
-          v-for="msg in messages"
-          :key="msg.id"
-          :class="['message', `message--${msg.type}`, `message--${msg.size}`]"
-          @mouseenter="msg.keepAliveOnHover && pauseTimer(msg)"
-          @mouseleave="msg.keepAliveOnHover && resumeTimer(msg)"
-        >
-          <div class="icon">
-            <Icon
-              :name="msg.icon?.name || messageIconMap[msg.type].name"
-              :style="{ color: msg.icon?.color || messageIconMap[msg.type].color }"
-            />
+  <ClientOnly>
+    <slot />
+    <Teleport defer to="body">
+      <div class="message-container">
+        <TransitionGroup name="message-list" @before-leave="beforeLeave">
+          <div
+            v-for="msg in messages"
+            :key="msg.id"
+            :class="['message', `message--${msg.type}`, `message--${msg.size}`]"
+            @mouseenter="msg.keepAliveOnHover && pauseTimer(msg)"
+            @mouseleave="msg.keepAliveOnHover && resumeTimer(msg)"
+          >
+            <div class="icon">
+              <Icon
+                :name="msg.icon?.name || messageIconMap[msg.type].name"
+                :style="{ color: msg.icon?.color || messageIconMap[msg.type].color }"
+              />
+            </div>
+            <span class="content">
+              {{ msg.text }}
+            </span>
+            <button v-if="msg.closable" class="close-btn" @click="destroy(msg.id)">
+              <Icon name="material-symbols:close" size="20" />
+            </button>
           </div>
-          <span class="content">
-            {{ msg.text }}
-          </span>
-          <button v-if="msg.closable" class="close-btn" @click="destroy(msg.id)">
-            <Icon name="material-symbols:close" size="20" />
-          </button>
-        </div>
-      </TransitionGroup>
-    </div>
-  </Teleport>
+        </TransitionGroup>
+      </div>
+    </Teleport>
+  </ClientOnly>
 </template>
 
 <style lang="less" scoped>
