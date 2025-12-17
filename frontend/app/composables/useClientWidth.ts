@@ -7,6 +7,7 @@ export function useClientWidth() {
   });
 
   const getWidthFromUA = () => {
+    if (import.meta.client) return window.innerWidth;
     const headers = useRequestHeaders(["user-agent"]);
     const ua = headers["user-agent"] || "";
 

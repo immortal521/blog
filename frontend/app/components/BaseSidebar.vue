@@ -11,37 +11,44 @@ const { collapsed = false, width = 220, widthCollapsed = 60, items = [] } = defi
 const open = defineModel("open", { required: false, default: true });
 
 const selectedKey = defineModel("selectedKey", { required: false, default: "" });
+
+const emit = defineEmits<{
+  (e: "item-clicked", item: SidebarItem): void;
+}>();
+
+const onItemClicked = (item: SidebarItem) => {
+  emit("item-clicked", item);
+};
 </script>
 
 <template>
-  <client-only>
-    <div :class="{ 'sidebar-wrapper': true, collapsed, 'is-hidden': !open }">
-      <aside class="sidebar-content">
-        <div v-if="$slots.header" class="sidebar-header">
-          <slot name="header" />
-        </div>
-        <ul class="nav-list">
-          <li
-            v-for="item in items"
-            :key="item.key"
-            :class="{ item: true, 'is-active': item.key === selectedKey }"
-          >
-            <div class="icon">
-              <Icon v-if="item.icon" :name="item.icon" size="18" />
+  <div :class="{ 'sidebar-wrapper': true, collapsed, 'is-hidden': !open }">
+    <aside class="sidebar-content">
+      <div v-if="$slots.header" class="sidebar-header">
+        <slot name="header" />
+      </div>
+      <ul class="nav-list">
+        <li
+          v-for="item in items"
+          :key="item.key"
+          :class="{ item: true, 'is-active': item.key === selectedKey }"
+          @click="onItemClicked(item)"
+        >
+          <div class="icon">
+            <Icon v-if="item.icon" :name="item.icon" size="18" />
+          </div>
+          <transition name="label">
+            <div v-if="!collapsed" class="label">
+              {{ item.label }}
             </div>
-            <transition name="label">
-              <div v-if="!collapsed" class="label">
-                {{ item.label }}
-              </div>
-            </transition>
-          </li>
-        </ul>
-      </aside>
-    </div>
-    <transition name="overlay">
-      <div v-if="open" class="overlay" @click.stop="open = false"></div>
-    </transition>
-  </client-only>
+          </transition>
+        </li>
+      </ul>
+    </aside>
+  </div>
+  <transition name="overlay">
+    <div v-if="open" class="overlay" @click.stop="open = false"></div>
+  </transition>
 </template>
 
 <style lang="less" scoped>
