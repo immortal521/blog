@@ -1,50 +1,45 @@
-import { useMediaQuery, useWindowSize } from "@vueuse/core";
-
-export function useResponsive() {
-  // SSR 时的初始宽度（来自 cookie）
-  const widthCookie = useCookie("windowWidth");
-  const ssrWidth = parseInt(widthCookie.value ?? "1080");
-
-  // 客户端自动更新窗口宽度
-  const { width: clientWidth } = useWindowSize();
-
-  // 统一管理设备断点
-  const isMobile = useMediaQuery("(max-width: 768px)", {
-    ssrWidth,
-  });
-
-  const isTablet = useMediaQuery("(max-width: 1024px)", {
-    ssrWidth,
-  });
-
-  const isDesktop = useMediaQuery("(min-width: 1025px)", {
-    ssrWidth,
-  });
-
-  // 用计算属性统一给组件读取的 width
-  const width = computed(() => {
-    // SSR 渲染阶段返回 cookie 里的宽度
-    if (import.meta.server) return ssrWidth;
-
-    // 客户端自动返回真实宽度
-    return clientWidth.value;
-  });
-
-  // 客户端时同步写入 cookie（让下一次 SSR 有正确宽度）
-  if (import.meta.client) {
-    watch(
-      clientWidth,
-      (val) => {
-        widthCookie.value = String(val);
-      },
-      { immediate: true },
-    );
-  }
+/**
+ * useResponsive
+ *
+ * 提供基于视口宽度的响应式布局状态，兼容 SSR / CSR 场景。
+ *
+ * @description
+ * 基于 useClientWidth，对窗口宽度进行统一管理，
+ * 并在此基础上派生出常用的布局判断。
+ *
+ * - 在 SSR 阶段即可得到“合理”的布局判断结果，避免首屏闪动
+ * - 不直接依赖 matchMedia，所有响应式判断基于同一宽度数据源
+ *
+ * 判定规则：
+ * - width < 768  → 移动端
+ * - width ≥ 768  → 桌面端
+ *
+ * 返回值：
+ * @returns {Object}
+ * @returns {Ref<number>} returns.width 当前视口宽度
+ * @returns {Ref<boolean>} returns.isMobile 是否为移动端布局
+ * @returns {Ref<boolean>} returns.isDesktop 是否为桌面端布局
+ *
+ * @example
+ * ```ts
+ * const { width, isMobile, isDesktop } = useResponsive();
+ *
+ * if (isDesktop.value) {
+ *   // 桌面端布局逻辑
+ * }
+ * ```
+ */ export function useResponsive(): {
+  width: Ref<number>;
+  isMobile: Ref<boolean>;
+  isDesktop: Ref<boolean>;
+} {
+  const { width } = useClientWidth();
+  const isMobile = computed(() => width.value < 768);
+  const isDesktop = computed(() => width.value >= 768);
 
   return {
     width,
     isMobile,
-    isTablet,
     isDesktop,
   };
 }
