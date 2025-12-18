@@ -7,7 +7,7 @@ interface Props {
   url: string;
 }
 
-const { title, summary = "", cover = "", date = "1970-01-01" } = defineProps<Props>();
+const { title, summary = "", cover = "", date = "1970-01-01", url } = defineProps<Props>();
 
 const updatedAt = computed(() => {
   return `上次更新于 ${formatDate(date, "YYYY-MM-DD")}`;
