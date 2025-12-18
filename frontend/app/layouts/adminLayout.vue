@@ -13,25 +13,26 @@ const menuItems = ref<AdminItem[]>([
     icon: undefined,
     label: "links",
     to: "/admin/links",
-    key: "",
+    key: "admin-links",
   },
   {
     icon: undefined,
     label: "post",
     to: "/admin/posts",
-    key: "",
+    key: "admin-posts",
   },
 ]);
 const selectedKey = ref("playground");
 
 const { open } = useSidebar();
-const { width } = useClientWidth();
+const { isMobile } = useResponsive();
 
 const localePath = useLocalePath();
 
 const onItemClicked = (item: SidebarItem) => {
-  const { to } = item as AdminItem;
+  const { to, key } = item as AdminItem;
   const localeTo = localePath(to);
+  selectedKey.value = key;
   navigateTo(localeTo);
 };
 </script>
@@ -47,7 +48,7 @@ const onItemClicked = (item: SidebarItem) => {
     />
     <div class="right">
       <header class="header">
-        <button v-if="width < 768" @click="open = !open">{{ open }}</button>
+        <button v-if="isMobile" @click="open = !open">{{ open }}</button>
       </header>
       <main class="main">
         <slot />
