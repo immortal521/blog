@@ -7,7 +7,7 @@ const menuItems = ref<AdminItem[]>([
     icon: undefined,
     label: "Dashboard",
     to: "/admin",
-    key: "playground",
+    key: "admin-index",
   },
   {
     icon: undefined,
@@ -34,6 +34,9 @@ const onItemClicked = (item: SidebarItem) => {
   const localeTo = localePath(to);
   selectedKey.value = key;
   navigateTo(localeTo);
+  if (isMobile.value) {
+    open.value = false;
+  }
 };
 </script>
 
@@ -48,7 +51,9 @@ const onItemClicked = (item: SidebarItem) => {
     />
     <div class="right">
       <header class="header">
-        <button v-if="isMobile" @click="open = !open">{{ open }}</button>
+        <button v-if="isMobile" class="menu-btn" @click="open = !open">
+          <Icon name="hugeicons:menu-11" size="24" />
+        </button>
       </header>
       <main class="main">
         <slot />
@@ -69,11 +74,20 @@ const onItemClicked = (item: SidebarItem) => {
 }
 
 .header {
-  height: 60px;
+  height: 50px;
   width: 100%;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-nav-base);
   backdrop-filter: blur(var(--nav-blur));
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+
+  .menu-btn {
+    background: none;
+    text-align: center;
+    padding: 10px;
+  }
 }
 
 .main {
