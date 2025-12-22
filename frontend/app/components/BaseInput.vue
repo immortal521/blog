@@ -102,6 +102,7 @@ const togglePasswordVisibility = () => {
     outline: none;
     padding: 8px;
     margin: 0;
+    margin-left: 5px;
     color: inherit;
     background-color: transparent;
   }
