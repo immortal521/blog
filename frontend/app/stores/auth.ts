@@ -18,7 +18,7 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.setItem("accessToken", newAccessToken);
   };
 
-  const clear = () => {
+  const lagout = () => {
     accessToken.value = "";
     localStorage.removeItem("accessToken");
   };
@@ -43,6 +43,6 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken,
     setAccessToken,
     login,
-    clear,
+    lagout,
   };
 });

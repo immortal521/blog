@@ -12,9 +12,13 @@ const backTop = () => {
   });
 };
 
+const localePath = useLocalePath();
+
 // TODO: 跳转用户设置界面逻辑, 双 Token 刷新机制
 // Navigation logic to the user settings page, with a dual-token refresh mechanism
-const toUserSetting = () => {};
+const toUserSetting = () => {
+  navigateTo(localePath("/admin"));
+};
 
 const copyRSSFeedUrl = async () => {
   await navigator.clipboard.writeText(window.location.origin + "/api/v1/rss");

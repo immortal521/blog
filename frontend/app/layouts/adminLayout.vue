@@ -22,7 +22,7 @@ const menuItems = ref<AdminItem[]>([
     key: "admin-posts",
   },
 ]);
-const selectedKey = ref("playground");
+const selectedKey = ref(menuItems.value[0]?.key);
 
 const { open } = useSidebar();
 const { isMobile } = useResponsive();
