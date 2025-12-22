@@ -13,6 +13,7 @@ import (
 	"blog-server/internal/router"
 	"blog-server/internal/scheduler"
 	"blog-server/internal/service"
+	"blog-server/internal/storage"
 	"blog-server/pkg/logger"
 	"blog-server/pkg/utils"
 	"blog-server/pkg/validatorx"
@@ -46,6 +47,7 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 		ErrorHandler:            handler.ErrorHandler(log, cfg),
 		TrustedProxies:          ips,
 		ProxyHeader:             fiber.HeaderXForwardedFor,
+		BodyLimit:               10 * 1024 * 1024,
 	}
 
 	app := fiber.New(fiberCfg)
@@ -132,6 +134,7 @@ func main() {
 		service.NewEmailService,
 		service.NewRssService,
 		service.NewModelService,
+		service.NewImageService,
 
 		// handlers
 		handler.NewAuthHandler,
@@ -139,6 +142,9 @@ func main() {
 		handler.NewLinkHandler,
 		handler.NewRssHandler,
 		handler.NewModelHandler,
+		handler.NewImageHandler,
+
+		storage.NewS3Storage,
 	)
 
 	invoke := fx.Invoke(

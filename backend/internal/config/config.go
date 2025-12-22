@@ -20,6 +20,7 @@ type Config struct {
 	Log      LogConfig      `mapstructure:"log"`
 	Email    EmailConfig    `mapstructure:"email"`
 	LLM      LLMConfig      `mapstructure:"llm"`
+	Rustfs   RustfsConfig   `mapstructure:"rustfs"`
 }
 
 type AppConfig struct {
@@ -112,4 +113,11 @@ type EmailConfig struct {
 
 type LLMConfig struct {
 	APIKey string `mapstructure:"apikey"`
+}
+
+type RustfsConfig struct {
+	Region          string `mapstructure:"region"`
+	AccessKeyID     string `mapstructure:"access_key_id"`
+	SecretAccessKey string `mapstructure:"secret_access_key"`
+	Endpoint        string `mapstructure:"endpoint"`
 }

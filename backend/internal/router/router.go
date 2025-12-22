@@ -14,6 +14,7 @@ func RegisterRoutes(app *fiber.App,
 	authHandler handler.IAuthHandler,
 	rssHandler handler.IRssHandler,
 	modelHandler handler.IModelHandler,
+	imageHandler handler.IImageHandler,
 	am *middleware.AuthMiddleware,
 ) {
 	api := app.Group("/api")
@@ -23,4 +24,5 @@ func RegisterRoutes(app *fiber.App,
 	RegisterAuthRoutes(v1, authHandler)
 	RegisterRssRoutes(v1, rssHandler)
 	RegisterModelRoutes(v1, modelHandler)
+	RegisterFileRoutes(v1, imageHandler)
 }

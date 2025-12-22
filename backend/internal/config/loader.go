@@ -126,13 +126,18 @@ func setDefaults() {
 	v.SetDefault("email.username", "Immortel@immort.top")
 	v.SetDefault("email.password", "123456")
 	v.SetDefault("email.from", "Immortel@immort.top")
+
+	v.SetDefault("region", "us-east-1")
+	v.SetDefault("access_key_id", "rustfsadmin")
+	v.SetDefault("secret_access_key", "rustfsadmin")
+	v.SetDefault("endpoint", "http://localhost:9000")
 }
 
 // loadFromFile 如果配置文件不存在，就写入默认配置
 func loadFromFile(configPath string) error {
 	dir := filepath.Dir(configPath)
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		_ = os.MkdirAll(dir, 0755)
+		_ = os.MkdirAll(dir, 0o755)
 		defaultCfg := &Config{}
 		if err := v.Unmarshal(defaultCfg); err != nil {
 			return err
@@ -152,7 +157,7 @@ func writeDefaultConfig(path string, cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0o644)
 }
 
 // setupConfigWatch 文件变动热更新
