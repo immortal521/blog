@@ -1,11 +1,12 @@
 package repo
 
 import (
-	"blog-server/internal/entity"
-	"blog-server/pkg/errs"
 	"context"
 	"errors"
 	"strings"
+
+	"blog-server/internal/entity"
+	"blog-server/pkg/errs"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -15,6 +16,7 @@ type IPostRepo interface {
 	GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
 	GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
 	GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
+	GetPostCount(ctx context.Context, db *gorm.DB) (int64, error)
 	GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*entity.Post, error)
 	UpdateViewCounts(ctx context.Context, db *gorm.DB, updates map[uint]int64) error
 }
@@ -82,6 +84,14 @@ func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Pos
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return posts, nil
+}
+
+func (r *postRepo) GetPostCount(ctx context.Context, db *gorm.DB) (int64, error) {
+	postCount, err := gorm.G[*entity.Post](db).Count(ctx, "id")
+	if err != nil {
+		return 0, errs.New(errs.CodeDatabaseError, "database error", err)
+	}
+	return postCount, nil
 }
 
 func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*entity.Post, error) {

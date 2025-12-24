@@ -135,6 +135,7 @@ func main() {
 		service.NewRssService,
 		service.NewModelService,
 		service.NewImageService,
+		service.NewStatsService,
 
 		// handlers
 		handler.NewAuthHandler,
@@ -143,6 +144,7 @@ func main() {
 		handler.NewRssHandler,
 		handler.NewModelHandler,
 		handler.NewImageHandler,
+		handler.NewStatsHandler,
 
 		storage.NewS3Storage,
 	)
