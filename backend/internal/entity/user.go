@@ -40,7 +40,7 @@ type User struct {
 	Posts []Post `gorm:"foreignKey:UserID;references:ID"`
 
 	// 关联关系
-	//Comments []Comment `gorm:"foreignKey:UserID;references:ID" json:"comments,omitempty"`
+	// Comments []Comment `gorm:"foreignKey:UserID;references:ID" json:"comments,omitempty"`
 }
 
 func (User) TableName() string {

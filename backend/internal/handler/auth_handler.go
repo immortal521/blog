@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"time"
+
 	"blog-server/internal/config"
 	"blog-server/internal/request"
 	"blog-server/internal/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/validatorx"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -1,10 +1,11 @@
 package handler
 
 import (
+	"strconv"
+
 	"blog-server/internal/response"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -49,7 +50,7 @@ func (h *postHandler) GetPosts(c *fiber.Ctx) error {
 
 func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
 	metas := h.svc.GetPostsMeta(c.UserContext())
-	var metasDTO = make([]response.PostMetaRes, len(metas))
+	metasDTO := make([]response.PostMetaRes, len(metas))
 	for i, meta := range metas {
 		metasDTO[i] = response.PostMetaRes{
 			ID:        meta.ID,

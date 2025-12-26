@@ -1,12 +1,13 @@
 package service
 
 import (
-	"blog-server/internal/config"
-	"blog-server/pkg/errs"
-	"blog-server/templates" // 假设这是包含 embed.FS 的包
 	"bytes"
 	"fmt"
 	"html/template"
+
+	"blog-server/internal/config"
+	"blog-server/pkg/errs"
+	"blog-server/templates" // 假设这是包含 embed.FS 的包
 
 	"gopkg.in/gomail.v2"
 )

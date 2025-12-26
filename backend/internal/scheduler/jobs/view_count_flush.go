@@ -2,10 +2,11 @@
 package jobs
 
 import (
-	"blog-server/internal/service"
 	"context"
 	"log"
 	"time"
+
+	"blog-server/internal/service"
 )
 
 func StartViewFlushJob(ctx context.Context, svc service.IPostService) {

@@ -1,10 +1,11 @@
 package logger
 
 import (
-	"blog-server/internal/config"
 	"fmt"
 	"os"
 	"time"
+
+	"blog-server/internal/config"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

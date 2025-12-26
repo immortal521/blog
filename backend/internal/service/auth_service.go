@@ -2,6 +2,12 @@
 package service
 
 import (
+	"context"
+	"fmt"
+	"slices"
+	"strings"
+	"time"
+
 	"blog-server/internal/cache"
 	"blog-server/internal/config"
 	"blog-server/internal/database"
@@ -11,11 +17,6 @@ import (
 	"blog-server/internal/response"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/utils"
-	"context"
-	"fmt"
-	"slices"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -102,7 +103,6 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 		return nil
 	})
 	if err != nil {
-		// ❗Trans 返回的 err 已经是 AppError 或普通 error，直接向上返回
 		return nil, errs.New(errs.CodeInternalError, "Register transaction failed", err)
 	}
 

@@ -2,10 +2,11 @@
 package cache
 
 import (
-	"blog-server/internal/config"
 	"context"
 	"fmt"
 	"time"
+
+	"blog-server/internal/config"
 
 	"github.com/redis/go-redis/v9"
 )

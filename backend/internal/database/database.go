@@ -3,9 +3,10 @@
 package database
 
 import (
-	"blog-server/internal/config"
 	"context"
 	"database/sql"
+
+	"blog-server/internal/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
