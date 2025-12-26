@@ -1,10 +1,11 @@
 package middleware
 
 import (
+	"strings"
+
 	"blog-server/internal/entity"
 	"blog-server/internal/service"
 	"blog-server/pkg/errs"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -50,8 +51,6 @@ func (a *AuthMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
 		}
 
 		c.Locals(ContextUserIDKey, claims.UserID)
-
-		c.Locals(ContextUserIDKey)
 
 		return c.Next()
 	}

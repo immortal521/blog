@@ -1,10 +1,11 @@
 package repo
 
 import (
-	"blog-server/internal/entity"
-	"blog-server/pkg/errs"
 	"context"
 	"errors"
+
+	"blog-server/internal/entity"
+	"blog-server/pkg/errs"
 
 	"gorm.io/gorm"
 )
@@ -44,42 +45,21 @@ func (u *userRepo) GetUserByEmail(ctx context.Context, db *gorm.DB, email string
 }
 
 func (u *userRepo) ExistsByEmail(ctx context.Context, db *gorm.DB, email string) (bool, error) {
-	_, err := gorm.G[*entity.User](db).Where("email = ?", email).Take(ctx)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	if err != nil {
-		return false, errs.New(errs.CodeDatabaseError, "database error", err)
-	}
-	return true, nil
+	return ExistsBy[entity.User](ctx, db, "email", email)
 }
 
 func (u *userRepo) ExistsByID(ctx context.Context, db *gorm.DB, id uint) (bool, error) {
-	_, err := gorm.G[*entity.User](db).Where("id = ?", id).Take(ctx)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	if err != nil {
-		return false, errs.New(errs.CodeDatabaseError, "database error", err)
-	}
-	return true, nil
+	return ExistsBy[entity.User](ctx, db, "id", id)
 }
 
 func (u *userRepo) ExistsByUUID(ctx context.Context, db *gorm.DB, uuid string) (bool, error) {
-	_, err := gorm.G[*entity.User](db).Where("uuid = ?", uuid).Take(ctx)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	if err != nil {
-		return false, errs.New(errs.CodeDatabaseError, "database error", err)
-	}
-	return true, nil
+	return ExistsBy[entity.User](ctx, db, "uuid", uuid)
 }
 
 func (u *userRepo) GetRoleByUUID(ctx context.Context, db *gorm.DB, uuid string) (*entity.UserRole, error) {
 	role, err := gorm.G[*entity.UserRole](db).Where("uuid = ?", uuid).Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errs.New(errs.CodeUserAlreadyExists, "user already exists", err)
+		return nil, errs.New(errs.CodeUserNotFound, "user not found", err)
 	}
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
