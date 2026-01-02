@@ -21,7 +21,6 @@ func (r *rssHandler) Subscribe(c *fiber.Ctx) error {
 	}
 
 	c.Type("xml")
-	c.Append("Content-Disposition", "attachment; filename=rss.xml")
 	return c.Send(data)
 }
 
