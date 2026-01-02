@@ -6,6 +6,9 @@ type RSS struct {
 	XMLName xml.Name   `xml:"rss"`
 	Version string     `xml:"version,attr"`
 	Channel RssChannel `xml:"channel"`
+	XMLNs   string     `xml:"xmlns:atom,attr"`
+	Content string     `xml:"xmlns:content,attr"`
+	DC      string     `xml:"xmlns:dc,attr"`
 }
 
 type RssChannel struct {
@@ -14,6 +17,13 @@ type RssChannel struct {
 	Description string    `xml:"description"`
 	LastBuild   string    `xml:"lastBuildDate"`
 	Items       []RssItem `xml:"item"`
+	AtomLink    AtomLink  `xml:"atom:link"`
+}
+
+type AtomLink struct {
+	Href string `xml:"href,attr"`
+	Rel  string `xml:"rel,attr"`
+	Type string `xml:"type,attr"`
 }
 
 type RssItemDescription struct {

@@ -37,9 +37,9 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	var pubDate string
 
 	if len(posts) == 0 {
-		pubDate = time.Now().Format(time.RFC1123Z)
+		pubDate = time.Now().Format(time.RFC822)
 	} else {
-		pubDate = posts[0].UpdatedAt.Format(time.RFC1123Z)
+		pubDate = posts[0].UpdatedAt.Format(time.RFC822)
 	}
 
 	for i, post := range posts {
@@ -55,12 +55,20 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 
 	feed := response.RSS{
 		Version: "2.0",
+		XMLNs:   "http://www.w3.org/2005/Atom",
+		Content: "http://purl.org/rss/1.0/modules/content/",
+		DC:      "http://purl.org/dc/elements/1.1/",
 		Channel: response.RssChannel{
 			Title:       r.cfg.Name,
 			Link:        r.cfg.Domain,
 			Description: "Latest posts",
 			Items:       items,
 			LastBuild:   posts[0].UpdatedAt.String(),
+			AtomLink: response.AtomLink{
+				Href: r.cfg.Domain + "/api/v1/rss",
+				Rel:  "self",
+				Type: "application/rss+xml",
+			},
 		},
 	}
 
