@@ -27,7 +27,6 @@ type RssGUID struct {
 
 type RssItem struct {
 	Title       string             `xml:"title"`
-	Content     string             `xml:"content"`
 	Link        string             `xml:"link"`
 	GUID        RssGUID            `xml:"guid"`
 	PubDate     string             `xml:"pubDate"`
