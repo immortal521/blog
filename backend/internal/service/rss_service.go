@@ -47,9 +47,9 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 		items[i] = response.RssItem{
 			Title:       post.Title,
 			Link:        link,
-			GUID:        link,
+			GUID:        response.RssGUID{Value: link, IsPermaLink: true},
 			PubDate:     pubDate,
-			Description: post.Summary,
+			Description: response.RssItemDescription{Value: post.Summary},
 		}
 	}
 

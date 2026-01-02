@@ -16,11 +16,20 @@ type RssChannel struct {
 	Items       []RssItem `xml:"item"`
 }
 
+type RssItemDescription struct {
+	Value *string `xml:",cdata"`
+}
+
+type RssGUID struct {
+	Value       string `xml:",chardata"`
+	IsPermaLink bool   `xml:"isPermaLink,attr"`
+}
+
 type RssItem struct {
-	Title       string  `xml:"title"`
-	Content     string  `xml:"content"`
-	Link        string  `xml:"link"`
-	GUID        string  `xml:"guid"`
-	PubDate     string  `xml:"pubDate"`
-	Description *string `xml:"description"`
+	Title       string             `xml:"title"`
+	Content     string             `xml:"content"`
+	Link        string             `xml:"link"`
+	GUID        RssGUID            `xml:"guid"`
+	PubDate     string             `xml:"pubDate"`
+	Description RssItemDescription `xml:"description"`
 }
