@@ -136,8 +136,8 @@ const beforeLeave = (el: Element) => {
 </script>
 
 <template>
+  <slot />
   <ClientOnly>
-    <slot />
     <Teleport defer to="body">
       <div class="message-container">
         <TransitionGroup name="message-list" @before-leave="beforeLeave">
