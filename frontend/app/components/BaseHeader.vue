@@ -1,74 +1,64 @@
 <script setup lang="ts">
-const isSticky = ref(false);
+interface Props {
+  isSticky?: boolean;
+}
 
-const header = useTemplateRef("header");
-
-const scrollHandler = () => {
-  if (!header.value) return;
-
-  const scrollTop = document.documentElement.scrollTop;
-
-  if (scrollTop > 100) {
-    isSticky.value = true;
-  } else {
-    isSticky.value = false;
-  }
-};
-
-onMounted(() => {
-  window.addEventListener("scroll", scrollHandler);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", scrollHandler);
-});
+const { isSticky = false } = defineProps<Props>();
 </script>
 
 <template>
-  <header ref="header" :class="{ header, sticky: isSticky }">
-    <NavbarWrapper />
+  <header ref="header" :class="{ header: true }">
+    <div class="header-container" :class="{ 'is-sticky': isSticky }">
+      <NavbarWrapper />
+    </div>
   </header>
 </template>
 
 <style lang="less" scoped>
 .header {
   position: fixed;
-  width: calc(100vw - 40px);
-  height: 60px;
-  left: 20px;
-  top: 20px;
-  border-radius: 15px;
+  width: 100vw;
+  height: 100px;
   overflow: hidden;
+  z-index: 1999;
+}
+
+.header-container {
+  position: relative;
+  max-width: 1000px;
+  margin: auto;
   background-color: var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
-  backdrop-filter: blur(var(--nav-blur));
+  backdrop-filter: var(--blur-nav);
+  overflow: hidden;
+  width: calc(100% - 40px);
+  height: 60px;
+  top: 25px;
+  border-radius: 15px;
   transition:
-    left 0.8s ease-in-out,
-    top 0.8s ease-in-out,
-    width 0.8s ease-in-out,
-    border-radius 0.8s ease-in-out,
+    top 0.5s ease-in-out,
+    width 0.5s ease-in-out,
+    max-width 0.5s ease-in-out,
+    border-radius 0.5s ease-in-out,
     background-color 0.3s ease-in-out,
     border-color 0.3s ease-in-out;
   animation: scale-in 0.5s ease-in-out;
   box-shadow: var(--shadow-nav);
-  z-index: 1999;
 
-  &:hover {
-    background-color: var(--bg-nav-hover);
-  }
-
-  @media (width <= 768px) {
-    width: 100%;
-    left: 0;
+  &.is-sticky {
+    border-radius: 0 0 15px 15px;
     top: 0;
-    border-radius: 0;
+    max-width: 100%;
+    width: 100%;
   }
 }
 
-.sticky {
-  border-radius: 0;
-  width: 100%;
-  left: 0;
-  top: 0;
+@media (width <= 768px) {
+  .header-container {
+    max-width: 100%;
+    width: 100%;
+    top: 0;
+    border-radius: 0;
+  }
 }
 </style>

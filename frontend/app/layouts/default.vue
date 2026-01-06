@@ -4,13 +4,16 @@ useHead({
     class: "with-bg",
   },
 });
+
+const isSticky = ref(false);
+useScrollHandler(100, (over) => (isSticky.value = over));
 </script>
 
 <template>
   <div class="default-layout">
     <ReadProgress />
     <SiteUtilityBar />
-    <BaseHeader />
+    <BaseHeader :is-sticky="isSticky" />
     <main class="main">
       <slot />
     </main>
