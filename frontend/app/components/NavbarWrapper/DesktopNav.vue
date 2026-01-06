@@ -67,8 +67,8 @@ const items = computed<MenuItem[]>(() => {
         content: "";
         position: absolute;
         height: 6px;
-        width: 0;
         border-radius: 10px;
+        width: 0;
         background-color: var(--color-primary-base);
         bottom: 10px;
         transition: width 0.3s ease-in-out;
