@@ -125,7 +125,7 @@ const selectedKey = ref("playground");
   width: 100%;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-nav-base);
-  backdrop-filter: blur(var(--nav-blur));
+  backdrop-filter: var(--filter-blur-sm);
 }
 
 .main {
