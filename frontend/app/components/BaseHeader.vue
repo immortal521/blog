@@ -45,6 +45,10 @@ const { isSticky = false } = defineProps<Props>();
   animation: scale-in 0.5s ease-in-out;
   box-shadow: var(--shadow-nav);
 
+  &:not(.is-sticky):hover {
+    background-color: var(--bg-nav-hover);
+  }
+
   &.is-sticky {
     border-radius: 0 0 15px 15px;
     top: 0;
@@ -59,6 +63,10 @@ const { isSticky = false } = defineProps<Props>();
     width: 100%;
     top: 0;
     border-radius: 0;
+
+    &.is-sticky {
+      border-radius: 0;
+    }
   }
 }
 </style>
