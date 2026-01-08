@@ -68,15 +68,11 @@ const handleDownArrowClick = () => {
   .avatar-image {
     width: 100px;
     height: 100px;
-    border: 3px solid #999;
+    border: 3px solid var(--color-primary-disabled);
     border-radius: 50%;
     object-fit: cover;
-    transform: rotate(0deg);
-    transition: transform 0.8s ease-in-out;
-
-    &:hover {
-      transform: rotate(360deg);
-    }
+    animation: breathing-light 5s ease-in-out infinite;
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -125,6 +121,17 @@ const handleDownArrowClick = () => {
 
   50% {
     transform: translate(-50%, 10px);
+  }
+}
+
+@keyframes breathing-light {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
   }
 }
 </style>
