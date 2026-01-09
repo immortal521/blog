@@ -31,8 +31,9 @@ type db struct {
 func NewDB(cfg *config.Config) (DB, error) {
 	dsn := cfg.Database.GetDSN()
 	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger:         logger.Default.LogMode(logger.Info),
-		TranslateError: true,
+		Logger:                                   logger.Default.LogMode(logger.Info),
+		TranslateError:                           true,
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		return nil, err
