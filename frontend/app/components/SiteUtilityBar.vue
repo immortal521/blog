@@ -3,7 +3,7 @@ import { ActionButton, PanelButton } from "@/components/FloatActionGroup";
 
 const message = useMessage();
 
-const { t } = useI18n();
+const { $ts } = useI18n();
 
 const backTop = () => {
   window.scrollTo({
@@ -12,17 +12,17 @@ const backTop = () => {
   });
 };
 
-const localePath = useLocalePath();
+const { $localePath } = useI18n();
 
 // TODO: 跳转用户设置界面逻辑, 双 Token 刷新机制
 // Navigation logic to the user settings page, with a dual-token refresh mechanism
 const toUserSetting = () => {
-  navigateTo(localePath("/admin"));
+  navigateTo($localePath("/admin"));
 };
 
 const copyRSSFeedUrl = async () => {
   await navigator.clipboard.writeText(window.location.origin + "/api/v1/rss");
-  message.success(t("message.rssCopied"), { keepAliveOnHover: true });
+  message.success($ts("message.rssCopied"), { keepAliveOnHover: true });
 };
 </script>
 
@@ -30,15 +30,15 @@ const copyRSSFeedUrl = async () => {
   <FloatActionGroup>
     <ActionButton
       icon="iconamoon:arrow-up-2-fill"
-      :title="$t('tooltip.backToTop')"
+      :title="$ts('tooltip.backToTop')"
       @click="backTop"
     />
-    <ActionButton :title="$t('tooltip.rss')" icon="ion:logo-rss" @click="copyRSSFeedUrl" />
-    <PanelButton animation="right" :title="$t('tooltip.contect')" icon="ion:mail">
+    <ActionButton :title="$ts('tooltip.rss')" icon="ion:logo-rss" @click="copyRSSFeedUrl" />
+    <PanelButton animation="right" :title="$ts('tooltip.contect')" icon="ion:mail">
       <ContectGroup />
     </PanelButton>
     <PanelButton
-      :title="$t('tooltip.themeOption')"
+      :title="$ts('tooltip.themeOption')"
       animation="down"
       icon="fluent:apps-list-detail-24-filled"
     >
@@ -46,7 +46,7 @@ const copyRSSFeedUrl = async () => {
     </PanelButton>
     <ActionButton
       icon="iconamoon:settings-fill"
-      :title="$t('tooltip.userSetting')"
+      :title="$ts('tooltip.userSetting')"
       @click="toUserSetting"
     />
   </FloatActionGroup>

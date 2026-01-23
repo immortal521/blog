@@ -23,37 +23,37 @@ const handleColorChange = () => {
   setPrimaryColor(colorInputValue.value);
 };
 
-const { locale, locales, setLocale } = useI18n();
+const { $getLocales, $getLocale, $switchLocale, $ts } = useI18n();
 
 const options = computed(() => {
-  return locales.value.map((l) => {
+  return $getLocales().map((l) => {
     return { label: l.name as string, value: l.code as string };
   });
 });
 
-const localeRef = ref(locale.value);
+const localeRef = ref($getLocale());
 
 onMounted(() => {
   watch(localeRef, () => {
-    setLocale(localeRef.value);
+    $switchLocale(localeRef.value);
   });
 });
 </script>
 
 <template>
   <div v-if="isShow" ref="themeControlCard" class="theme-control-card">
-    <p class="title">{{ $t("themeControl.themeMode") }}</p>
+    <p class="title">{{ $ts("themeControl.themeMode") }}</p>
     <div :class="{ 'buttons-track': true, dark: isDark }">
       <button class="buttons-item" @click="setThemeMode('light')">
         <Icon name="streamline-plump-color:sun" :size="20" />
-        {{ $t("themeControl.light") }}
+        {{ $ts("themeControl.light") }}
       </button>
       <button class="buttons-item" @click="setThemeMode('dark')">
         <Icon name="streamline-plump-color:moon-stars" :size="20" />
-        {{ $t("themeControl.dark") }}
+        {{ $ts("themeControl.dark") }}
       </button>
     </div>
-    <p class="title">{{ $t("themeControl.primaryColor") }}</p>
+    <p class="title">{{ $ts("themeControl.primaryColor") }}</p>
     <div class="color-picker">
       <button
         v-for="item in primaryColorList"

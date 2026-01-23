@@ -1,5 +1,3 @@
-import { onMounted, onBeforeUnmount, nextTick, type Ref } from "vue";
-
 type ComponentWithEl = { $el?: HTMLElement };
 type Target = HTMLElement | ComponentWithEl | null;
 type TargetOrArray = Target | Target[];

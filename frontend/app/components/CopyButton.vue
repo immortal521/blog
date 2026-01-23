@@ -1,11 +1,11 @@
 <script setup lang="ts">
 const { text } = defineProps<{ text: string }>();
 
-const { t } = useI18n();
+const { $ts } = useI18n();
 
 const copied = ref(false);
 
-const buttonLabel = computed(() => (copied.value ? t("copied") : t("copy")));
+const buttonLabel = computed(() => (copied.value ? $ts("copied") : $ts("copy")));
 
 const copy = async () => {
   try {

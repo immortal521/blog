@@ -1,11 +1,11 @@
 <script setup lang="ts">
 const router = useRouter();
-const localePath = useLocalePath();
+const { $localePath } = useI18n();
 const handleLogoClicked = () => {
   const currentPath = router.currentRoute.value.fullPath;
   const targetPath = "/";
   if (targetPath !== currentPath) {
-    navigateTo(localePath(targetPath));
+    navigateTo($localePath(targetPath));
   }
 };
 </script>

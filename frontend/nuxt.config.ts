@@ -50,6 +50,11 @@ export default defineNuxtConfig({
     typeCheck: true,
   },
 
+  routeRules: {
+    "/admin/**": { appLayout: "admin-layout" },
+    "/auth/**": { appLayout: "auth-layout" },
+  },
+
   // Nitro 配置
   nitro: {
     routeRules: {
@@ -88,11 +93,10 @@ export default defineNuxtConfig({
       { code: "zh", name: "简体中文", file: "zh.json" },
       { code: "ja", name: "日本語", file: "ja.json" },
     ],
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: "i18n_redirected",
-      redirectOn: "root", // 只在根路径重定向
-    },
+    disablePageLocales: true,
+    redirects: true,
+    autoDetectLanguage: true,
+    autoDetectPath: "/",
   },
 
   icon: {
@@ -122,9 +126,9 @@ export default defineNuxtConfig({
     "@nuxt/icon",
     "@nuxt/scripts",
     "@pinia/nuxt",
-    "@nuxtjs/i18n",
     "@nuxtjs/sitemap",
     "@nuxt/image",
     "motion-v/nuxt",
+    "nuxt-i18n-micro",
   ],
 });

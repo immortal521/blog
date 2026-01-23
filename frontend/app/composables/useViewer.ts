@@ -1,5 +1,5 @@
-import type { ShallowRef } from "vue";
 import Viewer from "viewerjs";
+import type { ShallowRef } from "vue";
 
 export function useViewer(
   elementRef: Readonly<ShallowRef<HTMLDivElement | null>>,

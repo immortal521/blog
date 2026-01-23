@@ -5,16 +5,18 @@ interface ContectItem {
   title: string;
 }
 
+const { $ts } = useI18n();
+
 const contectItems = computed<ContectItem[]>(() => [
   {
     url: "https://github.com/immortal521",
     icon: "codicon:github",
-    title: "tooltip.github",
+    title: $ts("tooltip.github"),
   },
   {
     url: "https://qm.qq.com/cgi-bin/qm/qr?k=82gkG9i3QYouTHUsD9h4mk1UGFYZdlxT",
     icon: "streamline-logos:qq-logo-solid",
-    title: "tooltip.addQQFriend",
+    title: $ts("tooltip.addQQFriend"),
   },
 ]);
 </script>

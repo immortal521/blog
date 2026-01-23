@@ -2,14 +2,14 @@
 import { onClickOutside } from "@vueuse/core";
 import { navLinks } from "./navLinks";
 
-const { t } = useI18n();
+const { $ts } = useI18n();
 
 const items = computed<MenuItem[]>(() => {
   return navLinks.map((item) => {
     return {
       key: item.to,
       icon: item.icon,
-      label: t(item.labelKey),
+      label: $ts(item.labelKey),
       to: item.to,
     };
   });

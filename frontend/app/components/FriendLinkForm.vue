@@ -33,6 +33,7 @@ interface LinkFormData {
   description: string; // 站点简介
   avatar: string;
 }
+
 const form = ref<LinkFormData>({
   name: "", // 友链名称
   url: "", // 站点链接
@@ -64,7 +65,7 @@ function validate() {
 }
 
 const message = useMessage();
-const { t } = useI18n();
+const { $ts } = useI18n();
 
 /**
  * 提交处理
@@ -93,7 +94,7 @@ async function handleSubmit() {
     };
 
     show.value = false;
-    message.success(t("submission.friendLink"));
+    message.success($ts("submission.friendLink"));
   } catch (e) {
     console.warn(e);
   } finally {

@@ -1,8 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: "auth-layout",
-});
-
 const { login } = useAuthStore();
 
 const formData = ref({

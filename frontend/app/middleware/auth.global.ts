@@ -4,12 +4,12 @@ export default defineNuxtRouteMiddleware((to) => {
   if (!to.fullPath.includes("admin")) return;
 
   const authStore = useAuthStore();
-  const localePath = useLocalePath();
+  const { $localePath } = useI18n();
 
   const { accessToken, lagout } = authStore;
 
   if (!accessToken) {
     lagout();
-    return navigateTo(localePath("/auth/login"));
+    return navigateTo($localePath("/auth/login"));
   }
 });

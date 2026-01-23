@@ -27,11 +27,11 @@ const selectedKey = ref(menuItems.value[0]?.key);
 const { open } = useSidebar();
 const { isMobile } = useResponsive();
 
-const localePath = useLocalePath();
+const { $localePath } = useI18n();
 
 const onItemClicked = (item: SidebarItem) => {
   const { to, key } = item as AdminItem;
-  const localeTo = localePath(to);
+  const localeTo = $localePath(to);
   selectedKey.value = key;
   navigateTo(localeTo);
   if (isMobile.value) {

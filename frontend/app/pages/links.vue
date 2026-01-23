@@ -1,7 +1,7 @@
 <script setup lang="ts">
-const { t } = useI18n();
+const { $ts } = useI18n();
 useHead({
-  title: t("page.links"),
+  title: $ts("page.links"),
 });
 
 const { data } = await useFetch<{
@@ -25,7 +25,7 @@ useAddClassOnIntersect(linkCards, "show");
 <template>
   <ContentPanel style="min-height: 100vh">
     <article class="content">
-      <h1 class="title">{{ t("friendLink.title") }}</h1>
+      <h1 class="title">{{ $ts("friendLink.title") }}</h1>
       <div class="submit-link-tips">
         申请友链需要满足以下条件:
         <ul>
