@@ -2,3 +2,4 @@ node_modules
 frontend/.vscode
 .idea
 queries
+frontend/server/assets/_locales/
