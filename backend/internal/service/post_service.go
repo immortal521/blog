@@ -10,7 +10,7 @@ import (
 	"blog-server/internal/cache"
 	"blog-server/internal/database"
 	"blog-server/internal/entity"
-	"blog-server/internal/repo"
+	"blog-server/internal/repository"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/logger"
 
@@ -29,10 +29,10 @@ type postService struct {
 	log      logger.Logger
 	db       database.DB
 	rc       cache.CacheClient
-	postRepo repo.IPostRepo
+	postRepo repository.IPostRepo
 }
 
-func NewPostService(log logger.Logger, db database.DB, rc cache.CacheClient, postRepo repo.IPostRepo) IPostService {
+func NewPostService(log logger.Logger, db database.DB, rc cache.CacheClient, postRepo repository.IPostRepo) IPostService {
 	return &postService{log: log, db: db, rc: rc, postRepo: postRepo}
 }
 

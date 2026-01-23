@@ -5,7 +5,7 @@ import (
 
 	"blog-server/internal/database"
 	"blog-server/internal/entity"
-	"blog-server/internal/repo"
+	"blog-server/internal/repository"
 	"blog-server/internal/request"
 )
 
@@ -16,10 +16,10 @@ type ILinkService interface {
 
 type linkService struct {
 	db       database.DB
-	linkRepo repo.ILinkRepo
+	linkRepo repository.ILinkRepo
 }
 
-func NewLinkService(db database.DB, linkRepo repo.ILinkRepo) ILinkService {
+func NewLinkService(db database.DB, linkRepo repository.ILinkRepo) ILinkService {
 	return &linkService{db: db, linkRepo: linkRepo}
 }
 

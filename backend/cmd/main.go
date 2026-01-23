@@ -9,7 +9,7 @@ import (
 	"blog-server/internal/database"
 	"blog-server/internal/handler"
 	"blog-server/internal/middleware"
-	"blog-server/internal/repo"
+	"blog-server/internal/repository"
 	"blog-server/internal/router"
 	"blog-server/internal/scheduler"
 	"blog-server/internal/service"
@@ -122,9 +122,9 @@ func main() {
 		middleware.NewAuthMiddleware,
 
 		// repos
-		repo.NewUserRepo,
-		repo.NewPostRepo,
-		repo.NewLinkRepo,
+		repository.NewUserRepo,
+		repository.NewPostRepo,
+		repository.NewLinkRepo,
 
 		// services
 		service.NewAuthService,

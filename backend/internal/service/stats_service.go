@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"blog-server/internal/database"
-	"blog-server/internal/repo"
+	"blog-server/internal/repository"
 	"blog-server/internal/response"
 )
 
@@ -14,7 +14,7 @@ type IStatsService interface {
 
 type statsService struct {
 	db       database.DB
-	postRepo repo.IPostRepo
+	postRepo repository.IPostRepo
 }
 
 func (s *statsService) GetDashboardStats(ctx context.Context) (*response.DashboardStatsRes, error) {
@@ -27,7 +27,7 @@ func (s *statsService) GetDashboardStats(ctx context.Context) (*response.Dashboa
 	}, nil
 }
 
-func NewStatsService(db database.DB, postRepo repo.IPostRepo) IStatsService {
+func NewStatsService(db database.DB, postRepo repository.IPostRepo) IStatsService {
 	return &statsService{
 		db,
 		postRepo,

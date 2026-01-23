@@ -9,7 +9,7 @@ import (
 
 	"blog-server/internal/config"
 	"blog-server/internal/database"
-	"blog-server/internal/repo"
+	"blog-server/internal/repository"
 	"blog-server/internal/response"
 )
 
@@ -20,7 +20,7 @@ type IRssService interface {
 type rssService struct {
 	cfg      config.AppConfig
 	db       database.DB
-	postRepo repo.IPostRepo
+	postRepo repository.IPostRepo
 }
 
 func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
@@ -75,6 +75,6 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	return xml.MarshalIndent(feed, "", "  ")
 }
 
-func NewRssService(cfg *config.Config, db database.DB, postRepo repo.IPostRepo) IRssService {
+func NewRssService(cfg *config.Config, db database.DB, postRepo repository.IPostRepo) IRssService {
 	return &rssService{cfg: cfg.App, db: db, postRepo: postRepo}
 }

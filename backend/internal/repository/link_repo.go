@@ -1,5 +1,5 @@
 // Package repo
-package repo
+package repository
 
 import (
 	"context"

@@ -12,7 +12,7 @@ import (
 	"blog-server/internal/config"
 	"blog-server/internal/database"
 	"blog-server/internal/entity"
-	"blog-server/internal/repo"
+	"blog-server/internal/repository"
 	"blog-server/internal/request"
 	"blog-server/internal/response"
 	"blog-server/pkg/errs"
@@ -52,13 +52,13 @@ type AuthService struct {
 	db          database.DB
 	rc          cache.CacheClient
 	cfg         *config.Config
-	userRepo    repo.IUserRepo
+	userRepo    repository.IUserRepo
 	jwtService  IJwtService
 	mailService IMailService
 }
 
 // NewAuthService creates and returns a new AuthService instance
-func NewAuthService(db database.DB, rc cache.CacheClient, userRepo repo.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
+func NewAuthService(db database.DB, rc cache.CacheClient, userRepo repository.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
 	return &AuthService{
 		db:          db,
 		rc:          rc,
