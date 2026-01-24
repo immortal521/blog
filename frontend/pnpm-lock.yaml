@@ -60,8 +60,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(@parcel/watcher@2.5.6)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.2)(less@4.5.1)(magicast@0.5.1)(meow@13.2.0)(optionator@0.9.4)(rollup@4.56.0)(stylelint@16.26.1(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2)
       nuxt-i18n-micro:
-        specifier: ^2.17.1
-        version: 2.17.1(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))
+        specifier: ^2.20.1
+        version: 2.20.1(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))
       ofetch:
         specifier: ^1.5.1
         version: 1.5.1
@@ -3944,8 +3944,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxt-i18n-micro@2.17.1:
-    resolution: {integrity: sha512-xmP1+zb8cLI83B3JzS1A3CLXdwFkNh3c0BTS3RZPYkrOIVcqBcqQLLDt9F+yiVz4v5dGu0+W2jxurjhxkfRJ5Q==}
+  nuxt-i18n-micro@2.20.1:
+    resolution: {integrity: sha512-8grL7qipfB1zGdijq1Z751AdWYZAJntHvYcb6CSI1HpivXm3fMJWT7A/r6seG49M6Sr+kGc805/cwLPjzF1nNg==}
     peerDependencies:
       vue-router: '>=4.4.0'
 
@@ -9696,7 +9696,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt-i18n-micro@2.17.1(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3))):
+  nuxt-i18n-micro@2.20.1(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3))):
     dependencies:
       '@i18n-micro/core': 1.0.28
       '@i18n-micro/test-utils': 1.0.8

@@ -95,6 +95,8 @@ export default defineNuxtConfig({
     ],
     disablePageLocales: true,
     redirects: true,
+    meta: true,
+    metaBaseUrl: "https://blog.immortel.top/",
     autoDetectLanguage: true,
     autoDetectPath: "/",
   },
