@@ -8,3 +8,10 @@ type LinkResponse struct {
 	Avatar      string `json:"avatar"`
 	SortOrder   int    `json:"sortOrder"`
 }
+
+type LinkOverview struct {
+	Total    int `json:"total"`
+	Normal   int `json:"normal"`
+	Abnormal int `json:"abnormal"`
+	Pending  int `json:"pending"`
+}

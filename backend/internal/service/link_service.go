@@ -11,12 +11,14 @@ import (
 	"blog-server/internal/entity"
 	"blog-server/internal/repository"
 	"blog-server/internal/request"
+	"blog-server/internal/response"
 )
 
 type ILinkService interface {
 	GetLinks(ctx context.Context) ([]*entity.Link, error)
 	CreateLink(ctx context.Context, dto *request.CreateLinkReq) error
 	CheckLinkStatus(ctx context.Context) error
+	GetOverview(ctx context.Context) (*response.LinkOverview, error)
 }
 
 type linkService struct {
@@ -30,6 +32,10 @@ func NewLinkService(db database.DB, linkRepo repository.ILinkRepo) ILinkService 
 
 func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
 	return s.linkRepo.GetAllEnabledLinks(ctx, s.db.Conn())
+}
+
+func (s *linkService) GetOverview(ctx context.Context) (*response.LinkOverview, error) {
+	return s.linkRepo.GetOverview(ctx, s.db.Conn())
 }
 
 func (s *linkService) CreateLink(ctx context.Context, dto *request.CreateLinkReq) error {

@@ -13,6 +13,7 @@ import (
 type ILinkHandler interface {
 	GetLinks(c *fiber.Ctx) error
 	ApplyForALinks(c *fiber.Ctx) error
+	GetLinksOverview(c *fiber.Ctx) error
 }
 
 type LinkHandler struct {
@@ -44,6 +45,15 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 
 	result := response.Success(linkDTOs)
 	return c.JSON(result)
+}
+
+func (h *LinkHandler) GetLinksOverview(c *fiber.Ctx) error {
+	overview, err := h.svc.GetOverview(c.UserContext())
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(response.Success(overview))
 }
 
 func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
