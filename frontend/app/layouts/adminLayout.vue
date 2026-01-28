@@ -7,24 +7,27 @@ const menuItems = ref<AdminItem[]>([
     icon: undefined,
     label: "Dashboard",
     to: "/admin",
-    key: "admin-index",
+    key: "/admin",
   },
   {
     icon: undefined,
     label: "links",
     to: "/admin/links",
-    key: "admin-links",
+    key: "/admin/links",
   },
   {
     icon: undefined,
     label: "post",
     to: "/admin/posts",
-    key: "admin-posts",
+    key: "/admin/posts",
   },
 ]);
-const selectedKey = ref(menuItems.value[0]?.key);
 
-const { open } = useSidebar();
+const route = useRoute();
+
+const selectedKey = ref(route.fullPath);
+
+const { open, collapsed } = useSidebar();
 const { isMobile } = useResponsive();
 
 const { $localePath } = useI18n();
@@ -38,6 +41,15 @@ const onItemClicked = (item: SidebarItem) => {
     open.value = false;
   }
 };
+
+const handleToggle = () => {
+  if (isMobile.value) {
+    collapsed.value = false;
+    open.value = !open.value;
+  } else {
+    collapsed.value = !collapsed.value;
+  }
+};
 </script>
 
 <template>
@@ -46,13 +58,14 @@ const onItemClicked = (item: SidebarItem) => {
       ref="sidebar"
       v-model:selected-key="selectedKey"
       v-model:open="open"
+      v-model:collapsed="collapsed"
       :items="menuItems"
       @item-clicked="onItemClicked"
     />
     <div class="right">
       <header class="header">
-        <button v-if="isMobile" class="menu-btn" @click="open = !open">
-          <Icon name="hugeicons:menu-11" size="24" />
+        <button class="menu-btn" @click="handleToggle">
+          <Icon name="hugeicons:menu-11" size="24" class="icon" />
         </button>
       </header>
       <main class="main">
@@ -67,6 +80,7 @@ const onItemClicked = (item: SidebarItem) => {
   width: 100vw;
   height: 100vh;
   display: flex;
+  color: var(--text-color-base);
 }
 
 .right {
@@ -87,6 +101,7 @@ const onItemClicked = (item: SidebarItem) => {
     background: none;
     text-align: center;
     padding: 10px;
+    color: inherit;
   }
 }
 

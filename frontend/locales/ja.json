@@ -30,6 +30,14 @@
     "title": "フレンドリンク",
     "requestLink": "リンクを送信"
   },
+  "link": {
+    "overview": {
+      "total": "リンク総数",
+      "normal": "正常リンク数",
+      "abnormal": "異常リンク数",
+      "pending": "審査待ち"
+    }
+  },
   "page": {
     "links": "友達",
     "about": "私について"

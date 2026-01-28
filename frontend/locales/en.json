@@ -26,6 +26,14 @@
     "title": "Friend Links",
     "requestLink": "Submit a Link"
   },
+  "link": {
+    "overview": {
+      "total": "Total Links",
+      "normal": "Normal Links",
+      "abnormal": "Abnormal Links",
+      "pending": "Pending Review"
+    }
+  },
   "page": {
     "links": "Friends",
     "about": "About me"

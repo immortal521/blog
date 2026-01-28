@@ -8,9 +8,9 @@ interface Props {
 
 const { collapsed = false, width = 220, widthCollapsed = 60, items = [] } = defineProps<Props>();
 
-const open = defineModel("open", { required: false, default: true });
+const open = defineModel<boolean>("open", { required: false, default: true });
 
-const selectedKey = defineModel("selectedKey", { required: false, default: "" });
+const selectedKey = defineModel<string>("selectedKey", { required: false, default: "" });
 
 const emit = defineEmits<{
   (e: "item-clicked", item: SidebarItem): void;
@@ -93,7 +93,7 @@ const onItemClicked = (item: SidebarItem) => {
     padding: 0 5px;
     line-height: 35px;
     border-radius: 8px;
-    color: var(--color-on-primary);
+    color: var(--text-color-base);
     user-select: none;
     cursor: pointer;
     position: relative;
@@ -115,8 +115,8 @@ const onItemClicked = (item: SidebarItem) => {
     }
 
     .label {
-      top: 0;
-      left: 35px;
+      font-weight: bold;
+      font-family: "Maple Mono", "Noto Sans SC", monospace;
     }
   }
 }
