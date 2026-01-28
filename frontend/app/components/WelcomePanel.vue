@@ -31,9 +31,9 @@ const handleDownArrowClick = () => {
         <p class="greetings">Cherish every moment.</p>
       </div>
     </div>
-    <div class="down-arrow" @click="handleDownArrowClick">
+    <button class="down-arrow" @click="handleDownArrowClick">
       <Icon name="mingcute:down-line" size="50" />
-    </div>
+    </button>
   </div>
 </template>
 
@@ -111,6 +111,7 @@ const handleDownArrowClick = () => {
   transform: translateX(-50%);
   color: var(--bg-nav-base);
   animation: bounce 2.5s infinite ease-in-out;
+  background-color: transparent;
 }
 
 @keyframes bounce {

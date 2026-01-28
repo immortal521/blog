@@ -15,5 +15,6 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
   backdrop-filter: blur(10px);
   animation: opacity 0.5s ease;
   padding-bottom: 140px;
+  padding-top: 60px;
 }
 </style>
