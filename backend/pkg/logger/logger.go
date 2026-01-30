@@ -21,7 +21,6 @@ type Logger interface {
 	Fatalf(format string, args ...any)
 	Panicf(format string, args ...any)
 
-	// WithFields 用于附加上下文字段，返回新的 Logger
 	WithFields(fields ...Field) Logger
 
 	Sync() error

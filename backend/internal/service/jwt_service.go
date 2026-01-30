@@ -94,7 +94,6 @@ func (j *JwtService) ValidateToken(tokenStr string) (bool, error) {
 }
 
 func (j *JwtService) ParseToken(tokenString string) (*Claims, error) {
-	// 用 HMAC 校验签名
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errs.New(
@@ -109,7 +108,6 @@ func (j *JwtService) ParseToken(tokenString string) (*Claims, error) {
 		return nil, errs.New(errs.CodeUnauthorized, "Invalid or expired token", err)
 	}
 
-	// 提取 claims
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}

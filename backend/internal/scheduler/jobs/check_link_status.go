@@ -10,7 +10,6 @@ import (
 
 func StartCheckLinkStatusJob(ctx context.Context, svc service.ILinkService) {
 	for {
-		// 计算当前时间到下一整点的间隔
 		now := time.Now()
 		next := now.Truncate(time.Hour).Add(time.Hour)
 		wait := time.Until(next)

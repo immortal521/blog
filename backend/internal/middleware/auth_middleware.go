@@ -12,19 +12,24 @@ import (
 )
 
 const (
+	// ContextUserIDKey is the key used to store user ID in Fiber context
 	ContextUserIDKey = "user_id"
 )
 
+// AuthMiddleware handles JWT authentication for protected routes
 type AuthMiddleware struct {
 	jwtService service.IJwtService
 }
 
+// NewAuthMiddleware creates a new auth middleware instance
 func NewAuthMiddleware(jwtService service.IJwtService) *AuthMiddleware {
 	return &AuthMiddleware{
 		jwtService: jwtService,
 	}
 }
 
+// Handler returns a Fiber handler that validates JWT tokens
+// Optional roles can be specified for role-based access control
 func (a *AuthMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
@@ -45,7 +50,6 @@ func (a *AuthMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
 			return err
 		}
 
-		// 验证 UUID 格式
 		if _, err := uuid.Parse(claims.UserID); err != nil {
 			return errs.New(errs.CodeUnauthorized, "invalid user id in token", nil)
 		}
@@ -56,6 +60,7 @@ func (a *AuthMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
 	}
 }
 
+// GetUserUUID retrieves the user UUID from the Fiber context
 func GetUserUUID(c *fiber.Ctx) (string, bool) {
 	value := c.Locals(ContextUserIDKey)
 	uuid, ok := value.(string)

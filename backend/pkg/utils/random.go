@@ -22,7 +22,6 @@ func RandomString(length int, alphabet string) string {
 	for i := range length {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphabet))))
 		if err != nil {
-			// 极少发生，发生时用 'a' 填充
 			result[i] = 'a'
 			continue
 		}

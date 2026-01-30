@@ -17,6 +17,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// IPostService defines the interface for post business logic operations
 type IPostService interface {
 	GetPosts(ctx context.Context) ([]*entity.Post, error)
 	GetPostsWithContent(ctx context.Context) ([]*entity.Post, error)
@@ -32,18 +33,22 @@ type postService struct {
 	postRepo repository.IPostRepo
 }
 
+// NewPostService creates a new post service instance
 func NewPostService(log logger.Logger, db database.DB, rc cache.CacheClient, postRepo repository.IPostRepo) IPostService {
 	return &postService{log: log, db: db, rc: rc, postRepo: postRepo}
 }
 
+// GetPosts retrieves all published posts without content
 func (p *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
 	return p.postRepo.GetAllPosts(ctx, p.db.Conn())
 }
 
+// GetPostsWithContent retrieves all published posts with full content
 func (p *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
 	return p.postRepo.GetAllPostsWithContent(ctx, p.db.Conn())
 }
 
+// GetPostsMeta retrieves metadata (id and updated_at) for all posts
 func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
 	posts, err := p.postRepo.GetPostsMeta(ctx, p.db.Conn())
 	if err != nil {
@@ -53,12 +58,14 @@ func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
 	return posts
 }
 
+// GetPostByID retrieves a single published post by ID and increments the view count in Redis
 func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
 	post, err := p.postRepo.GetPostByID(ctx, p.db.Conn(), id)
 	if err != nil {
 		return nil, err
 	}
 
+	// Increment view count asynchronously
 	go func(postID uint) {
 		if err := p.rc.Raw().Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID)).Err(); err != nil {
 			p.log.Error("incr post view count failed", logger.Error(err))
@@ -68,6 +75,7 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 	return post, nil
 }
 
+// FlushViewCountToDB flushes cached view counts from Redis to the database
 func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	var cursor uint64
 	var allErrors []error

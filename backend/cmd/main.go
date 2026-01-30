@@ -56,6 +56,7 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 	return app, nil
 }
 
+// scheduler start
 func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

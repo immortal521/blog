@@ -19,7 +19,8 @@ var (
 	v              *viper.Viper
 )
 
-// Load 加载配置（支持默认值、文件、环境变量、多环境文件、热更新）
+// Load initializes the configuration.
+// It supports default values, file-based config, environment variables,
 func Load(configPath string) (*Config, error) {
 	configMutex.Lock()
 	defer configMutex.Unlock()
@@ -27,19 +28,19 @@ func Load(configPath string) (*Config, error) {
 	v = viper.New()
 	setDefaults()
 
-	// 支持环境变量覆盖
+	// Enable environment variable overrides
 	v.SetEnvPrefix("app")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "__"))
 	v.AutomaticEnv()
 
-	// 读取主配置文件
+	// Load primary configuration file
 	if configPath != "" {
 		if err := loadFromFile(configPath); err != nil {
 			return nil, err
 		}
 	}
 
-	// 如果有环境配置文件，比如 config.development.yaml
+	// Handle environment-specific config files
 	env := v.GetString("app.environment")
 	if env != "" {
 		ext := filepath.Ext(configPath)
@@ -53,7 +54,6 @@ func Load(configPath string) (*Config, error) {
 		}
 	}
 
-	// 映射到结构体
 	cfg := &Config{}
 	if err := v.Unmarshal(cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
@@ -63,7 +63,6 @@ func Load(configPath string) (*Config, error) {
 
 	configInstance = cfg
 
-	// 热更新
 	if configPath != "" {
 		setupConfigWatch()
 	}
@@ -71,7 +70,7 @@ func Load(configPath string) (*Config, error) {
 	return cfg, nil
 }
 
-// setDefaults 设置默认值
+// setDefaults defines the fallback values for all configuration keys
 func setDefaults() {
 	v.SetDefault("app.name", "my-app")
 	v.SetDefault("app.version", "1.0.1")
@@ -133,7 +132,7 @@ func setDefaults() {
 	v.SetDefault("endpoint", "http://localhost:9000")
 }
 
-// loadFromFile 如果配置文件不存在，就写入默认配置
+// loadFromFile reads the config file or creates a default one if it doesn't exist
 func loadFromFile(configPath string) error {
 	dir := filepath.Dir(configPath)
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -152,6 +151,7 @@ func loadFromFile(configPath string) error {
 	return nil
 }
 
+// writeDefaultConfig serializes the current config state to a YAML file
 func writeDefaultConfig(path string, cfg *Config) error {
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
@@ -160,13 +160,12 @@ func writeDefaultConfig(path string, cfg *Config) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
-// setupConfigWatch 文件变动热更新
+// setupConfigWatch enables hot-reloading when the configuration file is modified
 func setupConfigWatch() {
 	v.WatchConfig()
 	v.OnConfigChange(func(e fsnotify.Event) {
 		log.Printf("Config file changed: %s", e.Name)
 
-		// 重新读取配置文件
 		if err := v.ReadInConfig(); err != nil {
 			log.Printf("Error reloading config file: %v", err)
 			return
@@ -178,7 +177,6 @@ func setupConfigWatch() {
 			return
 		}
 
-		// 验证配置
 		if err := validateConfig(newCfg); err != nil {
 			log.Printf("Reloaded config validation failed: %v", err)
 			return
@@ -186,23 +184,20 @@ func setupConfigWatch() {
 
 		newCfg.App.Domain = strings.TrimSuffix(newCfg.App.Domain, "/")
 
-		// 原子替换
 		configMutex.Lock()
 		configInstance = newCfg
 		configMutex.Unlock()
 
-		log.Println("✅ Config reloaded successfully")
+		log.Println("Config reloaded successfully")
 	})
 }
 
-// Get 全局获取配置
 func Get() *Config {
 	configMutex.RLock()
 	defer configMutex.RUnlock()
 	return configInstance
 }
 
-// GetViper 获取 Viper 实例
 func GetViper() *viper.Viper {
 	return v
 }

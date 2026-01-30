@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"strings"
 )
 
 // AppError represents an application-specific error with a code and a message.
@@ -48,15 +49,15 @@ func (e *AppError) StackString() string {
 		return ""
 	}
 	frames := runtime.CallersFrames(e.stack)
-	var s string
+	var s strings.Builder
 	for {
 		frames, more := frames.Next()
-		s += fmt.Sprintf("%s\n\t%s:%d\n", frames.Function, frames.File, frames.Line)
+		s.WriteString(fmt.Sprintf("%s\n\t%s:%d\n", frames.Function, frames.File, frames.Line))
 		if !more {
 			break
 		}
 	}
-	return s
+	return s.String()
 }
 
 func (e *AppError) FormatStack() string {

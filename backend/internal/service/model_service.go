@@ -25,7 +25,7 @@ type modelService struct {
 }
 
 func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-chan string, <-chan error) {
-	textCh := make(chan string, 10) // 加缓冲
+	textCh := make(chan string, 10)
 	errCh := make(chan error, 1)
 
 	go func() {
@@ -33,8 +33,13 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		defer close(errCh)
 
 		payload := map[string]any{
-			"model":      "gpt-4.1-mini",
-			"messages":   []map[string]string{{"role": "user", "content": "请帮我总结这篇文章(以纯文本格式返回)：" + content}},
+			"model": "gpt-4.1-mini",
+			"messages": []map[string]string{
+				{
+					"role":    "user",
+					"content": "Please summarize this article for me (return in plain text format): " + content,
+				},
+			},
 			"max_tokens": 8000,
 			"stream":     true,
 		}

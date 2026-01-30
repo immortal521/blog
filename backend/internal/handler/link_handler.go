@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// ILinkHandler defines the interface for link HTTP handlers
 type ILinkHandler interface {
 	GetLinks(c *fiber.Ctx) error
 	ApplyForALinks(c *fiber.Ctx) error
@@ -21,10 +22,12 @@ type LinkHandler struct {
 	validate validatorx.Validator
 }
 
+// NewLinkHandler creates a new link handler instance
 func NewLinkHandler(svc service.ILinkService, validate validatorx.Validator) ILinkHandler {
 	return &LinkHandler{svc: svc, validate: validate}
 }
 
+// GetLinks retrieves all enabled links
 func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	links, err := h.svc.GetLinks(c.UserContext())
 	if err != nil {
@@ -47,6 +50,7 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// GetLinksOverview retrieves link statistics overview
 func (h *LinkHandler) GetLinksOverview(c *fiber.Ctx) error {
 	overview, err := h.svc.GetOverview(c.UserContext())
 	if err != nil {
@@ -56,6 +60,7 @@ func (h *LinkHandler) GetLinksOverview(c *fiber.Ctx) error {
 	return c.JSON(response.Success(overview))
 }
 
+// ApplyForALinks creates a new link application
 func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
 	req := new(request.CreateLinkReq)
 	if err := c.BodyParser(req); err != nil {

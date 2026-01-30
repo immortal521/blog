@@ -20,13 +20,11 @@ func NewLogger(cfg *config.Config) Logger {
 	var level zapcore.Level
 
 	if cfg.App.Environment == "production" {
-		// 生产环境：JSON 结构化日志
 		encoderCfg := zap.NewProductionEncoderConfig()
 		encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
 		encoder = zapcore.NewJSONEncoder(encoderCfg)
 		level = zap.InfoLevel
 	} else {
-		// 开发环境：彩色控制台日志
 		encoderCfg := zapcore.EncoderConfig{
 			TimeKey:       "time",
 			LevelKey:      "level",
@@ -44,11 +42,11 @@ func NewLogger(cfg *config.Config) Logger {
 				var color string
 				switch l {
 				case zapcore.DebugLevel, zapcore.InfoLevel:
-					color = "\033[32m" // 绿色
+					color = "\033[32m" // green
 				case zapcore.WarnLevel:
-					color = "\033[33m" // 黄色
+					color = "\033[33m" // yellow
 				case zapcore.ErrorLevel, zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
-					color = "\033[31m" // 红色
+					color = "\033[31m" // red
 				default:
 					color = "\033[0m"
 				}

@@ -1,4 +1,4 @@
-// Package repository
+// Package repository provides data access layer for the blog system
 package repository
 
 import (
@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ILinkRepo 定义链接仓库接口
+// ILinkRepo defines the interface for link data access operations
 type ILinkRepo interface {
 	GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error)
 	GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error)
@@ -22,15 +22,14 @@ type ILinkRepo interface {
 	GetOverview(ctx context.Context, db *gorm.DB) (*response.LinkOverview, error)
 }
 
-// linkRepo 实现 ILinkRepo
 type linkRepo struct{}
 
-// NewLinkRepo 创建链接仓库实例
+// NewLinkRepo creates a new link repository instance
 func NewLinkRepo() ILinkRepo {
 	return &linkRepo{}
 }
 
-// GetAllLinks 获取所有链接
+// GetAllLinks retrieves all links from the database
 func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
 	links, err := gorm.G[*entity.Link](db).Find(ctx)
 	if err != nil {
@@ -39,7 +38,7 @@ func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link
 	return links, nil
 }
 
-// GetAllEnabledLinks 获取已启用的链接
+// GetAllEnabledLinks retrieves all enabled links from the database
 func (r *linkRepo) GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
 	links, err := gorm.G[*entity.Link](db).Where("enabled = ?", true).Find(ctx)
 	if err != nil {
@@ -48,7 +47,7 @@ func (r *linkRepo) GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*enti
 	return links, nil
 }
 
-// CreateLink 创建新链接
+// CreateLink creates a new link in the database
 func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error {
 	if err := gorm.G[entity.Link](db).Create(ctx, link); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
@@ -59,7 +58,7 @@ func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Lin
 	return nil
 }
 
-// UpdateLinkStatusBatch 批量更新链接状态
+// UpdateLinkStatusBatch batch updates the status of multiple links
 func (r *linkRepo) UpdateLinkStatusBatch(ctx context.Context, db *gorm.DB, updates map[uint]entity.LinkStatus) error {
 	if len(updates) == 0 {
 		return nil
@@ -86,7 +85,7 @@ func (r *linkRepo) UpdateLinkStatusBatch(ctx context.Context, db *gorm.DB, updat
 	return nil
 }
 
-// GetOverview 获取链接概览
+// GetOverview retrieves link statistics including total, normal, abnormal, and pending counts
 func (r *linkRepo) GetOverview(ctx context.Context, db *gorm.DB) (*response.LinkOverview, error) {
 	type result struct {
 		Total   int

@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// validateConfig 验证配置
 func validateConfig(cfg *Config) error {
 	if cfg.App.Name == "" {
 		return fmt.Errorf("app name is required")

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// IPostRepo 定义文章仓库接口
+// IPostRepo defines the interface for post data access operations
 type IPostRepo interface {
 	GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
 	GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
@@ -22,15 +22,14 @@ type IPostRepo interface {
 	UpdateViewCounts(ctx context.Context, db *gorm.DB, updates map[uint]int64) error
 }
 
-// postRepo 实现 IPostRepo
 type postRepo struct{}
 
-// NewPostRepo 创建文章仓库实例
+// NewPostRepo creates a new post repository instance
 func NewPostRepo() IPostRepo {
 	return &postRepo{}
 }
 
-// GetAllPosts 获取所有已发布文章（不含内容）
+// GetAllPosts retrieves all published posts without content
 func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
 	posts, err := gorm.G[*entity.Post](db).
 		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
@@ -55,7 +54,7 @@ func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post
 	return posts, nil
 }
 
-// GetAllPostsWithContent 获取所有已发布文章（包含内容）
+// GetAllPostsWithContent retrieves all published posts with full content
 func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
 	posts, err := gorm.G[*entity.Post](db).
 		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
@@ -81,7 +80,7 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 	return posts, nil
 }
 
-// GetPostsMeta 获取文章元信息（仅 id 和更新时间）
+// GetPostsMeta retrieves metadata (id and updated_at) for all posts
 func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
 	posts, err := gorm.G[*entity.Post](db).
 		Select("id", "updated_at").
@@ -92,7 +91,7 @@ func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Pos
 	return posts, nil
 }
 
-// GetPostCount 获取文章总数
+// GetPostCount returns the total count of posts
 func (r *postRepo) GetPostCount(ctx context.Context, db *gorm.DB) (int64, error) {
 	postCount, err := gorm.G[*entity.Post](db).Count(ctx, "id")
 	if err != nil {
@@ -101,7 +100,7 @@ func (r *postRepo) GetPostCount(ctx context.Context, db *gorm.DB) (int64, error)
 	return postCount, nil
 }
 
-// GetPostByID 根据 ID 获取文章
+// GetPostByID retrieves a single published post by ID
 func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*entity.Post, error) {
 	post, err := gorm.G[*entity.Post](db).
 		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
@@ -131,7 +130,7 @@ func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*enti
 	return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 }
 
-// UpdateViewCounts 批量更新文章浏览量
+// UpdateViewCounts batch updates view counts for multiple posts
 func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates map[uint]int64) error {
 	if len(updates) == 0 {
 		return nil

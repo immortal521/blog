@@ -3,37 +3,42 @@ package errs
 import "net/http"
 
 const (
-	CodeOK               = 0    // 一切正常
-	CodeInternalError    = 1000 // 未知内部错误
-	CodeUnauthorized     = 1001 // 未登录或 token 无效
-	CodeForbidden        = 1002 // 无权限
-	CodeTooManyRequests  = 1003 // 请求过于频繁
-	CodeInvalidSignature = 1004 // 签名错误
-	CodeNotImplemented   = 1005 // 功能未实现
+	// Global Status Codes
+	CodeOK               = 0    // Success
+	CodeInternalError    = 1000 // Internal server error
+	CodeUnauthorized     = 1001 // Unauthorized: No login or invalid token
+	CodeForbidden        = 1002 // Forbidden: Insufficient permissions
+	CodeTooManyRequests  = 1003 // Rate limit exceeded
+	CodeInvalidSignature = 1004 // Invalid request signature
+	CodeNotImplemented   = 1005 // Feature not implemented
 
-	CodeUserNotFound      = 2000 // 用户不存在
-	CodeUserAlreadyExists = 2001 // 用户已存在
-	CodeInvalidPassword   = 2002 // 密码错误
-	CodeUserDisabled      = 2003 // 用户已禁用
-	CodeTokenExpired      = 2004 // Token 过期
+	// User & Authentication Codes
+	CodeUserNotFound      = 2000 // User does not exist
+	CodeUserAlreadyExists = 2001 // User already exists
+	CodeInvalidPassword   = 2002 // Incorrect password
+	CodeUserDisabled      = 2003 // User account is disabled
+	CodeTokenExpired      = 2004 // Authentication token expired
 
-	CodeResourceNotFound      = 3000 // 资源不存在
-	CodeResourceAlreadyExists = 3001 // 资源已存在
-	CodeConflict              = 3002 // 操作冲突（如版本冲突）
-	CodeResourceLocked        = 3003 // 资源被锁定或占用
-	CodeNoContent             = 3004
+	// Resource Management Codes
+	CodeResourceNotFound      = 3000 // Resource not found
+	CodeResourceAlreadyExists = 3001 // Resource already exists
+	CodeConflict              = 3002 // Resource conflict (e.g., version mismatch)
+	CodeResourceLocked        = 3003 // Resource is locked or occupied
+	CodeNoContent             = 3004 // Request processed but no content returned
 
-	CodeInvalidParam      = 4000 // 参数错误
-	CodeMissingParam      = 4001 // 缺少必要参数
-	CodeValidationFailed  = 4002 // 参数验证不通过
-	CodeUnsupportedFormat = 4003 // 不支持的格式
-	CodeOutOfRange        = 4004 // 数值或分页越界
+	// Request & Parameter Validation Codes
+	CodeInvalidParam      = 4000 // General parameter error
+	CodeMissingParam      = 4001 // Missing required parameter
+	CodeValidationFailed  = 4002 // Parameter validation failed
+	CodeUnsupportedFormat = 4003 // Unsupported data format
+	CodeOutOfRange        = 4004 // Value or pagination out of range
 
-	CodeDatabaseError    = 5000 // 数据库错误
-	CodeCacheError       = 5001 // Redis 或缓存错误
-	CodeNetworkError     = 5002 // 网络请求失败
-	CodeExternalAPIError = 5003 // 调用外部接口失败
-	CodeFileSystemError  = 5004 // 文件系统错误
+	// Infrastructure & System Codes
+	CodeDatabaseError    = 5000 // Database operation failed
+	CodeCacheError       = 5001 // Redis or cache failure
+	CodeNetworkError     = 5002 // Network request failure
+	CodeExternalAPIError = 5003 // External API service error
+	CodeFileSystemError  = 5004 // File system operation error
 )
 
 func MapToHTTPStatus(code int) int {

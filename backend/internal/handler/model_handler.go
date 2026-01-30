@@ -43,7 +43,7 @@ func (h *modelHandler) CreateSummarySession(c *fiber.Ctx) error {
 	session := &Session{
 		Content:  req.Content,
 		TaskType: "summary",
-		TextCh:   nil, // 在 SSE 中初始化
+		TextCh:   nil,
 		ErrCh:    nil,
 	}
 

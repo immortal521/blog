@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// IPostHandler defines the interface for post HTTP handlers
 type IPostHandler interface {
 	GetPosts(c *fiber.Ctx) error
 	GetPost(c *fiber.Ctx) error
@@ -20,10 +21,12 @@ type postHandler struct {
 	svc service.IPostService
 }
 
+// NewPostHandler creates a new post handler instance
 func NewPostHandler(svc service.IPostService) IPostHandler {
 	return &postHandler{svc: svc}
 }
 
+// GetPosts retrieves all published posts
 func (h *postHandler) GetPosts(c *fiber.Ctx) error {
 	posts, err := h.svc.GetPosts(c.UserContext())
 	if err != nil {
@@ -48,6 +51,7 @@ func (h *postHandler) GetPosts(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// GetPostIds retrieves metadata (id and updated_at) for all posts
 func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
 	metas := h.svc.GetPostsMeta(c.UserContext())
 	metasDTO := make([]response.PostMetaRes, len(metas))
@@ -61,6 +65,7 @@ func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// GetPost retrieves a single published post by ID
 func (h *postHandler) GetPost(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

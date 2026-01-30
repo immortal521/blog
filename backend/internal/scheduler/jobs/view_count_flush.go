@@ -11,7 +11,6 @@ import (
 
 func StartViewFlushJob(ctx context.Context, svc service.IPostService) {
 	for {
-		// 计算当前时间到下一整点的间隔
 		now := time.Now()
 		next := now.Truncate(time.Hour).Add(time.Hour)
 		wait := time.Until(next)
