@@ -78,7 +78,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 	email := dto.Email
 
 	// Verify captcha
-	cachedCaptcha := s.rc.Raw().Get(ctx, fmt.Sprintf("Register:%s", email)).Val()
+	cachedCaptcha, err := s.rc.Get(ctx, fmt.Sprintf("Register:%s", email))
 	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(dto.Captcha)) {
 		return nil, errs.New(errs.CodeInvalidParam, "Invalid captcha", nil)
 	}
@@ -182,7 +182,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	captcha := utils.GenerateCaptcha()
 	data.Captcha = captcha
 
-	if err := s.rc.Raw().Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute).Err(); err != nil {
+	if err := s.rc.Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute); err != nil {
 		return errs.New(errs.CodeCacheError, "Set captcha in Redis failed", err)
 	}
 
@@ -210,7 +210,10 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*re
 		return nil, errs.New(errs.CodeUserNotFound, "User not found", nil)
 	}
 
-	cacheRefreshToken := s.rc.Raw().Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid)).Val()
+	cacheRefreshToken, err := s.rc.Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid))
+	if err != nil {
+		return nil, errs.New(errs.CodeCacheError, "Get refresh token from Redis failed", err)
+	}
 
 	if !strings.EqualFold(token, cacheRefreshToken) {
 		return nil, errs.New(errs.CodeUnauthorized, "Invalid token", nil)
@@ -251,7 +254,7 @@ func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.
 // cacheRefreshToken stores the refresh token in Redis
 func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
 	key := fmt.Sprintf("RefreshToken:%s", userUUID)
-	if err := s.rc.Raw().Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration).Err(); err != nil {
+	if err := s.rc.Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration); err != nil {
 		return errs.New(
 			errs.CodeCacheError,
 			fmt.Sprintf("Failed to cache refresh token for user %s", userUUID),
