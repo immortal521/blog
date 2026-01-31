@@ -32,6 +32,7 @@ const (
 	CodeValidationFailed  = 4002 // Parameter validation failed
 	CodeUnsupportedFormat = 4003 // Unsupported data format
 	CodeOutOfRange        = 4004 // Value or pagination out of range
+	CodeCacheMiss         = 4005 // Cache miss
 
 	// Infrastructure & System Codes
 	CodeDatabaseError    = 5000 // Database operation failed
@@ -55,7 +56,7 @@ func MapToHTTPStatus(code int) int {
 		return http.StatusBadRequest
 	case CodeResourceNotFound, CodeUserNotFound:
 		return http.StatusNotFound
-	case CodeConflict, CodeResourceAlreadyExists:
+	case CodeConflict, CodeResourceAlreadyExists, CodeCacheMiss:
 		return http.StatusConflict
 	case CodeNotImplemented:
 		return http.StatusNotImplemented

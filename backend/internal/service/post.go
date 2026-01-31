@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,8 +12,6 @@ import (
 	"blog-server/internal/repository"
 	"blog-server/pkg/errs"
 	"blog-server/pkg/logger"
-
-	"github.com/redis/go-redis/v9"
 )
 
 // IPostService defines the interface for post business logic operations
@@ -67,7 +64,7 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 
 	// Increment view count asynchronously
 	go func(postID uint) {
-		if err := p.rc.Raw().Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID)).Err(); err != nil {
+		if _, err := p.rc.Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", post.ID)); err != nil {
 			p.log.Error("incr post view count failed", logger.Error(err))
 		}
 	}(post.ID)
@@ -81,7 +78,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	var allErrors []error
 
 	for {
-		keys, next, err := p.rc.Raw().Scan(ctx, cursor, "blog:post:view_count:*", 100).Result()
+		keys, next, err := p.rc.Scan(ctx, "blog:post:view_count:*", cursor, 100)
 		if err != nil {
 			return errs.New(errs.CodeCacheError, "Failed to scan Redis keys for post view count", err)
 		}
@@ -94,25 +91,13 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 			continue
 		}
 
-		pipe := p.rc.Raw().Pipeline()
-		cmds := make([]*redis.StringCmd, len(keys))
-
-		for i, key := range keys {
-			cmds[i] = pipe.GetDel(ctx, key)
-		}
-
-		if _, err = pipe.Exec(ctx); err != nil && !errors.Is(err, redis.Nil) {
-			allErrors = append(allErrors, fmt.Errorf("pipeline exec failed: %w", err))
-			continue
+		data, err := p.rc.PopBatch(ctx, keys)
+		if err != nil {
+			allErrors = append(allErrors, fmt.Errorf("PopBatch failed: %w", err))
 		}
 
 		updates := make(map[uint]int64)
-		for i, key := range keys {
-			valStr, err := cmds[i].Result()
-			if err != nil && !errors.Is(err, redis.Nil) {
-				continue
-			}
-
+		for key, valStr := range data {
 			count, err := strconv.ParseInt(valStr, 10, 64)
 			if err != nil || count == 0 {
 				continue
