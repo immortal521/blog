@@ -1,4 +1,4 @@
-// Package util
+// Package utils
 package utils
 
 func GenerateCaptcha() string {
