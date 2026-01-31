@@ -114,7 +114,7 @@ func main() {
 	provider := fx.Provide(
 		logger.NewLogger,
 		provideConfig,
-		database.NewDB,
+		database.New,
 		cache.NewCacheClient,
 		validatorx.NewValidator,
 		providerFiberApp,

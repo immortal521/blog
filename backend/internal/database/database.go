@@ -28,7 +28,7 @@ type db struct {
 	db *gorm.DB
 }
 
-func NewDB(cfg *config.Config) (DB, error) {
+func New(cfg *config.Config) (DB, error) {
 	dsn := cfg.Database.GetDSN()
 	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:                                   logger.Default.LogMode(logger.Info),
