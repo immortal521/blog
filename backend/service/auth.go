@@ -92,7 +92,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 		UUID:     uuid.New(),
 		Email:    dto.Email,
 		Password: hashPassword,
-		Username: utils.GenerateUsername(),
+		Username: entity.GenerateUsername(),
 	}
 
 	var newUser *entity.User
@@ -179,7 +179,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 		return err
 	}
 
-	captcha := utils.GenerateCaptcha()
+	captcha := generateCaptcha()
 	data.Captcha = captcha
 
 	if err := s.rc.Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute); err != nil {
@@ -297,4 +297,8 @@ var captchaMetaMap = map[CaptchaType]*AuthMailData{
 		Type:    "Email Change",
 		Content: "You are attempting to change your email address. Please use this verification code to verify your new email.",
 	},
+}
+
+func generateCaptcha() string {
+	return utils.RandomString(6, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 }
