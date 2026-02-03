@@ -38,6 +38,17 @@
     "links": "Friends",
     "about": "About me"
   },
+  "admin": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "content": "Content",
+      "settings": "Settings",
+      "links": "Links",
+      "posts": "Posts",
+      "profile": "Profile",
+      "system": "System"
+    }
+  },
   "copy": "Copy",
   "copied": "Copied"
 }

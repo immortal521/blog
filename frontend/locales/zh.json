@@ -1,30 +1,26 @@
 {
-  "navbar": {
-    "home": "首页",
-    "about": "关于",
-    "links": "友链"
-  },
+  "navbar": { "home": "首页", "about": "关于", "links": "友链" },
   "themeControl": {
     "themeMode": "主题模式",
-    "light": "亮色",
-    "dark": "暗色",
+    "light": "浅色",
+    "dark": "深色",
     "primaryColor": "主题色",
     "language": "语言"
   },
   "tooltip": {
-    "github": "查看 GitHub",
-    "backToTop": "返回顶部",
+    "github": "在 GitHub 查看",
+    "backToTop": "回到顶部",
     "addQQFriend": "添加 QQ 好友",
     "themeOption": "主题设置",
-    "contect": "联系方式",
+    "contect": "联系我",
     "userSetting": "用户设置",
     "rss": "RSS 订阅"
   },
   "message": {
-    "rssCopied": "RSS 订阅链接已复制"
+    "rssCopied": "RSS 订阅链接已复制。"
   },
   "submission": {
-    "friendLink": "申请提交成功！"
+    "friendLink": "提交成功！"
   },
   "friendLink": {
     "title": "友情链接",
@@ -32,15 +28,26 @@
   },
   "link": {
     "overview": {
-      "total": "友链总数",
-      "normal": "正常链接数量",
-      "abnormal": "异常链接数量",
+      "total": "链接总数",
+      "normal": "正常链接",
+      "abnormal": "异常链接",
       "pending": "待审核"
     }
   },
   "page": {
-    "links": "友情链接",
+    "links": "友链",
     "about": "关于我"
+  },
+  "admin": {
+    "sidebar": {
+      "dashboard": "仪表盘",
+      "content": "内容",
+      "settings": "设置",
+      "links": "链接",
+      "posts": "文章",
+      "profile": "个人资料",
+      "system": "系统"
+    }
   },
   "copy": "复制",
   "copied": "已复制"

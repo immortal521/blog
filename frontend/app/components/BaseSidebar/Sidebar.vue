@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { SidebarNode } from "./types";
+
 interface Props {
-  items?: SidebarItem[];
+  items?: SidebarNode[];
   collapsed?: boolean;
   width?: number | string;
   widthCollapsed?: number | string;
@@ -10,14 +12,11 @@ const { collapsed = false, width = 220, widthCollapsed = 60, items = [] } = defi
 
 const open = defineModel<boolean>("open", { required: false, default: true });
 
-const selectedKey = defineModel<string>("selectedKey", { required: false, default: "" });
+const openKeys = ref<Set<string>>(new Set<string>());
 
-const emit = defineEmits<{
-  (e: "item-clicked", item: SidebarItem): void;
-}>();
-
-const onItemClicked = (item: SidebarItem) => {
-  emit("item-clicked", item);
+const handleToggle = (key: string) => {
+  if (openKeys.value.has(key)) openKeys.value.delete(key);
+  else openKeys.value.add(key);
 };
 </script>
 
@@ -27,23 +26,22 @@ const onItemClicked = (item: SidebarItem) => {
       <div v-if="$slots.header" class="sidebar-header">
         <slot name="header" />
       </div>
-      <ul class="nav-list">
-        <li
-          v-for="item in items"
-          :key="item.key"
-          :class="{ item: true, 'is-active': item.key === selectedKey }"
-          @click="onItemClicked(item)"
-        >
-          <div class="icon">
-            <Icon v-if="item.icon" :name="item.icon" size="18" />
-          </div>
-          <transition name="label">
-            <div v-if="!collapsed" class="label">
-              {{ item.label }}
-            </div>
-          </transition>
-        </li>
-      </ul>
+      <template v-for="node in items" :key="node.key">
+        <BaseSidebarSection
+          v-if="node.type === 'section'"
+          :section="node"
+          :collapsed="collapsed"
+          :open-keys="openKeys"
+          @toggle="handleToggle"
+        />
+        <BaseSidebarItem
+          v-else
+          :item="node"
+          :collapsed="collapsed"
+          :open-keys="openKeys"
+          @toggle="handleToggle"
+        />
+      </template>
     </aside>
   </div>
   <transition name="overlay">
@@ -54,6 +52,7 @@ const onItemClicked = (item: SidebarItem) => {
 <style lang="less" scoped>
 .sidebar-wrapper {
   background: var(--bg-sidebar);
+  padding: 0 5px;
   height: 100vh;
   width: 100%;
   max-width: calc(v-bind(width) * 1px);
@@ -79,7 +78,7 @@ const onItemClicked = (item: SidebarItem) => {
 }
 
 .sidebar-header {
-  height: 60px;
+  height: 50px;
   width: 100%;
 }
 
@@ -98,7 +97,7 @@ const onItemClicked = (item: SidebarItem) => {
     cursor: pointer;
     position: relative;
     display: flex;
-    margin: 2px 0;
+    margin: 5px 0;
 
     &.is-active {
       background: var(--color-primary-base);
@@ -110,8 +109,11 @@ const onItemClicked = (item: SidebarItem) => {
 
     .icon {
       flex-shrink: 0;
-      width: 30px;
+      width: 35px;
       height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .label {

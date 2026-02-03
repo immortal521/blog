@@ -1,25 +1,59 @@
 <script setup lang="ts">
-interface AdminItem extends SidebarItem {
-  to: string;
-}
-const menuItems = ref<AdminItem[]>([
+import type { SidebarNode } from "~/components/BaseSidebar/types";
+
+const { ts } = useI18n();
+
+const menuItems = ref<SidebarNode[]>([
   {
-    icon: undefined,
-    label: "Dashboard",
+    type: "link",
+    icon: "duo-icons:dashboard",
+    label: ts("admin.sidebar.dashboard"),
     to: "/admin",
     key: "/admin",
+    exact: true,
   },
   {
-    icon: undefined,
-    label: "links",
-    to: "/admin/links",
-    key: "/admin/links",
+    type: "section",
+    key: "content",
+    label: ts("admin.sidebar.content"),
+    items: [
+      {
+        type: "link",
+        icon: "ri:link",
+        label: ts("admin.sidebar.links"),
+        to: "/admin/links",
+        key: "/admin/links",
+      },
+      {
+        type: "link",
+        icon: "material-symbols:post-rounded",
+        label: ts("admin.sidebar.posts"),
+        to: "/admin/posts",
+        key: "/admin/posts",
+      },
+    ],
   },
+
   {
-    icon: undefined,
-    label: "post",
-    to: "/admin/posts",
-    key: "/admin/posts",
+    type: "section",
+    key: "settings",
+    label: ts("admin.sidebar.settings"),
+    items: [
+      {
+        type: "link",
+        icon: "mdi:account-cog-outline",
+        label: ts("admin.sidebar.profile"),
+        to: "/admin/profile",
+        key: "/admin/profile",
+      },
+      {
+        type: "link",
+        icon: "mdi:cog-outline",
+        label: ts("admin.sidebar.system"),
+        to: "/admin/settings",
+        key: "/admin/settings",
+      },
+    ],
   },
 ]);
 
@@ -29,18 +63,6 @@ const selectedKey = ref(route.fullPath);
 
 const { open, collapsed } = useSidebar();
 const { isMobile } = useResponsive();
-
-const { $localePath } = useI18n();
-
-const onItemClicked = (item: SidebarItem) => {
-  const { to, key } = item as AdminItem;
-  const localeTo = $localePath(to);
-  selectedKey.value = key;
-  navigateTo(localeTo);
-  if (isMobile.value) {
-    open.value = false;
-  }
-};
 
 const handleToggle = () => {
   if (isMobile.value) {
@@ -60,12 +82,19 @@ const handleToggle = () => {
       v-model:open="open"
       v-model:collapsed="collapsed"
       :items="menuItems"
-      @item-clicked="onItemClicked"
-    />
+    >
+      <template #header>
+        <div class="logo">
+          <h2>Admin</h2>
+        </div>
+      </template>
+    </BaseSidebar>
     <div class="right">
       <header class="header">
         <button class="menu-btn" @click="handleToggle">
-          <Icon name="hugeicons:menu-11" size="24" class="icon" />
+          <Icon v-if="!isMobile && !collapsed" name="icon-park-outline:menu-fold" size="28" />
+          <Icon v-else-if="!isMobile && collapsed" name="icon-park-outline:menu-unfold" size="28" />
+          <Icon v-else name="hugeicons:menu-11" size="24" class="icon" />
         </button>
       </header>
       <main class="main">
@@ -85,6 +114,15 @@ const handleToggle = () => {
 
 .right {
   width: 100%;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-color-base);
 }
 
 .header {
