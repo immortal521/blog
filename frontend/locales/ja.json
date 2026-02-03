@@ -1,9 +1,5 @@
 {
-  "navbar": {
-    "home": "ホーム",
-    "about": "紹介",
-    "links": "リンク集"
-  },
+  "navbar": { "home": "ホーム", "about": "概要", "links": "フレンド" },
   "themeControl": {
     "themeMode": "テーマモード",
     "light": "ライト",
@@ -12,36 +8,47 @@
     "language": "言語"
   },
   "tooltip": {
-    "github": "GitHub を表示",
+    "github": "GitHubで表示",
     "backToTop": "トップへ戻る",
-    "addQQFriend": "QQ 友だちを追加する",
+    "addQQFriend": "QQフレンドを追加",
     "themeOption": "テーマ設定",
-    "contect": "お問い合わせ",
+    "contect": "連絡先",
     "userSetting": "ユーザー設定",
-    "rss": "RSS フィード"
+    "rss": "RSSフィード"
   },
   "message": {
-    "rssCopied": "RSS 購読リンクがコピーされました"
+    "rssCopied": "RSS購読リンクをコピーしました。"
   },
   "submission": {
-    "friendLink": "申請が正常に送信されました！"
+    "friendLink": "送信が完了しました！"
   },
   "friendLink": {
     "title": "フレンドリンク",
-    "requestLink": "リンクを送信"
+    "requestLink": "リンクを投稿"
   },
   "link": {
     "overview": {
       "total": "リンク総数",
-      "normal": "正常リンク数",
-      "abnormal": "異常リンク数",
+      "normal": "通常リンク",
+      "abnormal": "異常リンク",
       "pending": "審査待ち"
     }
   },
   "page": {
-    "links": "友達",
+    "links": "フレンド",
     "about": "私について"
   },
-  "copy": "コピーする",
+  "admin": {
+    "sidebar": {
+      "dashboard": "ダッシュボード",
+      "content": "コンテンツ",
+      "settings": "設定",
+      "links": "リンク",
+      "posts": "投稿",
+      "profile": "プロフィール",
+      "system": "システム"
+    }
+  },
+  "copy": "コピー",
   "copied": "コピーしました"
 }

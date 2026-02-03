@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import type {
+  SidebarActionItem,
+  SidebarDividerItem,
+  SidebarGroupItem,
+  SidebarLinkItem,
+  SidebarSection,
+} from "~/components/BaseSidebar/types";
+
 definePageMeta({
   layout: "admin-layout",
 });
@@ -40,42 +48,65 @@ onMounted(() => {
   open.value = window.innerWidth >= 768;
 });
 
-interface AdminItems extends SidebarItem {
-  to: string;
-}
+const link: SidebarLinkItem = {
+  to: "1",
+  type: "link",
+  key: "",
+  icon: "ri:link",
+  label: "Link",
+};
 
-const menuItems = ref<AdminItems[]>([
-  {
-    icon: undefined,
-    label: "Dashboard",
-    to: "/admin",
-    key: "playground",
-  },
-  {
-    icon: undefined,
-    label: "links",
-    to: "/admin/links",
-    key: "",
-  },
-  {
-    icon: undefined,
-    label: "post",
-    to: "/admin/posts",
-    key: "",
-  },
-]);
+const divider: SidebarDividerItem = {
+  type: "divider",
+  key: "",
+  title: "Divider",
+};
 
-const selectedKey = ref("playground");
+const action: SidebarActionItem = {
+  action: function (): void {
+    collapsed.value = !collapsed.value;
+  },
+  label: "Action",
+  type: "action",
+  key: "",
+};
+
+const group: SidebarGroupItem = {
+  children: [
+    {
+      type: "link",
+      label: "playground",
+      to: "/playground",
+      key: "/playground",
+    },
+  ],
+  type: "group",
+  key: "group",
+  label: "Group",
+};
+
+const section = ref<SidebarSection>({
+  type: "section",
+  items: [link, divider, action, group],
+  key: "",
+  label: "section",
+});
+
+const openKeys = ref(new Set<string>());
+openKeys.value.add(group.key);
+
+const collapsed = ref(false);
 </script>
 
 <template>
   <div class="container">
-    <BaseSidebar
-      ref="sidebar"
-      v-model:selected-key="selectedKey"
-      v-model:open="open"
-      :items="menuItems"
-    />
+    <div class="sidebar" :class="{ collapsed }">
+      <BaseSidebarItem :item="link" :open-keys="openKeys" :collapsed />
+      <BaseSidebarItem :item="group" :open-keys="openKeys" :collapsed />
+      <BaseSidebarItem :item="action" :open-keys="openKeys" :collapsed />
+      <BaseSidebarItem :item="divider" :open-keys="openKeys" :collapsed />
+      <BaseSidebarSection :section="section" :open-keys="openKeys" :collapsed />
+    </div>
     <div class="right">
       <header class="header">
         <button @click="open = !open">{{ open }}</button>
@@ -114,6 +145,16 @@ const selectedKey = ref("playground");
   width: 100vw;
   height: 100vh;
   display: flex;
+}
+
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  transition: width 0.3s ease;
+}
+
+.collapsed {
+  width: 60px;
 }
 
 .right {
