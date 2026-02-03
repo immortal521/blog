@@ -52,15 +52,19 @@ const handleToggle = (key: string) => {
 <style lang="less" scoped>
 .sidebar-wrapper {
   background: var(--bg-sidebar);
-  padding: 0 5px;
   height: 100vh;
   width: 100%;
   max-width: calc(v-bind(width) * 1px);
   overflow-x: hidden;
-  transition: max-width 0.3s ease-in-out;
+  transition:
+    transform 0.3s ease-in-out,
+    max-width 0.3s ease-in-out;
+  transform: translateX(0);
+  will-change: transform;
 }
 
 .sidebar-content {
+  padding: 0 5px;
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
 }
@@ -70,7 +74,13 @@ const handleToggle = (key: string) => {
 }
 
 .is-hidden {
-  max-width: 0;
+  transform: translateX(-100%);
+  max-width: calc(v-bind(width) * 1px); /* 保持原宽，避免内部被压缩 */
+  pointer-events: none;
+
+  * {
+    pointer-events: none;
+  }
 
   .sidebar-content {
     opacity: 0;
