@@ -9,8 +9,6 @@ interface Props {
 const emit = defineEmits<SidebarItemEmits>();
 
 const { section, collapsed = false, openKeys } = defineProps<Props>();
-
-console.log(section);
 </script>
 
 <template>

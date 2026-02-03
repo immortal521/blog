@@ -13,6 +13,11 @@ const { collapsed = false, width = 220, widthCollapsed = 60, items = [] } = defi
 const open = defineModel<boolean>("open", { required: false, default: true });
 
 const openKeys = ref<Set<string>>(new Set<string>());
+
+const handleToggle = (key: string) => {
+  if (openKeys.value.has(key)) openKeys.value.delete(key);
+  else openKeys.value.add(key);
+};
 </script>
 
 <template>
@@ -27,8 +32,15 @@ const openKeys = ref<Set<string>>(new Set<string>());
           :section="node"
           :collapsed="collapsed"
           :open-keys="openKeys"
+          @toggle="handleToggle"
         />
-        <BaseSidebarItem v-else :item="node" :collapsed="collapsed" :open-keys="openKeys" />
+        <BaseSidebarItem
+          v-else
+          :item="node"
+          :collapsed="collapsed"
+          :open-keys="openKeys"
+          @toggle="handleToggle"
+        />
       </template>
     </aside>
   </div>
