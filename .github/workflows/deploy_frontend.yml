@@ -43,6 +43,8 @@ jobs:
           pnpm install --frozen-lockfile
 
       - name: Build Nuxt SSR in frontend
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           cd frontend
           pnpm build
