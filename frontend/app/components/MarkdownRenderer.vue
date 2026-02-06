@@ -13,13 +13,20 @@ const props = defineProps({
 const renderedVNode = shallowRef<VNodeChild>([]);
 const containerRef = useTemplateRef("container");
 
-useViewer(containerRef);
+const { update } = useViewer(containerRef);
 
 const renderMarkdown = () => {
   renderedVNode.value = parseMarkdownToVNode(props.markdown);
 };
 
-watch(() => props.markdown, renderMarkdown, { immediate: true });
+watch(
+  () => props.markdown,
+  async () => {
+    renderMarkdown();
+    await update();
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

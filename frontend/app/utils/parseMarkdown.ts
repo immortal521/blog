@@ -129,6 +129,12 @@ function tokensToVNode(tokens: Token[]): VNodeChild[] {
         break;
       }
 
+      case token.type === "softbreak": {
+        const key = getNextKey("br");
+        pushToParent(h("br", { key }));
+        break;
+      }
+
       // 可以根据需要添加更多 token 类型
       default: {
         console.warn(`未处理的 token 类型: ${token.type}`);
