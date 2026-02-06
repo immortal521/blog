@@ -44,7 +44,13 @@
       "content": "コンテンツ",
       "settings": "設定",
       "links": "リンク",
-      "posts": "投稿",
+      "posts": "記事",
+      "postsList": "記事一覧",
+      "postCreate": "新規作成",
+      "categories": "カテゴリ",
+      "tags": "タグ",
+      "comments": "コメント",
+      "trash": "ゴミ箱",
       "profile": "プロフィール",
       "system": "システム"
     }

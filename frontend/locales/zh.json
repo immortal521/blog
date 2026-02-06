@@ -45,8 +45,14 @@
       "settings": "设置",
       "links": "链接",
       "posts": "文章",
+      "postsList": "文章列表",
+      "postCreate": "新建文章",
+      "categories": "分类",
+      "tags": "标签",
+      "comments": "评论",
+      "trash": "回收站",
       "profile": "个人资料",
-      "system": "系统"
+      "system": "系统设置"
     }
   },
   "copy": "复制",

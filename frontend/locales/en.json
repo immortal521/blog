@@ -45,6 +45,12 @@
       "settings": "Settings",
       "links": "Links",
       "posts": "Posts",
+      "postsList": "All",
+      "postCreate": "New",
+      "categories": "Categories",
+      "tags": "Tags",
+      "comments": "Comments",
+      "trash": "Trash",
       "profile": "Profile",
       "system": "System"
     }
