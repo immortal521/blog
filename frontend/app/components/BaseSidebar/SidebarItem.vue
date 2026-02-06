@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SidebarItem } from "./types";
+import type { SidebarActionItem, SidebarGroupItem, SidebarItem } from "./types";
 interface Props {
   item: SidebarItem;
   collapsed?: boolean;
@@ -12,11 +12,13 @@ const emit = defineEmits<{
   (e: "toggle", key: string): void;
 }>();
 
-const isOpen = computed(() => {
+const route = useRoute();
+
+const disabled = computed(() => !!item.disabled);
+
+const isGroupOpen = computed(() => {
   return item.type === "group" && openKeys.has(item.key);
 });
-
-const route = useRoute();
 
 const isLinkMatch = (to: string, exact?: boolean) => {
   if (exact) return route.path === to;
@@ -41,7 +43,7 @@ const isLinkActive = computed(() => {
 
 const isGroupActive = computed(() => {
   if (item.type !== "group") return false;
-  return hasActiveChild(item.children ?? []);
+  return hasActiveChild((item as SidebarGroupItem).children ?? []);
 });
 
 const onLinkClick = (e: MouseEvent) => {
@@ -49,15 +51,13 @@ const onLinkClick = (e: MouseEvent) => {
 };
 
 const onGroupClick = () => {
-  if (item.type !== "group") return;
-  if (item.disabled) return;
+  if (item.type !== "group" || disabled.value) return;
   emit("toggle", item.key);
 };
 
-const onActiveClick = () => {
-  if (item.type !== "action") return;
-  if (item.disabled) return;
-  item.action();
+const onActionClick = () => {
+  if (item.type !== "action" || disabled.value) return;
+  (item as SidebarActionItem).action();
 };
 
 const onBeforeEnter = (el: Element) => {
@@ -124,7 +124,7 @@ const onAfterLeave = (el: Element) => {
       </NuxtLinkLocale>
     </div>
     <div v-else-if="item.type === 'action'" class="row" :class="{ collapsed }">
-      <button class="btn" :disabled="item.disabled" @click="onActiveClick">
+      <button class="btn" :disabled="item.disabled" @click="onActionClick">
         <div class="icon">
           <Icon v-if="item.icon" :name="item.icon" />
         </div>
@@ -134,13 +134,17 @@ const onAfterLeave = (el: Element) => {
     <div
       v-else-if="item.type === 'group'"
       class="row"
-      :class="{ 'active-group': isGroupActive, collapsed }"
+      :class="{
+        group: true,
+        'active-group': isGroupActive,
+        collapsed,
+        'collapsed-open-group': collapsed && openKeys.has(item.key),
+      }"
     >
       <button
-        v-if="!collapsed"
         class="btn"
         type="button"
-        :aria-expanded="isOpen"
+        :aria-expanded="isGroupOpen"
         :disabled="item.disabled"
         @click="onGroupClick"
       >
@@ -158,7 +162,7 @@ const onAfterLeave = (el: Element) => {
         @leave="onLeave"
         @after-leave="onAfterLeave"
       >
-        <div v-show="isOpen" class="children">
+        <div v-show="isGroupOpen" class="children">
           <SidebarItem
             v-for="ch in item.children"
             :key="ch.key"
@@ -248,6 +252,16 @@ const onAfterLeave = (el: Element) => {
     border-radius: 5px;
     background: var(--border-color-divider);
   }
+}
+
+.collapsed .group {
+  border-radius: 16px;
+  padding: 5px 0;
+}
+
+.collapsed-open-group {
+  border-radius: 20px;
+  background-color: var(--color-primary-bg-muted);
 }
 
 .row.collapsed > .btn {
