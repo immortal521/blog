@@ -1,4 +1,4 @@
-interface MenuItem extends SidebarItem {
+interface MenuItem {
   key: string;
   label: string;
   icon: IconName | Component;
