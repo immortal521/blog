@@ -32,7 +32,7 @@
     "markdown-it": "^14.1.0",
     "motion-v": "^1.9.0",
     "nuxt": "^4.3.0",
-    "nuxt-i18n-micro": "^3.2.4",
+    "nuxt-i18n-micro": "^3.3.0",
     "ofetch": "^1.5.1",
     "pinia": "^3.0.4",
     "tinycolor2": "^1.6.0",

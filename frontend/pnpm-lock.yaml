@@ -60,8 +60,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(@parcel/watcher@2.5.6)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.2)(less@4.5.1)(magicast@0.5.1)(meow@13.2.0)(optionator@0.9.4)(rollup@4.56.0)(stylelint@16.26.1(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2)
       nuxt-i18n-micro:
-        specifier: ^3.2.4
-        version: 3.2.4(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))
+        specifier: ^3.3.0
+        version: 3.3.0(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))
       ofetch:
         specifier: ^1.5.1
         version: 1.5.1
@@ -812,11 +812,14 @@ packages:
   '@i18n-micro/core@1.1.0':
     resolution: {integrity: sha512-PvTqFpv6UMrJs5ZcegMHqZZAYNJLI0RMJ3D6M2LrtLYTU8sMW02Zy8Jl1y6qLOs56tpcGRVf+KdnqGlfLNdQjw==}
 
-  '@i18n-micro/path-strategy@1.0.3':
-    resolution: {integrity: sha512-6/F9cptjz7MTl8aOdv135s2tz7KMbC2pWGw6pA08VaFbTGUhiteEHTO5TqBnz58cpPc3mKqrhP1Vbpk3ewFPrQ==}
+  '@i18n-micro/core@1.1.1':
+    resolution: {integrity: sha512-4Cn0T97nOTxGoWefEC+8JMovY/O5cU1hHXutWxQ/md4zYrDTRvOO7H9dzW20g1yfNH5I5wk89pzhDGnmSChrwg==}
 
-  '@i18n-micro/route-strategy@1.1.0':
-    resolution: {integrity: sha512-HqJvBQc38hMh+Mx6hcvpY0tXM+Ix0I8viPffIN8KoRuIhBkLfRXBeA7ZDaKx8KBLCX6noYtmonTp4bLIr8MLBw==}
+  '@i18n-micro/path-strategy@1.1.1':
+    resolution: {integrity: sha512-iBoPZAysS8kbBU8GCmRv6FbmFOb79exmXCzqdkef7Low4YiWzEPtUZuOGVQvkcXKDMlLsIoGoRnS1oqg8ivQ0A==}
+
+  '@i18n-micro/route-strategy@1.1.1':
+    resolution: {integrity: sha512-HaxqXqcaHCHLsQ+qOZ4BgV7C1Vgkz2ZkXMcYK2fH/FzKDf8uUAFQ/HSwinMFzW/19hGqTwXh5e9IL57Tome66g==}
     engines: {node: '>=18'}
 
   '@i18n-micro/test-utils@1.1.0':
@@ -1754,6 +1757,11 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@rollup/rollup-linux-x64-gnu@4.57.1':
+    resolution: {integrity: sha512-ABca4ceT4N+Tv/GtotnWAeXZUZuM/9AQyCyKYyKnpk4yoA7QIAuBt6Hkgpw8kActYlew2mvckXkvx0FfoInnLg==}
+    cpu: [x64]
+    os: [linux]
+
   '@rollup/rollup-linux-x64-musl@4.56.0':
     resolution: {integrity: sha512-ZhGH1eA4Qv0lxaV00azCIS1ChedK0V32952Md3FtnxSqZTBTd6tgil4nZT5cU8B+SIw3PFYkvyR4FKo2oyZIHA==}
     cpu: [x64]
@@ -1786,6 +1794,11 @@ packages:
 
   '@rollup/rollup-win32-x64-msvc@4.56.0':
     resolution: {integrity: sha512-H8AE9Ur/t0+1VXujj90w0HrSOuv0Nq9r1vSZF2t5km20NTfosQsGGUXDaKdQZzwuLts7IyL1fYT4hM95TI9c4g==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rollup/rollup-win32-x64-msvc@4.57.1':
+    resolution: {integrity: sha512-mxRFDdHIWRxg3UfIIAwCm6NzvxG0jDX/wBN6KsQFTvKFqqg9vTrWUE68qEjHt19A5wwx5X5aUi2zuZT7YR0jrA==}
     cpu: [x64]
     os: [win32]
 
@@ -3951,8 +3964,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxt-i18n-micro@3.2.4:
-    resolution: {integrity: sha512-ACDT5sW0xXSH4XVfLAU4m+OkUtlPVD/qyYewJmjQzK+HKc3LWZX2Jf/cVSx3QELtjYTMiyPzA+vfgZJ+9DGnOw==}
+  nuxt-i18n-micro@3.3.0:
+    resolution: {integrity: sha512-pbVFEKUZ/+5eL2wQBf+8XJWBIWBGOy628UXbVuln5jbH7Ywb1UpZwAh+nv75M6XC/hHmhEd5wG37/oXOwbJunw==}
     peerDependencies:
       vue-router: '>=4.4.0'
 
@@ -6075,14 +6088,18 @@ snapshots:
     dependencies:
       '@i18n-micro/types': 1.1.0
 
-  '@i18n-micro/path-strategy@1.0.3':
+  '@i18n-micro/core@1.1.1':
+    dependencies:
+      '@i18n-micro/types': 1.1.0
+
+  '@i18n-micro/path-strategy@1.1.1':
     dependencies:
       '@i18n-micro/types': 1.1.0
       ufo: 1.6.3
 
-  '@i18n-micro/route-strategy@1.1.0':
+  '@i18n-micro/route-strategy@1.1.1':
     dependencies:
-      '@i18n-micro/core': 1.1.0
+      '@i18n-micro/core': 1.1.1
       '@i18n-micro/types': 1.1.0
       '@nuxt/schema': 4.3.0
 
@@ -7236,6 +7253,9 @@ snapshots:
   '@rollup/rollup-linux-x64-gnu@4.56.0':
     optional: true
 
+  '@rollup/rollup-linux-x64-gnu@4.57.1':
+    optional: true
+
   '@rollup/rollup-linux-x64-musl@4.56.0':
     optional: true
 
@@ -7255,6 +7275,9 @@ snapshots:
     optional: true
 
   '@rollup/rollup-win32-x64-msvc@4.56.0':
+    optional: true
+
+  '@rollup/rollup-win32-x64-msvc@4.57.1':
     optional: true
 
   '@shikijs/core@3.21.0':
@@ -9714,11 +9737,11 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt-i18n-micro@3.2.4(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3))):
+  nuxt-i18n-micro@3.3.0(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3))):
     dependencies:
-      '@i18n-micro/core': 1.1.0
-      '@i18n-micro/path-strategy': 1.0.3
-      '@i18n-micro/route-strategy': 1.1.0
+      '@i18n-micro/core': 1.1.1
+      '@i18n-micro/path-strategy': 1.1.1
+      '@i18n-micro/route-strategy': 1.1.1
       '@i18n-micro/test-utils': 1.1.0
       '@i18n-micro/types': 1.1.0
       '@nuxt/devtools-kit': 2.7.0(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))
@@ -9728,8 +9751,8 @@ snapshots:
       ufo: 1.6.3
       vue-router: 4.6.4(vue@3.5.27(typescript@5.9.3))
     optionalDependencies:
-      '@rollup/rollup-linux-x64-gnu': 4.56.0
-      '@rollup/rollup-win32-x64-msvc': 4.56.0
+      '@rollup/rollup-linux-x64-gnu': 4.57.1
+      '@rollup/rollup-win32-x64-msvc': 4.57.1
     transitivePeerDependencies:
       - magicast
       - vite
