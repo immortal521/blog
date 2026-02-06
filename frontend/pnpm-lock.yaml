@@ -60,8 +60,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(@parcel/watcher@2.5.6)(@types/node@22.19.7)(@vue/compiler-sfc@3.5.27)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.2)(less@4.5.1)(magicast@0.5.1)(meow@13.2.0)(optionator@0.9.4)(rollup@4.56.0)(stylelint@16.26.1(typescript@5.9.3))(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.3(typescript@5.9.3))(yaml@2.8.2)
       nuxt-i18n-micro:
-        specifier: ^2.20.1
-        version: 2.20.1(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))
+        specifier: ^3.2.4
+        version: 3.2.4(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))
       ofetch:
         specifier: ^1.5.1
         version: 1.5.1
@@ -809,14 +809,21 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@i18n-micro/core@1.0.28':
-    resolution: {integrity: sha512-kYNg/0QJxMHBO5oM23q0LuERkZZPNaSaz/H6qGZeBV2/0IYSKxSRFOTDESy96C3CpvSZqXvZ9sE1gWwS3+fcMA==}
+  '@i18n-micro/core@1.1.0':
+    resolution: {integrity: sha512-PvTqFpv6UMrJs5ZcegMHqZZAYNJLI0RMJ3D6M2LrtLYTU8sMW02Zy8Jl1y6qLOs56tpcGRVf+KdnqGlfLNdQjw==}
 
-  '@i18n-micro/test-utils@1.0.8':
-    resolution: {integrity: sha512-TGcaxATEXmC9nsSPooNcch+KRVq7M+zbTNIsz4wLO4W+5B9LPvcKYSMzR9SDJ5qm3lnAnBWjKLwjIjnJ1LnzRA==}
+  '@i18n-micro/path-strategy@1.0.3':
+    resolution: {integrity: sha512-6/F9cptjz7MTl8aOdv135s2tz7KMbC2pWGw6pA08VaFbTGUhiteEHTO5TqBnz58cpPc3mKqrhP1Vbpk3ewFPrQ==}
 
-  '@i18n-micro/types@1.0.16':
-    resolution: {integrity: sha512-QpZGZhTm26glpWDxtlCrelaPcPXdwOcHPi0hKZ9wwPZ939TU5MXWyboCTEo9NlUg9xcbz26vyYhgdkwvnU/L1Q==}
+  '@i18n-micro/route-strategy@1.1.0':
+    resolution: {integrity: sha512-HqJvBQc38hMh+Mx6hcvpY0tXM+Ix0I8viPffIN8KoRuIhBkLfRXBeA7ZDaKx8KBLCX6noYtmonTp4bLIr8MLBw==}
+    engines: {node: '>=18'}
+
+  '@i18n-micro/test-utils@1.1.0':
+    resolution: {integrity: sha512-nmGf5/VOG+pidmu0pfxXtipKE2BzooP3LMWeTqwOAyiCoXPYJIHqlBQKF1u8w2IfAq87oSv8MbKpisniMSmFwg==}
+
+  '@i18n-micro/types@1.1.0':
+    resolution: {integrity: sha512-zkMRff8fT9VFQWb/bWwz29r55sWsrq2DOkxkYtexIfjZToNMyuocrxzuTBebx2dYgDGrm8xzesid6Z56yiDv8w==}
 
   '@iconify-json/codicon@1.2.40':
     resolution: {integrity: sha512-9wvTOD/Rvmr1G7vadrAOpj24hzO/1jVeGt3KhMoAvauHRaYpjoZyIeeHlBIPxsUJ9ADkBlB1+x83CzmGaTRKLw==}
@@ -3944,8 +3951,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxt-i18n-micro@2.20.1:
-    resolution: {integrity: sha512-8grL7qipfB1zGdijq1Z751AdWYZAJntHvYcb6CSI1HpivXm3fMJWT7A/r6seG49M6Sr+kGc805/cwLPjzF1nNg==}
+  nuxt-i18n-micro@3.2.4:
+    resolution: {integrity: sha512-ACDT5sW0xXSH4XVfLAU4m+OkUtlPVD/qyYewJmjQzK+HKc3LWZX2Jf/cVSx3QELtjYTMiyPzA+vfgZJ+9DGnOw==}
     peerDependencies:
       vue-router: '>=4.4.0'
 
@@ -6064,15 +6071,26 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@i18n-micro/core@1.0.28':
+  '@i18n-micro/core@1.1.0':
     dependencies:
-      '@i18n-micro/types': 1.0.16
+      '@i18n-micro/types': 1.1.0
 
-  '@i18n-micro/test-utils@1.0.8':
+  '@i18n-micro/path-strategy@1.0.3':
     dependencies:
-      '@i18n-micro/core': 1.0.28
+      '@i18n-micro/types': 1.1.0
+      ufo: 1.6.3
 
-  '@i18n-micro/types@1.0.16': {}
+  '@i18n-micro/route-strategy@1.1.0':
+    dependencies:
+      '@i18n-micro/core': 1.1.0
+      '@i18n-micro/types': 1.1.0
+      '@nuxt/schema': 4.3.0
+
+  '@i18n-micro/test-utils@1.1.0':
+    dependencies:
+      '@i18n-micro/core': 1.1.0
+
+  '@i18n-micro/types@1.1.0': {}
 
   '@iconify-json/codicon@1.2.40':
     dependencies:
@@ -9696,11 +9714,13 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt-i18n-micro@2.20.1(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3))):
+  nuxt-i18n-micro@3.2.4(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3))):
     dependencies:
-      '@i18n-micro/core': 1.0.28
-      '@i18n-micro/test-utils': 1.0.8
-      '@i18n-micro/types': 1.0.16
+      '@i18n-micro/core': 1.1.0
+      '@i18n-micro/path-strategy': 1.0.3
+      '@i18n-micro/route-strategy': 1.1.0
+      '@i18n-micro/test-utils': 1.1.0
+      '@i18n-micro/types': 1.1.0
       '@nuxt/devtools-kit': 2.7.0(magicast@0.5.1)(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(less@4.5.1)(terser@5.46.0)(yaml@2.8.2))
       '@nuxt/kit': 4.3.0(magicast@0.5.1)
       chokidar: 3.6.0
