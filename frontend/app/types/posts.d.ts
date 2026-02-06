@@ -13,3 +13,12 @@ interface PostMeta {
 interface Post extends PostMeta {
   content: string;
 }
+
+interface PostInput {
+  cover: string;
+  summary: string;
+  title: string;
+  content: string;
+  tagIds: number[];
+  status: "draft" | "published";
+}
