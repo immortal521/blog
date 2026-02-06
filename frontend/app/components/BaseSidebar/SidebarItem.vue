@@ -76,8 +76,9 @@ const onEnter = (el: Element) => {
 
 const onAfterEnter = (el: Element) => {
   const e = el as HTMLElement;
-  e.style.overflow = "auto";
+  e.style.height = "auto";
   e.style.overflow = "";
+  e.style.opacity = "";
 };
 
 const onBeforeLeave = (el: Element) => {
@@ -136,6 +137,7 @@ const onAfterLeave = (el: Element) => {
       :class="{ 'active-group': isGroupActive, collapsed }"
     >
       <button
+        v-if="!collapsed"
         class="btn"
         type="button"
         :aria-expanded="isOpen"
@@ -143,7 +145,7 @@ const onAfterLeave = (el: Element) => {
         @click="onGroupClick"
       >
         <div class="icon">
-          <Icon v-if="item.icon" :name="item.icon" />
+          <Icon v-if="item.icon" :name="item.icon" size="24" />
         </div>
         <span class="label">{{ item.label }}</span>
       </button>
@@ -193,6 +195,7 @@ const onAfterLeave = (el: Element) => {
 
   .label {
     font-weight: inherit;
+    font-size: 1.6rem;
   }
 }
 

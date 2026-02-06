@@ -12,7 +12,7 @@ const { collapsed = false, width = 220, widthCollapsed = 60, items = [] } = defi
 
 const open = defineModel<boolean>("open", { required: false, default: true });
 
-const openKeys = ref<Set<string>>(new Set<string>());
+const { openKeys } = storeToRefs(useSidebarStore());
 
 const handleToggle = (key: string) => {
   if (openKeys.value.has(key)) openKeys.value.delete(key);

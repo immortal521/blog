@@ -18,18 +18,26 @@ const menuItems = ref<SidebarNode[]>([
     label: ts("admin.sidebar.content"),
     items: [
       {
+        type: "group",
+        icon: "material-symbols:post-rounded",
+        label: ts("admin.sidebar.posts"),
+        key: "/admin/posts",
+        children: [
+          {
+            type: "link",
+            icon: "ri:link",
+            label: ts("admin.sidebar.links"),
+            to: "/admin/links",
+            key: "/admin/links",
+          },
+        ],
+      },
+      {
         type: "link",
         icon: "ri:link",
         label: ts("admin.sidebar.links"),
         to: "/admin/links",
         key: "/admin/links",
-      },
-      {
-        type: "link",
-        icon: "material-symbols:post-rounded",
-        label: ts("admin.sidebar.posts"),
-        to: "/admin/posts",
-        key: "/admin/posts",
       },
     ],
   },
