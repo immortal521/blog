@@ -80,7 +80,9 @@ const handleToggle = () => {
 
   .menu-btn {
     background: none;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 10px;
     color: inherit;
   }
