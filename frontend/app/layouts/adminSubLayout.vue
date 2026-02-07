@@ -9,7 +9,9 @@ const handleBack = () => {
 <template>
   <div class="admin-sub-layout">
     <header class="header">
-      <button @click="handleBack">1</button>
+      <button class="back-btn" @click="handleBack">
+        <Icon name="eva:arrow-back-fill" size="28" />
+      </button>
     </header>
     <main class="main">
       <slot />
@@ -37,5 +39,14 @@ const handleBack = () => {
 
 .main {
   padding: 15px;
+}
+
+.back-btn {
+  background: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  color: inherit;
 }
 </style>
