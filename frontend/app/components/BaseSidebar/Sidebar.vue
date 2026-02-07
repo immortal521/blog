@@ -61,6 +61,7 @@ const handleToggle = (key: string) => {
     max-width 0.3s ease-in-out;
   transform: translateX(0);
   will-change: transform;
+  padding-bottom: 30px;
 
   &::-webkit-scrollbar {
     display: none;
