@@ -12,6 +12,9 @@ const handleBack = () => {
       <button class="back-btn" @click="handleBack">
         <Icon name="eva:arrow-back-fill" size="28" />
       </button>
+      <div class="actions">
+        <slot name="actions" />
+      </div>
     </header>
     <main class="main">
       <slot />
@@ -21,8 +24,8 @@ const handleBack = () => {
 
 <style lang="less" scoped>
 .admin-sub-layout {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100dvh;
   color: var(--text-color-base);
 }
 
@@ -35,10 +38,19 @@ const handleBack = () => {
   display: flex;
   align-items: center;
   padding: 0 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.actions {
+  margin-left: auto;
 }
 
 .main {
-  padding: 15px;
+  height: 100%;
+  padding: 65px 15px 15px;
 }
 
 .back-btn {

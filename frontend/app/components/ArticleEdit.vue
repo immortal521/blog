@@ -22,12 +22,11 @@ const content = defineModel<string>("content", {
 
 <style lang="less" scoped>
 .article-edit {
-  margin: 0 2%;
   border: 1.5px solid var(--border-color-divider);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
   width: 96%;
-  min-height: 400px;
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
