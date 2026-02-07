@@ -25,6 +25,7 @@ export default defineNuxtConfig({
       script: [{}],
     },
     pageTransition: { name: "page", mode: "out-in" },
+    layoutTransition: { name: "layout", mode: "out-in" },
   },
 
   // 站点基本信息
