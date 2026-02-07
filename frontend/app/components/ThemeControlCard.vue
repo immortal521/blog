@@ -71,7 +71,7 @@ onMounted(() => {
         @change="handleColorChange"
       />
     </div>
-    <p class="title">{{ $t("themeControl.language") }}</p>
+    <p class="title">{{ $ts("themeControl.language") }}</p>
     <InputSelect v-model:value="localeRef" :options />
   </div>
 </template>

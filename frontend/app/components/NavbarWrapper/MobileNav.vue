@@ -2,10 +2,9 @@
 import { onClickOutside } from "@vueuse/core";
 import { navLinks } from "./navLinks";
 
-const { $ts, $getLocaleName } = useI18n();
+const { $ts } = useI18n();
 
 const items = computed<MenuItem[]>(() => {
-  $getLocaleName();
   return navLinks.map((item) => {
     return {
       key: item.to,

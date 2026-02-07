@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { navLinks } from "./navLinks";
 
-const { $ts, $getLocaleName } = useI18n();
+const { $ts } = useI18n();
 
 const items = computed<MenuItem[]>(() => {
   return navLinks.map((item) => {
-    $getLocaleName();
     return {
       key: item.to,
       icon: item.icon,

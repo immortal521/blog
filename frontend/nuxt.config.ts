@@ -84,7 +84,6 @@ export default defineNuxtConfig({
   // 全局样式
   css: ["~/assets/styles/main.less"],
 
-  // 国际化配置 (i18n)
   i18n: {
     strategy: "prefix_except_default",
     defaultLocale: "zh",
@@ -95,6 +94,7 @@ export default defineNuxtConfig({
     ],
     disablePageLocales: true,
     redirects: true,
+    localeCookie: "user-locale",
     meta: true,
     metaBaseUrl: "https://blog.immortel.top/",
     autoDetectLanguage: true,
