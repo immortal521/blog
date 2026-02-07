@@ -126,7 +126,7 @@ const onAfterLeave = (el: Element) => {
     <div v-else-if="item.type === 'action'" class="row" :class="{ collapsed }">
       <button class="btn" :disabled="item.disabled" @click="onActionClick">
         <div class="icon">
-          <Icon v-if="item.icon" :name="item.icon" />
+          <Icon v-if="item.icon" :name="item.icon" size="24" />
         </div>
         <span class="label">{{ item.label }}</span>
       </button>

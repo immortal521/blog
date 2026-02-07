@@ -2,6 +2,7 @@ import type { SidebarNode } from "~/components/BaseSidebar/types";
 
 export function useAdminMenu() {
   const { $ts } = useI18n();
+  const router = useRouter();
 
   const menuItems = computed<SidebarNode[]>(() => [
     {
@@ -28,15 +29,15 @@ export function useAdminMenu() {
               icon: "mdi:format-list-bulleted",
               label: $ts("admin.sidebar.postsList"),
               to: "/admin/posts",
-              key: "/admin/posts/index",
+              key: "/admin/posts",
               exact: true,
             },
             {
               type: "link",
               icon: "mdi:plus-box-outline",
               label: $ts("admin.sidebar.postCreate"),
-              to: "/admin/posts/create",
-              key: "/admin/posts/create",
+              to: "/admin/posts/edit",
+              key: "/admin/posts/edit",
             },
             {
               type: "link",
@@ -85,7 +86,7 @@ export function useAdminMenu() {
               type: "link",
               label: $ts("admin.sidebar.profile"),
               to: "/admin/profile",
-              key: "/admin/profile/index",
+              key: "/admin/profile",
               exact: true,
             },
           ],
@@ -100,12 +101,21 @@ export function useAdminMenu() {
               type: "link",
               label: $ts("admin.sidebar.system"),
               to: "/admin/settings",
-              key: "/admin/settings/index",
+              key: "/admin/settings",
               exact: true,
             },
           ],
         },
       ],
+    },
+    {
+      type: "action",
+      label: $ts("admin.sidebar.back"),
+      icon: "material-symbols:text-select-move-back-word-rounded",
+      key: "admin.sidebar.back",
+      action: () => {
+        router.back();
+      },
     },
   ]);
 
