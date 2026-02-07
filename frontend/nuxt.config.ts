@@ -122,7 +122,6 @@ export default defineNuxtConfig({
 
   image: {},
 
-  // 使用的模块
   modules: [
     "@nuxt/fonts",
     "@nuxt/eslint",

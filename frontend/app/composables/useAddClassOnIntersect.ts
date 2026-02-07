@@ -26,12 +26,13 @@ export function useAddClassOnIntersect(
   let observer: IntersectionObserver | null = null;
 
   onMounted(async () => {
-    await nextTick(); // 确保 DOM 渲染完成
+    // 确保 DOM 渲染完成
+    await nextTick();
 
     // 将 targets 转为数组并提取真实 DOM 元素
     const list: HTMLElement[] = (Array.isArray(targets.value) ? targets.value : [targets.value])
       .map(getDomElement)
-      .filter((el): el is HTMLElement => el !== null); // TS 类型守卫
+      .filter((el): el is HTMLElement => el !== null);
 
     if (list.length === 0) return;
 
@@ -39,7 +40,7 @@ export function useAddClassOnIntersect(
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add(className);
-          observer?.unobserve(entry.target); // 只处理一次
+          observer?.unobserve(entry.target);
         }
       });
     }, options ?? {});

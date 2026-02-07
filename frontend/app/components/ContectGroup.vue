@@ -40,8 +40,8 @@ const contectItems = computed<ContectItem[]>(() => [
   min-height: 40px;
   margin-left: auto;
   align-items: center;
-  gap: 8px; /* 设置格子之间的空隙 */
-  justify-content: end; /* 整个grid水平居中 */
+  gap: 8px;
+  justify-content: end;
   flex-wrap: wrap;
 }
 

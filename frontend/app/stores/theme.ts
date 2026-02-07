@@ -12,7 +12,6 @@ export const useThemeStore = defineStore("theme", () => {
   const primaryColor = ref<string>(getInitialPrimaryColor());
   const themeColors = ref<ThemeColors>(generateThemeColors(primaryColor.value, mode.value)); // 先用 light 占位
 
-  // 设置主题模式：Light / Dark
   const setMode = (newMode: ThemeMode) => {
     if (newMode === mode.value) return;
 
@@ -29,7 +28,6 @@ export const useThemeStore = defineStore("theme", () => {
     }, newMode === "light");
   };
 
-  // 设置主题颜色
   const setPrimaryColor = (newColor: string) => {
     if (newColor === primaryColor.value) return;
 

@@ -58,11 +58,11 @@ const content = defineModel<string>("content", {
 .edit {
   width: 50%;
   min-width: 0;
-  display: flex; /* 让 textarea 更稳定地撑满 */
+  display: flex;
 }
 
 .edit textarea {
-  flex: 1; /* 用 flex 撑满比 height:100% 更稳 */
+  flex: 1;
   width: 100%;
   color: var(--text-color-base);
   border-radius: 8px 0 0 8px;

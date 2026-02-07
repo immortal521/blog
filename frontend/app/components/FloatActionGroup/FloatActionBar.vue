@@ -9,6 +9,7 @@ const show = ref(false);
 
 const SCROLL_SHOW_THRESHOLD = 80;
 const SCROLL_HIDE_THRESHOLD = 20;
+
 /**
  * 滚动事件处理函数，控制 `show` 状态
  */

@@ -1,5 +1,5 @@
 const count = ref(0);
-const isVisible = computed(() => count.value > 0); // 更改为 > 0 更严谨
+const isVisible = computed(() => count.value > 0);
 
 export function useLoadingBar() {
   return {

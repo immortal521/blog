@@ -86,7 +86,7 @@ const togglePasswordVisibility = () => {
   .input-suffix-group {
     display: flex;
     align-items: center;
-    padding: 8px 0; // 统一垂直填充，保证高度
+    padding: 8px 0;
     color: var(--color-text-secondary);
     font-size: 14px;
   }
@@ -108,17 +108,16 @@ const togglePasswordVisibility = () => {
   }
 
   .input-suffix-group {
-    padding-right: 10px; // 后缀组与右侧边框的距离
+    padding-right: 10px;
   }
 
-  // 密码切换按钮样式
   .password-toggle-button {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0; // 按钮自身不再需要太多 padding
+    padding: 0;
     margin-left: 4px;
-    margin-right: 4px; // 按钮与后缀插槽/输入框之间的间距
+    margin-right: 4px;
     font-size: 18px;
     line-height: 1;
     transition: color 0.2s;

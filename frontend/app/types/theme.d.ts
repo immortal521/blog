@@ -5,5 +5,5 @@ declare interface ThemeColors {
   hover: string;
   active: string;
   disabled: string;
-  onPrimary: string; // 用于按钮文字（黑 or 白）
+  onPrimary: string;
 }

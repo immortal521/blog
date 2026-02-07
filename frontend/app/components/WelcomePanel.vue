@@ -97,8 +97,8 @@ const handleDownArrowClick = () => {
   max-width: 210px;
   list-style: none;
   width: max-content;
-  gap: 8px; /* 设置格子之间的空隙 */
-  justify-content: start; /* 整个grid水平居中 */
+  gap: 8px;
+  justify-content: start;
   animation: fade-in-down 1s ease-in-out;
   flex-wrap: wrap;
 }

@@ -79,7 +79,7 @@ const handleToggle = (key: string) => {
 
 .is-hidden {
   transform: translateX(-100%);
-  max-width: calc(v-bind(width) * 1px); /* 保持原宽，避免内部被压缩 */
+  max-width: calc(v-bind(width) * 1px);
   pointer-events: none;
 
   * {

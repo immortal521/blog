@@ -205,7 +205,6 @@ watch(
   color: var(--text-color-muted);
 }
 
-/* 列表嵌套支持（缩进一致性） */
 :deep(ul ul),
 :deep(ul ol),
 :deep(ol ul),
@@ -228,7 +227,7 @@ watch(
 }
 
 :deep(u) {
-  text-decoration-line: underline; /* 首先需要有下划线 */
+  text-decoration-line: underline;
   text-decoration-color: var(--color-primary-base);
   text-underline-offset: 0.5rem;
   text-decoration-thickness: 2px;

@@ -28,16 +28,16 @@ watch(show, () => {
  * 表单数据
  */
 interface LinkFormData {
-  name: string; // 友链名称
-  url: string; // 站点链接
-  description: string; // 站点简介
+  name: string;
+  url: string;
+  description: string;
   avatar: string;
 }
 
 const form = ref<LinkFormData>({
-  name: "", // 友链名称
-  url: "", // 站点链接
-  description: "", // 站点简介
+  name: "",
+  url: "",
+  description: "",
   avatar: "",
 });
 
@@ -67,9 +67,6 @@ function validate() {
 const message = useMessage();
 const { $ts } = useI18n();
 
-/**
- * 提交处理
- */
 async function handleSubmit() {
   errorMsg.value = "";
   successMsg.value = "";

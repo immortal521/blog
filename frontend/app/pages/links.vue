@@ -156,8 +156,8 @@ useAddClassOnIntersect(linkCards, "show");
 }
 
 .description {
-  overflow: hidden; /* 隐藏溢出内容 */
-  text-overflow: ellipsis; /* 显示省略号 */
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: -webkit-box; /* Webkit 浏览器专用，将元素作为弹性盒子显示 */
   -webkit-box-orient: vertical; /* 垂直方向排列内容 */
   line-clamp: 3;

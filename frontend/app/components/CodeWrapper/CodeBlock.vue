@@ -10,7 +10,6 @@ interface Props {
 
 const { code, lang } = defineProps<Props>();
 
-// 计算行数
 const lineCount = code.trim().split("\n").length;
 
 // 将 code 转换为 HAST，并添加行号
