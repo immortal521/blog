@@ -16,7 +16,8 @@ const containerRef = useTemplateRef("container");
 const { update } = useViewer(containerRef);
 
 const renderMarkdown = () => {
-  renderedVNode.value = parseMarkdownToVNode(props.markdown);
+  const { content } = parseMarkdownToVNode(props.markdown, { toc: true });
+  renderedVNode.value = content;
 };
 
 watch(
