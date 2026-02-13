@@ -44,10 +44,6 @@ const handleBack = () => {
   right: 0;
 }
 
-.actions {
-  margin-left: auto;
-}
-
 .main {
   height: 100%;
   padding: 65px 15px 15px;

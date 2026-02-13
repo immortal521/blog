@@ -2,12 +2,32 @@
 const content = defineModel<string>("content", {
   default: "",
 });
+
+const editorRef = useTemplateRef<HTMLDivElement>("editor");
+
+const isFullscreen = ref(false);
+
+const fullscreen = () => {
+  if (isFullscreen.value) {
+    document.exitFullscreen();
+    isFullscreen.value = false;
+  } else {
+    editorRef.value?.requestFullscreen();
+    isFullscreen.value = true;
+  }
+};
 </script>
 
 <template>
-  <div class="article-edit">
+  <div ref="editor" class="article-edit">
     <div class="toolbar">
-      <div class="tools"></div>
+      <div class="tools-left"></div>
+      <div class="tools-right">
+        <button class="btn" @click="fullscreen">
+          <Icon v-if="!isFullscreen" name="mingcute:fullscreen-fill" size="18" />
+          <Icon v-else name="mingcute:fullscreen-exit-fill" size="18" />
+        </button>
+      </div>
     </div>
     <div class="main">
       <div class="edit">
@@ -38,12 +58,34 @@ const content = defineModel<string>("content", {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 5px 15px;
+  border-bottom: 1px solid var(--border-color-divider);
 
-  .tools {
-    width: calc(100% - 4px);
-    height: 30px;
-    background-color: var(--color-primary-bg-muted);
-    border-radius: 8px;
+  .tools-left {
+    margin-right: auto;
+  }
+
+  .tools-right {
+    margin-left: auto;
+  }
+
+  .btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color-base);
+    background-color: transparent;
+    padding: 4px;
+    border-radius: 5px;
+
+    &:hover {
+      background-color: var(--border-color-base);
+    }
+
+    &:active {
+      background-color: var(--border-color-divider);
+      transform: scale(0.95);
+    }
   }
 }
 
@@ -52,6 +94,7 @@ const content = defineModel<string>("content", {
   flex: 1;
   min-height: 0;
   display: flex;
+  padding: 8px 0;
 }
 
 .edit {
@@ -65,7 +108,7 @@ const content = defineModel<string>("content", {
   width: 100%;
   color: var(--text-color-base);
   border-radius: 8px 0 0 8px;
-  padding: 10px;
+  padding: 10px 20px;
   resize: none;
   font-size: 1.5rem;
   line-height: 1.5;

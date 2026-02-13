@@ -23,19 +23,14 @@ const summarize = async () => {
   const es = new EventSource("/api/v1/model/summarize/" + data.sessionId);
 
   es.onmessage = (event) => {
-    setTimeout(() => {
-      summary.value += event.data;
-      console.log(event.data);
-    }, 1000);
+    summary.value += event.data;
   };
 
   es.addEventListener("done", () => {
-    console.log("生成完成");
     es.close();
   });
 
-  es.addEventListener("error", (e) => {
-    console.error("SSE 错误:", e);
+  es.addEventListener("error", () => {
     es.close();
   });
 };
@@ -44,7 +39,9 @@ const summarize = async () => {
 <template>
   <div>
     <NuxtLayout name="admin-sub-layout">
-      <template #actions> 一些操作 </template>
+      <template #actions>
+        <BaseInput placeholder="输入文章标题" />
+      </template>
       <div class="container">
         <ArticleEdit v-model:content="content" class="editor" />
         <div class="settings">
@@ -132,6 +129,10 @@ const summarize = async () => {
   .settings {
     width: 100%;
     height: auto;
+    max-width: none;
+    min-width: 0;
+    margin-left: 0;
+    margin-top: 10px;
   }
 }
 </style>
