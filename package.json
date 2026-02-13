@@ -2,7 +2,10 @@
   "name": "blog",
   "version": "1.0.1",
   "description": "",
-  "packageManager": "pnpm@10.15.0",
+  "keywords": [],
+  "license": "ISC",
+  "author": "immortal521",
+  "type": "module",
   "scripts": {
     "prepare": "husky",
     "fmt:go": "cd backend && go fmt ./...",
@@ -11,19 +14,9 @@
     "dev:frontend": "cd frontend && pnpm dev",
     "dev:backend": "cd backend && go run ./cmd"
   },
-  "type": "module",
-  "keywords": [],
-  "author": "immortal521",
-  "license": "ISC",
-  "lint-staged": {
-    "frontend/**/*.{js,vue,ts}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "backend": [
-      "go fmt ./...",
-      "golangci-lint run ./..."
-    ]
+  "dependencies": {
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -32,9 +25,15 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7"
   },
-  "dependencies": {
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.3",
-    "vue-tsc": "^3.2.3"
-  }
+  "lint-staged": {
+    "frontend/**/*.{js,vue,ts}": [
+      "eslint --fix",
+      "oxfmt"
+    ],
+    "backend": [
+      "go fmt ./...",
+      "golangci-lint run ./..."
+    ]
+  },
+  "packageManager": "pnpm@10.15.0"
 }
