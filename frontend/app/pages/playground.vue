@@ -54,8 +54,8 @@ onMounted(() => {
           style="
             height: 200px;
             width: 100%;
-            background-color: var(--bg-card-base);
-            color: var(--text-color-base);
+            background: var(--glass-gradient), var(--bg-card-base);
+            color: var(--text-color-primary);
             padding: 10px;
           "
         ></textarea>
@@ -63,8 +63,13 @@ onMounted(() => {
       <button style="width: 80px; height: 40px; border-radius: 8px" @click="summarize">
         generate
       </button>
-      <h2 style="color: var(--text-color-base)">摘要：</h2>
-      <div style="background-color: var(--bg-card-base); color: var(--text-color-base)">
+      <h2 style="color: var(--text-color-primary)">摘要：</h2>
+      <div
+        style="
+          background: var(--glass-gradient), var(--bg-card-base);
+          color: var(--text-color-primary);
+        "
+      >
         <TransitionGroup name="msgs">
           <span v-for="msg in messages" :key="msg">{{ msg }}</span>
         </TransitionGroup>
@@ -100,8 +105,8 @@ onMounted(() => {
 .header {
   height: 60px;
   width: 100%;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-nav-base);
+  border-bottom: 1px solid var(--border-color-default);
+  background: var(--glass-gradient), var(--bg-nav-base);
   backdrop-filter: var(--filter-blur-sm);
 }
 

@@ -31,7 +31,7 @@ const { $ts } = useI18n();
 
 <style lang="less" scoped>
 .links {
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .overview {
@@ -46,7 +46,7 @@ const { $ts } = useI18n();
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  background-color: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   height: 140px;
   padding: 20px;
   border-radius: var(--radius-card);

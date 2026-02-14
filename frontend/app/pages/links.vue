@@ -66,7 +66,7 @@ useAddClassOnIntersect(linkCards, "show");
 
 .title {
   text-align: center;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   display: block;
   height: 130px;
   line-height: 130px;
@@ -76,11 +76,11 @@ useAddClassOnIntersect(linkCards, "show");
 
 .submit-link-tips {
   position: relative;
-  background: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   border-radius: 10px;
   box-shadow: var(--shadow-card-base);
   padding: 20px;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 
   li {
     list-style: none;
@@ -162,7 +162,7 @@ useAddClassOnIntersect(linkCards, "show");
   -webkit-box-orient: vertical; /* 垂直方向排列内容 */
   line-clamp: 3;
   -webkit-line-clamp: 3; /* 限制显示为 3 行 */
-  color: var(--text-color-muted);
+  color: var(--text-color-secondary);
   font-size: 0.925em;
 }
 </style>

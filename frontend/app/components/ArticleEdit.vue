@@ -130,7 +130,7 @@ function toggleMode() {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    color: var(--text-color-base);
+    color: var(--text-color-primary);
     background-color: transparent;
     padding: 6px;
     border-radius: 6px;
@@ -139,11 +139,11 @@ function toggleMode() {
     user-select: none;
 
     &:hover {
-      background-color: var(--border-color-base);
+      background-color: var(--bg-interactive-hover);
     }
 
     &:active {
-      background-color: var(--border-color-divider);
+      background-color: var(--bg-interactive-active);
       transform: scale(0.97);
     }
   }
@@ -173,7 +173,7 @@ function toggleMode() {
   flex: 1;
   width: 100%;
   height: 100%;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   padding: 10px 20px;
   resize: none;
   font-size: 1.5rem;

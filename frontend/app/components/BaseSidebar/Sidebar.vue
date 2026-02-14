@@ -51,7 +51,9 @@ const handleToggle = (key: string) => {
 
 <style lang="less" scoped>
 .sidebar-wrapper {
-  background: var(--bg-sidebar);
+  background: var(--glass-gradient), var(--bg-sidebar);
+  border-right: 1px solid var(--border-color-nav);
+  backdrop-filter: var(--glass-blur);
   height: 100vh;
   width: 100%;
   max-width: calc(v-bind(width) * 1px);
@@ -107,7 +109,7 @@ const handleToggle = (key: string) => {
     padding: 0 5px;
     line-height: 35px;
     border-radius: 8px;
-    color: var(--text-color-base);
+    color: var(--text-color-primary);
     user-select: none;
     cursor: pointer;
     position: relative;

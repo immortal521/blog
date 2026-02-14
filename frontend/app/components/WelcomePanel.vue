@@ -79,8 +79,8 @@ const handleDownArrowClick = () => {
 .greetings {
   height: 60px;
   width: 100%;
-  background-color: var(--bg-nav-base);
-  color: var(--text-color-base);
+  background: var(--glass-gradient), var(--bg-nav-base);
+  color: var(--text-color-primary);
   border: 1px solid var(--border-color-nav);
   border-radius: 10px;
   line-height: 60px;
@@ -109,7 +109,7 @@ const handleDownArrowClick = () => {
   left: 50%;
   cursor: pointer;
   transform: translateX(-50%);
-  color: var(--bg-nav-base);
+  color: var(--text-color-secondary);
   animation: bounce 2.5s infinite ease-in-out;
   background-color: transparent;
 }

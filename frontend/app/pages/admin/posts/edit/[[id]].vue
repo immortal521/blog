@@ -125,7 +125,7 @@ const title = ref<string>("");
       padding: 8px;
       line-height: 1;
       border-radius: 8px;
-      color: var(--text-color-base);
+      color: var(--text-color-primary);
       background-color: transparent;
       box-shadow: var(--shadow-sm);
     }

@@ -191,7 +191,7 @@ const onAfterLeave = (el: Element) => {
   min-height: 35px;
   font-family: "Maple Mono", monospace;
   text-decoration: none;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   padding: 2px 0;
   border-radius: 8px;
   cursor: pointer;
@@ -226,7 +226,7 @@ const onAfterLeave = (el: Element) => {
 }
 
 .row > .btn:hover {
-  background: var(--color-primary-bg);
+  background: var(--bg-sidebar-item-hover);
 }
 
 .row > .btn:active {
@@ -243,7 +243,7 @@ const onAfterLeave = (el: Element) => {
   .label {
     padding-right: 5px;
     font-size: 1.2rem;
-    color: var(--text-color-muted);
+    color: var(--text-color-secondary);
   }
 
   .divider-line {

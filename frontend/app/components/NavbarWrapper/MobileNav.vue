@@ -95,7 +95,7 @@ onClickOutside(dropdown, (event) => {
   align-items: center;
   height: 100%;
   width: 50px;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .dropdown {
@@ -104,7 +104,7 @@ onClickOutside(dropdown, (event) => {
   right: 0;
   width: 100vw;
   height: calc(100vh - 60px);
-  background-color: var(--bg-nav-active);
+  background: var(--glass-gradient-strong), var(--bg-nav-active);
   border-top: 2px solid var(--border-color-nav);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(10px);
@@ -144,7 +144,7 @@ onClickOutside(dropdown, (event) => {
       width: 100%;
       height: 100%;
       display: flex;
-      color: var(--text-color-base);
+      color: var(--text-color-primary);
       position: relative;
       align-items: center;
       transition:
@@ -153,7 +153,7 @@ onClickOutside(dropdown, (event) => {
         background-color 0.3s ease-in-out;
       padding: 0 8px;
       border-radius: 10px 10px 0 0;
-      border-bottom: 1px solid var(--text-color-muted);
+      border-bottom: 1px solid var(--border-color-divider);
 
       &:active {
         color: var(--color-primary-active);
@@ -162,7 +162,7 @@ onClickOutside(dropdown, (event) => {
       &:hover {
         border-bottom: 1px solid var(--color-primary-base);
         color: var(--color-primary-base);
-        background-color: var(--bg-nav-base);
+        background: var(--glass-gradient), var(--bg-nav-base);
       }
 
       :deep(.svg-icon) {

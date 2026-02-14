@@ -20,15 +20,16 @@ const { height = 30, icon } = defineProps<{
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--bg-nav-base);
+  background: var(--glass-gradient), var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
   width: 100%;
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-nav);
+  box-shadow: var(--shadow-nav);
   cursor: pointer;
+  transition: var(--transition-nav);
 }
 
 .icon {
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 </style>

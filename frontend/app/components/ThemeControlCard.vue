@@ -83,23 +83,24 @@ onMounted(() => {
   flex-direction: column;
   gap: 10px;
   padding: 12px;
-  border-radius: 8px;
-  background-color: var(--bg-nav-base);
+  border-radius: var(--radius-nav);
+  background: var(--glass-gradient), var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-nav);
+  transition: var(--transition-nav);
 }
 
 .title {
   font-size: 12px;
   font-family: "Maple Mono", monospace;
   font-weight: 500;
-  color: var(--text-color-muted);
+  color: var(--text-color-secondary);
 }
 
 .buttons-track {
   width: calc(100% - 10px);
   height: 35px;
-  background-color: var(--bg-button-toggle-track);
+  background: var(--glass-gradient), var(--bg-button-toggle-track);
   margin: 0 auto;
   border-radius: 5px;
   position: relative;
@@ -112,11 +113,11 @@ onMounted(() => {
     top: 2px;
     width: 50%;
     height: calc(100% - 4px);
-    background-color: var(--bg-button-toggle-thumb);
+    background: var(--glass-gradient-strong), var(--bg-button-toggle-thumb);
     z-index: -1;
     border-radius: 5px;
     transition: transform 0.3s ease-in-out;
-    border: var(--border-color-button-toggle);
+    border: 1px solid var(--border-color-button-toggle);
     backdrop-filter: blur(2px);
   }
 
@@ -131,7 +132,7 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   display: flex;
   justify-content: center;
   align-items: center;

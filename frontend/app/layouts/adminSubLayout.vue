@@ -24,14 +24,14 @@ const handleBack = () => {
 .admin-sub-layout {
   width: 100%;
   height: 100dvh;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .header {
   height: 50px;
   width: 100%;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-nav-base);
+  border-bottom: 1px solid var(--border-color-default);
+  background: var(--glass-gradient), var(--bg-nav-base);
   backdrop-filter: var(--filter-blur-sm);
   display: flex;
   align-items: center;

@@ -60,7 +60,7 @@ useAddClassOnIntersect(postCardRef, "show");
   height: 100%;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
   transition: color 0.5s ease-in-out;
 
@@ -69,7 +69,7 @@ useAddClassOnIntersect(postCardRef, "show");
     width: 100%;
     border-radius: 10px;
     overflow: hidden;
-    background: var(--bg-card-base);
+    background: var(--glass-gradient), var(--bg-card-base);
     transition:
       transform 0.5s ease,
       height 0.5s ease;
@@ -86,7 +86,7 @@ useAddClassOnIntersect(postCardRef, "show");
     position: absolute;
     padding: 4px 8px;
     background: var(--bg-card-title);
-    border: 1px solid var(--border-color-base);
+    border: 1px solid var(--border-color-default);
     border-radius: 5px;
   }
 

@@ -59,7 +59,7 @@ const items = computed<MenuItem[]>(() => {
       width: 100%;
       height: 100%;
       display: flex;
-      color: var(--text-color-base);
+      color: var(--text-color-primary);
       position: relative;
       align-items: center;
       transition: color 0.3s ease-in-out;
