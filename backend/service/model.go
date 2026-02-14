@@ -37,7 +37,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			"messages": []map[string]string{
 				{
 					"role":    "user",
-					"content": "请为我总结这篇文章（以纯文本格式返回）：" + content,
+					"content": "请为我总结这篇文章（以一百字以内的纯文本格式返回）：" + content,
 				},
 			},
 			"max_tokens": 8000,
