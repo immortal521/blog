@@ -49,18 +49,18 @@ const contectItems = computed<ContectItem[]>(() => [
   width: 35px;
   height: 35px;
   flex-shrink: 0;
-  background-color: var(--bg-nav-base);
-  border-radius: 10px;
+  background: var(--glass-gradient), var(--bg-nav-base);
+  border-radius: var(--radius-nav);
   border: 1px solid var(--border-color-nav);
-  box-shadow: var(--shadow-md);
-  transition: background-color 0.2s ease-in-out;
+  box-shadow: var(--shadow-nav);
+  transition: var(--transition-nav);
 
   &:hover {
-    background-color: var(--bg-nav-hover);
+    background: var(--glass-gradient-strong), var(--bg-nav-hover);
   }
 
   &:active {
-    background-color: var(--bg-nav-active);
+    background: var(--glass-gradient-strong), var(--bg-nav-active);
   }
 
   a {
@@ -73,6 +73,6 @@ const contectItems = computed<ContectItem[]>(() => [
 }
 
 .icon {
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 </style>

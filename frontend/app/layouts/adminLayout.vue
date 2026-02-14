@@ -52,7 +52,7 @@ const handleToggle = () => {
   width: 100vw;
   height: 100vh;
   display: flex;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .right {
@@ -65,14 +65,14 @@ const handleToggle = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .header {
   height: 50px;
   width: 100%;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-nav-base);
+  border-bottom: 1px solid var(--border-color-default);
+  background: var(--glass-gradient), var(--bg-nav-base);
   backdrop-filter: var(--filter-blur-sm);
   display: flex;
   align-items: center;

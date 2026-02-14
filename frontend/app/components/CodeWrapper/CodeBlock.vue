@@ -126,7 +126,7 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   margin-right: 0.5rem;
   background-color: var(--bg-code);
   text-align: right;
-  color: var(--text-color-muted);
+  color: var(--text-color-secondary);
   font-size: 1.5rem;
   line-height: 1.5;
   border-right: 1px solid var(--border-color-disabled);

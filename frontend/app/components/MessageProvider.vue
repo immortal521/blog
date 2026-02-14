@@ -184,7 +184,7 @@ const beforeLeave = (el: Element) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   border: 2px solid;
   position: relative;
   width: max-content;
@@ -192,7 +192,7 @@ const beforeLeave = (el: Element) => {
   border-radius: 10px;
   padding: 8px 12px;
   margin: 5px 0;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   backdrop-filter: blur(15px);
   overflow-wrap: break-word;
   pointer-events: auto;
@@ -210,7 +210,7 @@ const beforeLeave = (el: Element) => {
   .close-btn {
     cursor: pointer;
     border: none;
-    color: var(--text-color-base);
+    color: var(--text-color-primary);
     background-color: transparent;
     padding: 2px;
     border-radius: 50%;
@@ -223,7 +223,7 @@ const beforeLeave = (el: Element) => {
   }
 
   &--default {
-    border-color: var(--border-color-base);
+    border-color: var(--border-color-default);
   }
 
   &--success {

@@ -160,12 +160,12 @@ async function handleSubmit() {
 .content {
   max-width: 480px;
   width: 95%;
-  background: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   backdrop-filter: blur(10px);
   box-shadow: var(--shadow-card-base);
   border-radius: 10px;
   padding: 20px;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .title {
@@ -180,9 +180,9 @@ async function handleSubmit() {
 .input {
   width: 100%;
   padding: 8px 10px;
-  background-color: var(--bg-content);
-  color: var(--text-color-base);
-  border: 1px solid var(--border-color-base);
+  background: var(--glass-gradient), var(--bg-content);
+  color: var(--text-color-primary);
+  border: 1px solid var(--border-color-default);
   border-radius: 6px;
 }
 

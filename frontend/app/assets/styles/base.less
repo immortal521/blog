@@ -30,69 +30,80 @@
   --color-secondary: #67e8f9;
 
   /* === 文本颜色 === */
-  --text-color-base: #1f2937;
-  --text-color-muted: #6b7280;
+  --text-color-primary: #1f2937;
+  --text-color-secondary: #6b7280;
   --text-color-inverse: #fff;
 
   /* === 背景颜色 === */
-  --bg-app: #e5e5e5;
-  --bg-surface: #fff;
-  --bg-surface-muted: #f1f5f9;
-  --bg-content: rgb(255 255 255 / 80%);
-  --bg-article-cover: rgb(255 255 255 / 80%);
-  --bg-disabled: #f3f4f6;
+  --bg-app: #d8dfeb;
+  --bg-surface: rgb(255 255 255 / 56%);
+  --bg-surface-muted: rgb(255 255 255 / 46%);
+  --bg-content: rgb(255 255 255 / 36%);
+  --bg-article-cover: rgb(255 255 255 / 32%);
+  --bg-disabled: rgb(255 255 255 / 20%);
+  --bg-interactive-hover: rgb(0 0 0 / 5%);
+  --bg-interactive-active: rgb(0 0 0 / 10%);
+  --glass-gradient: linear-gradient(rgb(255 255 255 / 13%), transparent);
+  --glass-gradient-strong: linear-gradient(rgb(255 255 255 / 18%), transparent);
+  --glass-border-color: rgb(255 255 255 / 10%);
+  --glass-highlight-color: rgb(255 255 255 / 20%);
+  --glass-shadow-color: rgb(0 0 0 / 25%);
+  --glass-shadow-soft: 0 10px 20px rgb(0 0 0 / 12%);
+  --glass-shadow-strong: 0 14px 28px var(--glass-shadow-color);
+  --glass-blur: blur(12px);
 
   /* === 边框与分隔线 === */
-  --border-color-base: #e5e7eb;
-  --border-color-divider: #d1d5db;
-  --border-color-disabled: #9ca3af;
+  --border-color-default: var(--glass-border-color);
+  --border-color-divider: rgb(255 255 255 / 14%);
+  --border-color-disabled: rgb(255 255 255 / 18%);
 
   /* === 卡片组件 === */
-  --bg-card-base: rgb(255 255 255 / 50%);
-  --bg-card-hover: rgb(255 255 255 / 80%);
-  --bg-card-title: rgb(255 255 255 / 90%);
-  --border-color-card: #fff;
+  --bg-card-base: rgb(255 255 255 / 32%);
+  --bg-card-hover: rgb(255 255 255 / 42%);
+  --bg-card-title: rgb(255 255 255 / 50%);
+  --border-color-card: var(--glass-border-color);
+  --border-color-card-hover: var(--color-primary-bg);
   --radius-card: 10px;
-  --shadow-card-base: var(--shadow-md);
-  --shadow-card-hover: var(--shadow-lg);
+  --shadow-card-base: var(--glass-shadow-soft);
+  --shadow-card-hover: var(--glass-shadow-strong);
   --border-table: rgb(0 0 0 / 10%);
   --table-row-even-bg: rgb(0 0 0 / 4%);
   --table-row-hover-bg: rgb(0 0 0 / 8%);
   --table-head-bg: rgb(255 255 255 / 5%);
-  --table-head-border: var(--border-color-base);
+  --table-head-border: var(--border-color-default);
   --font-size-table-header: 1.5rem;
   --font-size-table-row: 1.5rem;
   --bg-code: #f0f0f0;
 
   /* === 导航栏/侧边栏 === */
-  --bg-nav-base: rgb(255 255 255 / 60%);
-  --bg-nav-hover: rgb(255 255 255 / 85%);
-  --bg-nav-active: rgb(255 255 255 / 95%);
-  --bg-sidebar: #f3f6fc;
+  --bg-nav-base: rgb(255 255 255 / 30%);
+  --bg-nav-hover: rgb(255 255 255 / 42%);
+  --bg-nav-active: rgb(255 255 255 / 52%);
+  --bg-sidebar: rgb(255 255 255 / 24%);
   --bg-sidebar-item-hover: color-mix(in srgb, var(--color-primary-base) 60%, transparent);
-  --border-color-nav: rgb(255 255 255 / 40%);
+  --border-color-nav: var(--glass-border-color);
   --radius-nav: var(--radius-card);
-  --shadow-nav: var(--shadow-md);
-  --blur-nav: var(--filter-blur-sm);
-  --transition-nav: background 0.3s ease, box-shadow 0.3s ease;
+  --shadow-nav: var(--glass-shadow-soft);
+  --blur-nav: var(--glass-blur);
+  --transition-nav: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 
   /* === 主题按钮开关 === */
-  --bg-button-toggle-track: rgb(255 255 255 / 40%);
-  --bg-button-toggle-thumb: rgb(255 255 255 / 80%);
-  --border-color-button-toggle: rgb(0 0 0 / 10%);
+  --bg-button-toggle-track: rgb(255 255 255 / 24%);
+  --bg-button-toggle-thumb: rgb(255 255 255 / 48%);
+  --border-color-button-toggle: var(--glass-border-color);
 
   /* === 选择框 === */
-  --bg-select: rgb(255 255 255 / 40%);
-  --border-color-select: rgb(0 0 0 / 10%);
+  --bg-select: rgb(255 255 255 / 24%);
+  --border-color-select: var(--glass-border-color);
 
   /* === 动效 === */
   --transition-base: all 0.3s ease;
 
   /* === 阴影层级 === */
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 5%);
-  --shadow-md: 0 4px 16px rgb(0 0 0 / 8%);
-  --shadow-lg: 0 6px 24px rgb(0 0 0 / 12%);
-  --shadow-xl: 0 10px 40px rgb(0 0 0 / 15%);
+  --shadow-sm: 0 6px 12px rgb(0 0 0 / 10%);
+  --shadow-md: var(--glass-shadow-soft);
+  --shadow-lg: var(--glass-shadow-strong);
+  --shadow-xl: 0 18px 36px rgb(0 0 0 / 20%);
 
   /* === 滤镜 === */
   --filter-blur-sm: blur(4px);
@@ -104,24 +115,34 @@
 }
 
 [data-theme="dark"] {
-  --bg-app: #0f1117;
-  --bg-surface: #1a1d24;
-  --bg-surface-muted: #2a2e38;
-  --bg-content: rgb(26 29 36 / 80%);
-  --bg-article-cover: rgb(26 29 36 / 30%);
-  --bg-disabled: #2f3240;
-  --bg-nav-base: rgb(26 29 36 / 60%);
-  --bg-nav-hover: rgb(26 29 36 / 85%);
-  --bg-nav-active: rgb(26 29 36 / 85%);
-  --border-color-nav: rgb(255 255 255 / 5%);
-  --bg-sidebar: #222327;
-  --bg-card-base: rgb(26 29 36 / 50%);
-  --bg-card-hover: rgb(26 29 36 / 80%);
-  --border-color-card: rgb(255 255 255 / 5%);
+  --bg-app: #080b11;
+  --bg-surface: rgb(12 18 30 / 72%);
+  --bg-surface-muted: rgb(12 18 30 / 56%);
+  --bg-content: rgb(12 18 30 / 46%);
+  --bg-article-cover: rgb(12 18 30 / 42%);
+  --bg-disabled: rgb(12 18 30 / 36%);
+  --bg-interactive-hover: rgb(255 255 255 / 6%);
+  --bg-interactive-active: rgb(255 255 255 / 10%);
+  --glass-gradient: linear-gradient(rgb(255 255 255 / 6%), rgb(0 0 0 / 10%));
+  --glass-gradient-strong: linear-gradient(rgb(255 255 255 / 10%), rgb(0 0 0 / 14%));
+  --glass-border-color: rgb(148 163 184 / 24%);
+  --glass-highlight-color: rgb(255 255 255 / 12%);
+  --glass-shadow-color: rgb(0 0 0 / 45%);
+  --glass-shadow-soft: 0 10px 22px rgb(0 0 0 / 34%);
+  --glass-shadow-strong: 0 14px 30px var(--glass-shadow-color);
+  --glass-blur: blur(16px);
+  --bg-nav-base: rgb(12 18 30 / 50%);
+  --bg-nav-hover: rgb(20 28 44 / 62%);
+  --bg-nav-active: rgb(24 34 52 / 70%);
+  --border-color-nav: var(--glass-border-color);
+  --bg-sidebar: rgb(12 18 30 / 58%);
+  --bg-card-base: rgb(12 18 30 / 52%);
+  --bg-card-hover: rgb(24 34 52 / 64%);
+  --border-color-card: var(--glass-border-color);
   --bg-code: #262b35;
-  --bg-card-title: rgb(26 29 36 / 80%);
-  --text-color-base: #f3f4f6;
-  --text-color-muted: #9ca3af;
+  --bg-card-title: rgb(12 18 30 / 64%);
+  --text-color-primary: #f3f4f6;
+  --text-color-secondary: #9ca3af;
   --text-color-inverse: #1f2937;
   --color-primary-hover: #b2b9ff;
   --color-primary-active: #7c85ff;
@@ -129,22 +150,22 @@
   --color-primary-border: #99a2ff;
   --color-on-primary: #1f2937;
   --color-header: #ecf0f1;
-  --border-color-base: #3a3f4b;
-  --border-color-divider: #2c2f38;
-  --border-color-disabled: #6b7280;
+  --border-color-default: var(--glass-border-color);
+  --border-color-divider: rgb(148 163 184 / 22%);
+  --border-color-disabled: rgb(148 163 184 / 28%);
   --border-table: rgb(255 255 255 / 10%);
   --table-row-even-bg: rgb(255 255 255 / 3%);
   --table-row-hover-bg: rgb(255 255 255 / 8%);
   --table-head-bg: rgb(255 255 255 / 5%);
-  --bg-button-toggle-track: rgb(26 29 36 / 40%);
-  --bg-button-toggle-thumb: rgb(46 50 60 / 85%);
-  --border-color-button-toggle: rgb(255 255 255 / 8%);
-  --bg-select: rgb(26 29 36 / 40%);
-  --border-color-select: rgb(46 50 60 / 85%);
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 15%);
-  --shadow-md: 0 4px 16px rgb(0 0 0 / 40%);
-  --shadow-lg: 0 6px 24px rgb(0 0 0 / 50%);
-  --shadow-xl: 0 10px 40px rgb(0 0 0 / 60%);
+  --bg-button-toggle-track: rgb(12 18 30 / 60%);
+  --bg-button-toggle-thumb: rgb(37 52 77 / 76%);
+  --border-color-button-toggle: var(--glass-border-color);
+  --bg-select: rgb(12 18 30 / 62%);
+  --border-color-select: var(--glass-border-color);
+  --shadow-sm: 0 6px 14px rgb(0 0 0 / 24%);
+  --shadow-md: var(--glass-shadow-soft);
+  --shadow-lg: var(--glass-shadow-strong);
+  --shadow-xl: 0 20px 40px rgb(0 0 0 / 48%);
   --filter-blur-sm: blur(4px);
   --filter-blur-md: blur(10px);
   --filter-blur-lg: blur(20px);

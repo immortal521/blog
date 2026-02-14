@@ -19,7 +19,6 @@ const { isSticky = false } = defineProps<Props>();
   position: fixed;
   width: 100vw;
   height: 100px;
-  overflow: hidden;
   z-index: 1999;
 }
 
@@ -27,7 +26,7 @@ const { isSticky = false } = defineProps<Props>();
   position: relative;
   max-width: 1000px;
   margin: auto;
-  background-color: var(--bg-nav-base);
+  background: var(--glass-gradient), var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
   backdrop-filter: var(--blur-nav);
   overflow: hidden;
@@ -40,13 +39,13 @@ const { isSticky = false } = defineProps<Props>();
     width 0.5s ease-in-out,
     max-width 0.5s ease-in-out,
     border-radius 0.5s ease-in-out,
-    background-color 0.3s ease-in-out,
+    background 0.3s ease-in-out,
     border-color 0.3s ease-in-out;
   animation: scale-in 0.5s ease-in-out;
   box-shadow: var(--shadow-nav);
 
   &:not(.is-sticky):hover {
-    background-color: var(--bg-nav-hover);
+    background: var(--glass-gradient-strong), var(--bg-nav-hover);
   }
 
   &.is-sticky {

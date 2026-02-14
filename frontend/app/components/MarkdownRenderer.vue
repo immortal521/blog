@@ -98,11 +98,11 @@ watch(
 :deep(h6) {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-color-muted);
+  color: var(--text-color-secondary);
 }
 
 :deep(p) {
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   overflow-wrap: break-word;
 }
 
@@ -123,10 +123,10 @@ watch(
   width: 100%;
   border-collapse: collapse;
   border-radius: 8px;
-  background-color: var(--bg-content);
+  background: var(--glass-gradient), var(--bg-content);
   overflow: hidden;
   font-size: var(--font-size-table-row);
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 :deep(thead) {
@@ -162,7 +162,7 @@ watch(
 :deep(blockquote) {
   border-radius: 5px;
   padding: 10px 16px;
-  background-color: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   position: relative;
   border-left: none;
 
@@ -183,7 +183,7 @@ watch(
 :deep(ol) {
   margin: 1em 0;
   padding-left: 1.5em;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   font-size: 1.5rem;
   line-height: 1.75;
 }
@@ -197,13 +197,13 @@ watch(
 
 /* 无序列表圆点样式 */
 :deep(ul li::marker) {
-  color: var(--text-color-muted);
+  color: var(--text-color-secondary);
 }
 
 /* 有序列表数字样式 */
 :deep(ol li::marker) {
   font-weight: bold;
-  color: var(--text-color-muted);
+  color: var(--text-color-secondary);
 }
 
 :deep(ul ul),

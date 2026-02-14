@@ -74,7 +74,7 @@ const togglePasswordVisibility = () => {
   align-items: center;
   width: 100%;
   color: inherit;
-  border: 1px solid var(--border-color-base);
+  border: 1px solid var(--border-color-default);
   transition: border 0.2s ease-in-out;
 
   &:focus-within {
@@ -87,7 +87,7 @@ const togglePasswordVisibility = () => {
     display: flex;
     align-items: center;
     padding: 8px 0;
-    color: var(--color-text-secondary);
+    color: var(--text-color-secondary);
     font-size: 14px;
   }
 
@@ -100,6 +100,9 @@ const togglePasswordVisibility = () => {
     flex-grow: 1;
     border: none;
     outline: none;
+    height: 100%;
+    font-size: inherit;
+    font-weight: inherit;
     padding: 8px;
     margin: 0;
     margin-left: 5px;
@@ -123,7 +126,7 @@ const togglePasswordVisibility = () => {
     transition: color 0.2s;
 
     .icon {
-      color: var(--color-text-secondary);
+      color: var(--text-color-secondary);
 
       &:hover:not(.password-toggle-button:disabled) {
         color: var(--color-primary-base);

@@ -26,9 +26,9 @@ const copy = async () => {
 
 <style lang="less" scoped>
 .btn {
-  background: var(--bg-card-base);
+  background: var(--glass-gradient), var(--bg-card-base);
   padding: 0 1rem;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
   border-radius: 5px;
   font-size: 1.2rem;
   font-family: var(--font-family-base);

@@ -7,11 +7,11 @@
 <style lang="less" scoped>
 .footer {
   height: 100px;
-  background: var(--bg-content);
+  background: var(--glass-gradient), var(--bg-content);
   backdrop-filter: blur(10px);
-  border-top: 1px solid var(--border-color-base);
+  border-top: 1px solid var(--border-color-default);
   text-align: center;
   line-height: 100px;
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 </style>

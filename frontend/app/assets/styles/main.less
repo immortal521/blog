@@ -9,6 +9,7 @@
   margin: 0;
   box-sizing: border-box;
   transition:
+    background 0.3s ease-in-out,
     background-color 0.3s ease-in-out,
     color 0.3s ease-in-out,
     border-color 0.3s ease-in-out;
@@ -16,6 +17,12 @@
 
 body {
   display: block;
+  position: relative;
+
+  --app-bg-image:
+    radial-gradient(1200px 700px at 0% 0%, rgb(255 255 255 / 18%), transparent 60%),
+    radial-gradient(900px 500px at 100% 100%, rgb(99 102 241 / 18%), transparent 70%);
+
   font-family: var(--font-family-base);
   font-weight: var(--font-weight-base);
   line-height: var(--line-height-base);
@@ -28,6 +35,7 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
+  background-image: var(--app-bg-image);
   background-color: var(--bg-app);
 }
 
@@ -36,7 +44,27 @@ body.with-bg {
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
-  background-image: url("https://api.xingzhige.com/API/Bing_img/");
+
+  --app-bg-image: url("https://api.xingzhige.com/API/Bing_img/");
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: var(--glass-gradient);
+  z-index: -1;
+}
+
+[data-theme="dark"] body {
+  --app-bg-image:
+    radial-gradient(900px 520px at 0% 0%, rgb(59 130 246 / 16%), transparent 62%),
+    radial-gradient(760px 420px at 100% 100%, rgb(79 70 229 / 14%), transparent 70%);
+}
+
+[data-theme="dark"] body.with-bg {
+  --app-bg-image: url("https://api.xingzhige.com/API/Bing_img/");
 }
 
 a {

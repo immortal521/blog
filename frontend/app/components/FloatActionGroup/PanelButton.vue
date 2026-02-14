@@ -39,12 +39,12 @@ onClickOutside(panelContent, (event) => {
 }
 
 .icon {
-  color: var(--text-color-base);
+  color: var(--text-color-primary);
 }
 
 .action-button {
-  background: var(--bg-nav-base);
-  border-radius: 8px;
+  background: var(--glass-gradient), var(--bg-nav-base);
+  border-radius: var(--radius-nav);
   width: 100%;
   height: 40px;
   display: flex;
@@ -52,7 +52,8 @@ onClickOutside(panelContent, (event) => {
   align-items: center;
   border: 1px solid var(--border-color-nav);
   cursor: pointer;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-nav);
+  transition: var(--transition-nav);
 }
 
 .panel-content {
