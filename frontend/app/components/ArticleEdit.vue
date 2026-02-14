@@ -56,7 +56,6 @@ function toggleMode() {
     return;
   }
 
-  // PC 三态循环（从 both 开始更符合桌面习惯）
   if (mode.value === "both") mode.value = "edit";
   else if (mode.value === "edit") mode.value = "preview";
   else mode.value = "both";
@@ -70,10 +69,8 @@ function toggleMode() {
       <div class="tools-right">
         <button class="btn" @click="toggleMode">
           <Icon v-if="mode === 'edit'" name="mingcute:eye-line" size="18" />
-
-          <Icon v-else-if="mode === 'preview'" name="mingcute:edit-2-line" size="18" />
-
-          <Icon v-else name="mingcute:layout-grid-line" size="18" />
+          <Icon v-else-if="mode === 'preview'" name="mingcute:layout-grid-line" size="18" />
+          <Icon v-else name="mingcute:edit-2-line" size="18" />
         </button>
         <button class="btn" @click="toggleFullscreen">
           <Icon v-if="!isFullscreen" name="mingcute:fullscreen-fill" size="18" />
@@ -83,7 +80,11 @@ function toggleMode() {
     </div>
     <div class="main">
       <div v-if="mode === 'edit' || mode === 'both'" class="edit">
-        <textarea v-model="content" :class="{ 'split-border': mode === 'both' }"></textarea>
+        <textarea
+          v-model="content"
+          :class="{ 'split-border': mode === 'both' }"
+          placeholder="输入文章内容"
+        ></textarea>
       </div>
       <div v-if="mode === 'preview' || mode === 'both'" class="preview">
         <MarkdownRenderer :markdown="content" />
