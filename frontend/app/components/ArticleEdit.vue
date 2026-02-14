@@ -116,14 +116,12 @@ function toggleMode() {
 
   .tools-left {
     display: flex;
-    gap: 6px;
     margin-right: auto;
     min-width: 0;
   }
 
   .tools-right {
     display: flex;
-    gap: 6px;
     margin-left: auto;
     min-width: 0;
   }

@@ -100,6 +100,9 @@ const togglePasswordVisibility = () => {
     flex-grow: 1;
     border: none;
     outline: none;
+    height: 100%;
+    font-size: inherit;
+    font-weight: inherit;
     padding: 8px;
     margin: 0;
     margin-left: 5px;

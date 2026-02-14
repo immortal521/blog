@@ -12,9 +12,7 @@ const handleBack = () => {
       <button class="back-btn" @click="handleBack">
         <Icon name="eva:arrow-back-fill" size="28" />
       </button>
-      <div class="actions">
-        <slot name="actions" />
-      </div>
+      <slot name="actions" />
     </header>
     <main class="main">
       <slot />
