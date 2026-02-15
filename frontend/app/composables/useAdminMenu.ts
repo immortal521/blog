@@ -1,8 +1,7 @@
 import type { SidebarNode } from "~/components/BaseSidebar/types";
 
 export function useAdminMenu() {
-  const { $ts } = useI18n();
-  const router = useRouter();
+  const { $ts, $localePath } = useI18n();
 
   const menuItems = computed<SidebarNode[]>(() => [
     {
@@ -114,7 +113,7 @@ export function useAdminMenu() {
       icon: "material-symbols:text-select-move-back-word-rounded",
       key: "admin.sidebar.back",
       action: () => {
-        router.back();
+        navigateTo($localePath("/"));
       },
     },
   ]);
