@@ -99,9 +99,10 @@ const title = ref<string>("");
   width: 100%;
   height: 50px;
   margin-top: 10px;
-  border: 1px solid var(--border-color-divider);
+  background-color: var(--bg-card-base);
+  border: 1px solid var(--border-color-default);
   border-radius: 8px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   display: flex;
   padding: 0 8px;
 
@@ -131,19 +132,21 @@ const title = ref<string>("");
     }
 
     .trash {
-      border: 1px solid var(--color-primary-base);
+      border: 1px solid var(--border-color-default);
+      background-color: var(--bg-card-base);
 
       &:hover {
-        border: 1px solid var(--color-primary-hover);
+        background-color: var(--bg-card-hover);
       }
 
       &:active {
-        border: 1px solid var(--color-primary-active);
+        background-color: var(--bg-card-active);
       }
     }
 
     .publish {
       background-color: var(--color-primary-base);
+      box-shadow: var(--shadow-sm);
 
       &:hover {
         background-color: var(--color-primary-hover);
