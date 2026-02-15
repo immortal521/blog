@@ -22,7 +22,7 @@ const { src = "", title = "" } = defineProps<Props>();
 <style lang="less" scoped>
 .article-cover {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 400px;
   backdrop-filter: blur(10px);
   background-position: center center;

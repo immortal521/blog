@@ -49,7 +49,7 @@ const handleToggle = () => {
 
 <style lang="less" scoped>
 .admin-layout {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   display: flex;
   color: var(--text-color-primary);

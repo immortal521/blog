@@ -22,7 +22,14 @@ useScrollHandler(100, (over) => (isSticky.value = over));
 </template>
 
 <style lang="less" scoped>
+.default-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .main {
   margin: 0;
+  flex: 1;
 }
 </style>

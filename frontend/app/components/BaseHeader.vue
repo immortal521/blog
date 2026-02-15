@@ -17,7 +17,7 @@ const { isSticky = false } = defineProps<Props>();
 <style lang="less" scoped>
 .header {
   position: fixed;
-  width: 100vw;
+  width: 100%;
   height: 100px;
   z-index: 1999;
 }
