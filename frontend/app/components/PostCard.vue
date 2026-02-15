@@ -42,6 +42,7 @@ useAddClassOnIntersect(postCardRef, "show");
   width: 100%;
   margin: 10px 0;
   opacity: 0;
+  color: var(--text-color-primary);
   transform: translateY(50px);
   transition:
     opacity 0.5s ease-out,
@@ -50,6 +51,10 @@ useAddClassOnIntersect(postCardRef, "show");
   &.show {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  a {
+    color: inherit;
   }
 }
 

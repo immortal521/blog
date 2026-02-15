@@ -37,7 +37,7 @@ const posts = computed(() => data.value?.data ?? []);
 
 .title {
   position: relative;
-  color: var(--color-primary-base);
+  color: var(--text-color-primary);
   font-weight: 500;
 
   &::after {
