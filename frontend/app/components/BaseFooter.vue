@@ -6,12 +6,12 @@
 
 <style lang="less" scoped>
 .footer {
-  height: 100px;
+  position: relative;
+  padding: 3.2rem 1.6rem;
   background: var(--glass-gradient), var(--bg-content);
   backdrop-filter: blur(10px);
-  border-top: 1px solid var(--border-color-default);
   text-align: center;
-  line-height: 100px;
+  line-height: 1.8;
   color: var(--text-color-primary);
 }
 </style>

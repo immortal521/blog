@@ -171,7 +171,7 @@ const beforeLeave = (el: Element) => {
 .message-container {
   position: fixed;
   inset: 0;
-  width: 100vw;
+  width: 100%;
   top: 20px;
   pointer-events: none;
   z-index: 10000;

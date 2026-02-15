@@ -102,7 +102,7 @@ onClickOutside(dropdown, (event) => {
   position: fixed;
   top: 60px;
   right: 0;
-  width: 100vw;
+  width: 100%;
   height: calc(100vh - 60px);
   background: var(--glass-gradient-strong), var(--bg-nav-active);
   border-top: 2px solid var(--border-color-nav);

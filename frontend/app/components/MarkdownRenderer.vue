@@ -107,16 +107,21 @@ watch(
 }
 
 :deep(:not(pre.shiki) > code) {
-  display: inline-block;
-  padding: 0.2em 0.4em;
+  display: inline;
+  padding: 0.16em 0.48em;
+  margin: 0 0.1em;
   font-family: "Maple Mono", "Noto Sans SC", monospace;
-  font-size: 0.92em;
-  color: var(--color-primary-base); /* 可自定义颜色变量 */
-  background-color: var(--bg-code);
-  border-radius: 4px;
-  line-height: 1.4;
+  font-size: 0.86em;
+  font-weight: 500;
+  color: var(--inline-code-color);
+  background-color: var(--inline-code-bg);
+  border: 1px solid var(--inline-code-border);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%);
+  line-height: 1.45;
   white-space: break-spaces;
   overflow-wrap: break-word;
+  vertical-align: 0.02em;
 }
 
 :deep(table) {
