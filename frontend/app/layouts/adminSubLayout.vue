@@ -33,6 +33,7 @@ const handleBack = () => {
   border-bottom: 1px solid var(--border-color-default);
   background: var(--glass-gradient), var(--bg-nav-base);
   backdrop-filter: var(--filter-blur-sm);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   padding: 0 10px;
