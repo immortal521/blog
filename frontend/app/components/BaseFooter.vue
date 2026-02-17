@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <footer class="footer">© 2025 Immortal's blog.</footer>
+  <footer class="footer">© 2026 Immortal's blog.</footer>
 </template>
 
 <style lang="less" scoped>
