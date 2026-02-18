@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { MenuItem } from "~/types/ui/navbar";
 import { navLinks } from "./navLinks";
 
 const { $ts } = useI18n();

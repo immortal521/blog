@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
 import { navLinks } from "./navLinks";
+import type { MenuItem } from "~/types/ui/navbar";
 
 const { $ts } = useI18n();
 

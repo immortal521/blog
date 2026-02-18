@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import type {
+  MessageIconProps,
+  MessageOptions,
+  MessageSizeType,
+  MessageType,
+} from "~/types/ui/message";
+
 interface Props {
   duration?: number;
   keepAliveOnHover?: boolean;

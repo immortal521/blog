@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ThemeMode } from "~/types/theme";
+
 const mode = storeToRefs(useThemeStore()).mode;
 const isShow = ref(true);
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { MenuItem } from "~/types/ui/navbar";
+
 interface Props {
   menuItems: MenuItem[];
 }

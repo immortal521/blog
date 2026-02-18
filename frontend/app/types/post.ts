@@ -1,4 +1,4 @@
-interface PostMeta {
+export interface PostMeta {
   id: number;
   cover: string;
   title: string;
@@ -10,11 +10,11 @@ interface PostMeta {
   tags: [];
 }
 
-interface Post extends PostMeta {
+export interface Post extends PostMeta {
   content: string;
 }
 
-interface PostInput {
+export interface PostInput {
   cover: string;
   summary: string;
   title: string;

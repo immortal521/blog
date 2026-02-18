@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import type { Post } from "~/types/post";
+import type { ApiResponse } from "~/types/api";
+
 const route = useRoute();
 
 const params = computed(() => route.params);
 
-const { data } = await useFetch<{
-  data: Post;
-}>("/api/v1/posts/" + params.value.id, {
+const { data } = await useFetch<ApiResponse<Post>>("/api/v1/posts/" + params.value.id, {
   method: "get",
 });
 

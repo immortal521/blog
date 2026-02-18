@@ -6,6 +6,7 @@ import {
   getInitialPrimaryColor,
   withViewTransition,
 } from "@/utils/theme";
+import type { ThemeColors, ThemeMode } from "~/types/theme";
 
 export const useThemeStore = defineStore("theme", () => {
   const mode = ref<ThemeMode>(getInitialMode());

@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import type { FriendLink } from "~/types/link";
+import type { ApiListResponse } from "~/types/api";
+
 const { $ts } = useI18n();
 useHead({
   title: $ts("page.links"),
 });
 
-const { data } = await useFetch<{
-  data: FriendLink[];
-}>("/api/v1/links", {
+const { data } = await useFetch<ApiListResponse<FriendLink>>("/api/v1/links", {
   method: "get",
 });
 

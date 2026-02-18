@@ -1,7 +1,8 @@
 <script setup lang="ts">
-const { data } = await useFetch<{
-  data: Post[];
-}>("/api/v1/posts", {
+import type { ApiListResponse } from "~/types/api";
+import type { Post } from "~/types/post";
+
+const { data } = await useFetch<ApiListResponse<Post>>("/api/v1/posts", {
   method: "get",
 });
 

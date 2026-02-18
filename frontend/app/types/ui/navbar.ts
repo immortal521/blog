@@ -1,7 +1,7 @@
-interface MenuItem {
+export interface MenuItem {
   key: string;
   label: string;
-  icon: IconName | Component;
+  icon: string;
   to: string;
   children?: MenuItem;
 }

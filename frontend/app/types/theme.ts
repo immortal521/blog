@@ -1,6 +1,6 @@
-declare type ThemeMode = "light" | "dark";
+export type ThemeMode = "light" | "dark";
 
-declare interface ThemeColors {
+export interface ThemeColors {
   base: string;
   hover: string;
   active: string;

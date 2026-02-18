@@ -1,3 +1,5 @@
+import type { MessageApi } from "~/types/ui/message";
+
 export function useMessage(): MessageApi {
   const api = inject<MessageApi>("message");
   if (!api) {

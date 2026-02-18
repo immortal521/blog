@@ -1,3 +1,5 @@
+import type { ThemeMode } from "~/types/theme";
+
 export default defineNuxtPlugin(() => {
   const mode = useCookie<ThemeMode>("theme-mode");
   if (!mode.value) {

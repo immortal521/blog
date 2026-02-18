@@ -1,5 +1,6 @@
 import tinycolor from "tinycolor2";
 import { nextTick } from "vue";
+import type { ThemeColors, ThemeMode } from "~/types/theme";
 
 /**
  * 计算一组主题颜色，包括 hover/active/disabled
@@ -28,7 +29,7 @@ export function generateThemeColors(baseColor: string, mode: ThemeMode): ThemeCo
 }
 
 /**
- * 把主题颜色同步到 CSS 变量（传入已生成的颜色）
+ * 把主题颜色同步到 CSS 变量
  */
 export function applyThemeColorsToCSSVars(colors: ThemeColors) {
   const root = document.documentElement;
@@ -41,7 +42,7 @@ export function applyThemeColorsToCSSVars(colors: ThemeColors) {
 }
 
 /**
- * 设置整体明暗模式（仅基础背景/文字色）
+ * 设置整体明暗模式
  */
 export function applyBaseThemeMode(mode: ThemeMode) {
   const root = document.documentElement;

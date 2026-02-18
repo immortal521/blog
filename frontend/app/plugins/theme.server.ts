@@ -1,4 +1,5 @@
 import { parseCookies } from "h3";
+import type { ThemeMode } from "~/types/theme";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const event = nuxtApp.ssrContext?.event;
