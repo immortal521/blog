@@ -98,7 +98,7 @@ function toggleMode() {
   border: 1.5px solid var(--border-color-default);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
-  width: 96%;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   display: flex;

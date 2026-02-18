@@ -1,8 +1,5 @@
 <script setup lang="ts">
 const { menuItems } = useAdminMenu();
-const route = useRoute();
-
-const selectedKey = ref(route.fullPath);
 
 const { open, collapsed } = useSidebar();
 const { isMobile } = useResponsive();
@@ -19,13 +16,7 @@ const handleToggle = () => {
 
 <template>
   <div class="admin-layout">
-    <BaseSidebar
-      ref="sidebar"
-      v-model:selected-key="selectedKey"
-      v-model:open="open"
-      v-model:collapsed="collapsed"
-      :items="menuItems"
-    >
+    <BaseSidebar ref="sidebar" v-model:open="open" v-model:collapsed="collapsed" :items="menuItems">
       <template #header>
         <div class="logo">
           <h2>Admin</h2>

@@ -9,6 +9,17 @@ definePageMeta({
 
 const content = ref<string>("");
 const title = ref<string>("");
+
+const charCount = computed(() => content.value.length);
+
+const lineCount = computed(() => {
+  const text = content.value ?? "";
+  if (!text.trim()) return 0;
+  const trimmed = text.replace(/^\n+|\n+$/g, "");
+  const mergedEmptyline = trimmed.replace(/\n{3,}/g, "\n\n");
+  return mergedEmptyline.split("\n").length;
+});
+
 // const summary = ref<string>("");
 
 // const summarize = async () => {
@@ -41,7 +52,7 @@ const title = ref<string>("");
     <NuxtLayout name="admin-sub-layout">
       <template #actions>
         <div class="editor-header">
-          <BaseInput v-model="title" class="title-input" placeholder="输入文章标题" />
+          <BaseInput v-model="title" class="title-input" placeholder="输入文章标题..." />
         </div>
       </template>
       <div class="editor-body">
@@ -49,7 +60,7 @@ const title = ref<string>("");
       </div>
       <div class="editor-footer">
         <div class="detail">
-          <div>行数：0 字符数：0</div>
+          <div>{{ `${charCount} 字 - ${lineCount} 行` }}</div>
         </div>
         <div class="actions">
           <button class="btn trash">存入草稿箱</button>
