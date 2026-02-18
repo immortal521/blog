@@ -1,12 +1,9 @@
+import type { ApiResponse } from "~/types/api";
 import type { User } from "~/types/user";
 
-export interface AuthResponse {
-  code: number;
-  msg: string;
-  data: {
-    accessToken: string;
-  } & User;
-}
+export type AuthData = {
+  accessToken: string;
+} & User;
 
 export const useAuthStore = defineStore("auth", () => {
   const { apiFetch } = useClientApi();
@@ -24,7 +21,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   const login = async (email: string, password: string) => {
-    const { code, data } = await apiFetch<AuthResponse>("/auth/login", {
+    const { code, data } = await apiFetch<ApiResponse<AuthData>>("/auth/login", {
       method: "POST",
       body: { email, password },
     });
