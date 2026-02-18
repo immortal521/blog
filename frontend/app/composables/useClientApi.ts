@@ -1,12 +1,9 @@
 import { ofetch, type FetchError, type FetchOptions } from "ofetch";
+import type { ApiResponse } from "~/types/api";
 
-interface RefreshRes {
-  code: number;
-  msg: string;
-  data: {
-    accessToken: string;
-  };
-}
+type RefreshData = {
+  accessToken: string;
+};
 
 /**
  * Flag indicating whether the Access Token is currently being refreshed
@@ -104,7 +101,7 @@ export function useClientApi() {
     if (isRefreshing) return;
     isRefreshing = true;
     try {
-      const res = await $baseFetch<RefreshRes>("/auth/refresh", {
+      const res = await $baseFetch<ApiResponse<RefreshData>>("/auth/refresh", {
         method: "POST",
         credentials: "include",
       });
