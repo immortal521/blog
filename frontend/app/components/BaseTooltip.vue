@@ -239,15 +239,21 @@ onBeforeUnmount(() => {
 .tooltip-content {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
-  background-color: var(--bg-card-base);
-  border: 1px solid var(--border-color-default);
+  background-color: var(--tooltip-bg, var(--bg-card-base));
+  border: 1px solid var(--tooltip-border-color, var(--border-color-default));
   color: var(--text-color-primary);
   box-shadow: var(--shadow-sm);
   position: relative;
   pointer-events: auto;
 
   --arrow-size: 8px;
-  --arrow-border: 9px;
+  --arrow-border: calc(var(--arrow-size) + 1px);
+  --arrow-color: var(--tooltip-arrow-color, var(--tooltip-bg, var(--bg-card-base)));
+  --arrow-border-color: var(
+    --tooltip-arrow-border-color,
+    var(--tooltip-border-color, var(--border-color-default))
+  );
+  --arrow-inset-fix: 1px;
 }
 
 .tooltip-content::before,
@@ -258,6 +264,7 @@ onBeforeUnmount(() => {
   height: 0;
   border-style: solid;
   pointer-events: none;
+  transition: none;
 }
 
 .tooltip-content[data-placement="top"]::before {
@@ -265,15 +272,15 @@ onBeforeUnmount(() => {
   top: 100%;
   transform: translateX(-50%);
   border-width: var(--arrow-border) var(--arrow-border) 0 var(--arrow-border);
-  border-color: var(--border-color-default) transparent transparent transparent;
+  border-color: var(--arrow-border-color) transparent transparent transparent;
 }
 
 .tooltip-content[data-placement="top"]::after {
   left: 50%;
-  top: 100%;
+  top: calc(100% - var(--arrow-inset-fix));
   transform: translateX(-50%);
   border-width: var(--arrow-size) var(--arrow-size) 0 var(--arrow-size);
-  border-color: var(--bg-card-base) transparent transparent transparent;
+  border-color: var(--arrow-color) transparent transparent transparent;
 }
 
 .tooltip-content[data-placement="bottom"]::before {
@@ -281,15 +288,15 @@ onBeforeUnmount(() => {
   bottom: 100%;
   transform: translateX(-50%);
   border-width: 0 var(--arrow-border) var(--arrow-border) var(--arrow-border);
-  border-color: transparent transparent var(--border-color-default) transparent;
+  border-color: transparent transparent var(--arrow-border-color) transparent;
 }
 
 .tooltip-content[data-placement="bottom"]::after {
   left: 50%;
-  bottom: 100%;
+  bottom: calc(100% - var(--arrow-inset-fix));
   transform: translateX(-50%);
   border-width: 0 var(--arrow-size) var(--arrow-size) var(--arrow-size);
-  border-color: transparent transparent var(--bg-card-base) transparent;
+  border-color: transparent transparent var(--arrow-color) transparent;
 }
 
 .tooltip-content[data-placement="left"]::before {
@@ -297,15 +304,15 @@ onBeforeUnmount(() => {
   left: 100%;
   transform: translateY(-50%);
   border-width: var(--arrow-border) 0 var(--arrow-border) var(--arrow-border);
-  border-color: transparent transparent transparent var(--border-color-default);
+  border-color: transparent transparent transparent var(--arrow-border-color);
 }
 
 .tooltip-content[data-placement="left"]::after {
   top: 50%;
-  left: 100%;
+  left: calc(100% - var(--arrow-inset-fix));
   transform: translateY(-50%);
   border-width: var(--arrow-size) 0 var(--arrow-size) var(--arrow-size);
-  border-color: transparent transparent transparent var(--bg-card-base);
+  border-color: transparent transparent transparent var(--arrow-color);
 }
 
 .tooltip-content[data-placement="right"]::before {
@@ -313,15 +320,15 @@ onBeforeUnmount(() => {
   right: 100%;
   transform: translateY(-50%);
   border-width: var(--arrow-border) var(--arrow-border) var(--arrow-border) 0;
-  border-color: transparent var(--border-color-default) transparent transparent;
+  border-color: transparent var(--arrow-border-color) transparent transparent;
 }
 
 .tooltip-content[data-placement="right"]::after {
   top: 50%;
-  right: 100%;
+  right: calc(100% - var(--arrow-inset-fix));
   transform: translateY(-50%);
   border-width: var(--arrow-size) var(--arrow-size) var(--arrow-size) 0;
-  border-color: transparent var(--bg-card-base) transparent transparent;
+  border-color: transparent var(--arrow-color) transparent transparent;
 }
 
 .tooltip-fader-enter-active,
