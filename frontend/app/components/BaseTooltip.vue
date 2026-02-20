@@ -1,37 +1,46 @@
 <script setup lang="ts">
+import type { TimerId } from "~/types/timer";
+
 type Placement = "top" | "left" | "right" | "bottom";
+type PlacementOption = Placement | "auto";
+
 interface Props {
-  placement?: Placement | "auto";
+  placement?: PlacementOption;
   maxWidth?: number | string;
 }
-interface Style {
+
+interface TooltipStyle {
   left: string;
   top: string;
   maxWidth: string;
 }
 
-const open = ref(false);
-
 const { placement = "auto", maxWidth = 320 } = defineProps<Props>();
+
+const OPEN_DELAY = 80;
+const CLOSE_DELAY = 80;
+
+const isOpen = ref(false);
 
 const targetRef = useTemplateRef<HTMLDivElement>("target");
 const tooltipRef = useTemplateRef<HTMLDivElement>("tooltip");
 
 const placements: Placement[] = ["top", "bottom", "left", "right"];
-const acturalPlacement = ref<Placement>("top");
+const actualPlacement = ref<Placement>("top");
 
-let openTimer: ReturnType<typeof setTimeout> | null = null;
-let closeTimer: ReturnType<typeof setTimeout> | null = null;
+let openTimer: TimerId = null;
+let closeTimer: TimerId = null;
 
 const toCssSize = (value: number | string) => (typeof value === "number" ? `${value}px` : value);
+const maxWidthCss = computed(() => toCssSize(maxWidth));
 
-const style = ref<Style>({
+const style = ref<TooltipStyle>({
   left: "0",
   top: "0",
-  maxWidth: toCssSize(maxWidth),
+  maxWidth: maxWidthCss.value,
 });
 
-const computePos = (
+const computePosition = (
   target: DOMRect,
   tooltipSize: { width: number; height: number },
   placement: Placement,
@@ -82,48 +91,49 @@ const overflowScope = (
   return overLeft + overRight + overTop + overBottom;
 };
 
-const pickPlacement = (targetRect: DOMRect, tooltipSize: { width: number; height: number }) => {
-  let list = placements;
-  let best: Placement = "top";
+const choosePlacement = (targetRect: DOMRect, tooltipSize: { width: number; height: number }) => {
+  let bestPlacement: Placement = "top";
   let bestScore = Number.MAX_SAFE_INTEGER;
-  if (placement !== "auto") {
-    best = placement;
-    list = [placement, ...placements.filter((p) => p !== placement)];
-  }
+  let bestLeft = 0;
+  let bestTop = 0;
+  const candidates =
+    placement !== "auto"
+      ? ([placement, ...placements.filter((p) => p !== placement)] as Placement[])
+      : placements;
 
-  for (const p of list) {
-    const { left, top } = computePos(targetRect, tooltipSize, p);
+  for (const p of candidates) {
+    const { left, top } = computePosition(targetRect, tooltipSize, p);
     const score = overflowScope(left, top, tooltipSize);
     if (score < bestScore) {
       bestScore = score;
-      best = p;
+      bestPlacement = p;
+      bestLeft = left;
+      bestTop = top;
       if (bestScore === 0) break;
     }
   }
 
-  return best;
+  return { placement: bestPlacement, left: bestLeft, top: bestTop };
 };
 
-const caculateStyle: () => Style | null = () => {
-  const target = targetRef.value;
-  const tooltip = tooltipRef.value;
-  if (!target || !tooltip) return null;
+const caculateStyle: () => TooltipStyle | null = () => {
+  const targetEl = targetRef.value;
+  const tooltipEl = tooltipRef.value;
+  if (!targetEl || !tooltipEl) return null;
 
-  const targetRect = target.getBoundingClientRect();
+  const targetRect = targetEl.getBoundingClientRect();
   const tooltipSize = {
-    width: tooltip.offsetWidth,
-    height: tooltip.offsetHeight,
+    width: tooltipEl.offsetWidth,
+    height: tooltipEl.offsetHeight,
   };
 
-  const chosen = pickPlacement(targetRect, tooltipSize);
-  acturalPlacement.value = chosen;
-
-  const { left, top } = computePos(targetRect, tooltipSize, acturalPlacement.value);
+  const result = choosePlacement(targetRect, tooltipSize);
+  actualPlacement.value = result.placement;
 
   return {
-    left: toCssSize(left),
-    top: toCssSize(top),
-    maxWidth: toCssSize(maxWidth),
+    left: toCssSize(result.left),
+    top: toCssSize(result.top),
+    maxWidth: maxWidthCss.value,
   };
 };
 
@@ -140,7 +150,7 @@ const clearTimers = () => {
 
 let rafId = 0;
 const updatePosition = () => {
-  if (!open.value) return;
+  if (!isOpen.value) return;
   if (rafId) return;
   rafId = requestAnimationFrame(() => {
     rafId = 0;
@@ -149,24 +159,24 @@ const updatePosition = () => {
   });
 };
 
-const scheduleOpen = () => {
+const openWithDelay = () => {
   clearTimers();
   openTimer = setTimeout(async () => {
-    open.value = true;
+    isOpen.value = true;
     await nextTick();
     updatePosition();
-  }, 80);
+  }, OPEN_DELAY);
 };
 
-const scheduleClose = () => {
+const closeWithDelay = () => {
   clearTimers();
   closeTimer = setTimeout(() => {
-    open.value = false;
-  }, 80);
+    isOpen.value = false;
+  }, CLOSE_DELAY);
 };
 
 watchEffect((onCleanup) => {
-  if (!open.value) return;
+  if (!isOpen.value) return;
 
   const handler = () => updatePosition();
   window.addEventListener("scroll", handler, true);
@@ -188,27 +198,24 @@ onBeforeUnmount(() => {
   <div
     ref="target"
     class="tooltip-target"
-    @mouseenter="scheduleOpen"
-    @mouseleave="scheduleClose"
-    @focusin="scheduleOpen"
-    @focusout="scheduleClose"
+    @mouseenter="openWithDelay"
+    @mouseleave="closeWithDelay"
+    @focusin="openWithDelay"
+    @focusout="closeWithDelay"
   >
     <slot />
   </div>
   <Teleport to="body">
     <Transition name="tooltip-fader">
       <div
-        v-if="open"
+        v-if="isOpen"
         ref="tooltip"
         class="tooltip"
         :style
         @mouseenter="clearTimers"
-        @mouseleave="scheduleClose"
+        @mouseleave="closeWithDelay"
       >
-        <div class="tooltip-content">
-          content
-          <div class="tooltip-arrow"></div>
-        </div>
+        <div class="tooltip-content" :data-placement="actualPlacement">content</div>
       </div>
     </Transition>
   </Teleport>
@@ -238,6 +245,83 @@ onBeforeUnmount(() => {
   box-shadow: var(--shadow-sm);
   position: relative;
   pointer-events: auto;
+
+  --arrow-size: 8px;
+  --arrow-border: 9px;
+}
+
+.tooltip-content::before,
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.tooltip-content[data-placement="top"]::before {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border-width: var(--arrow-border) var(--arrow-border) 0 var(--arrow-border);
+  border-color: var(--border-color-default) transparent transparent transparent;
+}
+
+.tooltip-content[data-placement="top"]::after {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border-width: var(--arrow-size) var(--arrow-size) 0 var(--arrow-size);
+  border-color: var(--bg-card-base) transparent transparent transparent;
+}
+
+.tooltip-content[data-placement="bottom"]::before {
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  border-width: 0 var(--arrow-border) var(--arrow-border) var(--arrow-border);
+  border-color: transparent transparent var(--border-color-default) transparent;
+}
+
+.tooltip-content[data-placement="bottom"]::after {
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  border-width: 0 var(--arrow-size) var(--arrow-size) var(--arrow-size);
+  border-color: transparent transparent var(--bg-card-base) transparent;
+}
+
+.tooltip-content[data-placement="left"]::before {
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border-width: var(--arrow-border) 0 var(--arrow-border) var(--arrow-border);
+  border-color: transparent transparent transparent var(--border-color-default);
+}
+
+.tooltip-content[data-placement="left"]::after {
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border-width: var(--arrow-size) 0 var(--arrow-size) var(--arrow-size);
+  border-color: transparent transparent transparent var(--bg-card-base);
+}
+
+.tooltip-content[data-placement="right"]::before {
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  border-width: var(--arrow-border) var(--arrow-border) var(--arrow-border) 0;
+  border-color: transparent var(--border-color-default) transparent transparent;
+}
+
+.tooltip-content[data-placement="right"]::after {
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  border-width: var(--arrow-size) var(--arrow-size) var(--arrow-size) 0;
+  border-color: transparent var(--bg-card-base) transparent transparent;
 }
 
 .tooltip-fader-enter-active,
