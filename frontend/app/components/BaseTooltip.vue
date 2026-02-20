@@ -7,6 +7,7 @@ type PlacementOption = Placement | "auto";
 interface Props {
   placement?: PlacementOption;
   maxWidth?: number | string;
+  content?: string;
 }
 
 interface TooltipStyle {
@@ -15,7 +16,7 @@ interface TooltipStyle {
   maxWidth: string;
 }
 
-const { placement = "auto", maxWidth = 320 } = defineProps<Props>();
+const { content = "", placement = "auto", maxWidth = 320 } = defineProps<Props>();
 
 const OPEN_DELAY = 80;
 const CLOSE_DELAY = 80;
@@ -215,7 +216,10 @@ onBeforeUnmount(() => {
         @mouseenter="clearTimers"
         @mouseleave="closeWithDelay"
       >
-        <div class="tooltip-content" :data-placement="actualPlacement">content</div>
+        <div class="tooltip-content" :data-placement="actualPlacement">
+          <slot v-if="$slots.content" name="content" />
+          <span v-else>{{ content }}</span>
+        </div>
       </div>
     </Transition>
   </Teleport>
