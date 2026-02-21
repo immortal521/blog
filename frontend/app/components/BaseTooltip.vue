@@ -18,6 +18,10 @@ interface TooltipStyle {
 
 const { content = "", placement = "auto", maxWidth = 320 } = defineProps<Props>();
 
+const slots = useSlots();
+
+const contentEmpty = computed(() => content === "" && slots.content === undefined);
+
 const OPEN_DELAY = 80;
 const CLOSE_DELAY = 80;
 
@@ -162,6 +166,7 @@ const updatePosition = () => {
 
 const openWithDelay = () => {
   clearTimers();
+  if (contentEmpty.value) return;
   openTimer = setTimeout(async () => {
     isOpen.value = true;
     await nextTick();
@@ -171,12 +176,14 @@ const openWithDelay = () => {
 
 const closeWithDelay = () => {
   clearTimers();
+  if (contentEmpty.value) return;
   closeTimer = setTimeout(() => {
     isOpen.value = false;
   }, CLOSE_DELAY);
 };
 
 watchEffect((onCleanup) => {
+  if (contentEmpty.value) return;
   if (!isOpen.value) return;
 
   const handler = () => updatePosition();
@@ -209,7 +216,7 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <Transition name="tooltip-fader">
       <div
-        v-if="isOpen"
+        v-if="isOpen && (content || $slots.content)"
         ref="tooltip"
         class="tooltip"
         :style
