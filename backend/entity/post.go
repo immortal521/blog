@@ -3,8 +3,6 @@ package entity
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // PostStatus represents the status of a post
@@ -21,17 +19,20 @@ const (
 
 // Post represents a blog post entity
 type Post struct {
-	*gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"type:timestamptz;index"`
 
-	Title           string     `gorm:"type:varchar(255);not null"`           // Post title
-	Summary         *string    `gorm:"type:varchar(500)"`                    // Post summary (optional)
-	Content         string     `gorm:"type:text;not null"`                    // Post content in markdown or HTML
-	Cover           *string    `gorm:"type:varchar(255)"`                     // Cover image URL (optional)
-	ReadTimeMinutes uint       `gorm:"not null"`                              // Estimated reading time in minutes
-	ViewCount       uint       `gorm:"not null"`                              // Total view count
-	Status          PostStatus `gorm:"type:smallint;default:1;not null"`      // Post status
+	Title           string     `gorm:"type:varchar(255);not null"`       // Post title
+	Summary         *string    `gorm:"type:varchar(500)"`                // Post summary (optional)
+	Content         string     `gorm:"type:text;not null"`               // Post content in markdown or HTML
+	Cover           *string    `gorm:"type:varchar(255)"`                // Cover image URL (optional)
+	ReadTimeMinutes uint       `gorm:"not null"`                         // Estimated reading time in minutes
+	ViewCount       uint       `gorm:"not null"`                         // Total view count
+	Status          PostStatus `gorm:"type:smallint;default:1;not null"` // Post status
 
-	UserID uint `gorm:"not null;index"` // Foreign key to User
+	UserID uint `gorm:"not null;index"`                  // Foreign key to User
 	User   User `gorm:"foreignKey:UserID;references:ID"` // Author of the post
 
 	PublishedAt *time.Time `gorm:"type:timestamp(6)"` // Publication timestamp

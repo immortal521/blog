@@ -1,9 +1,12 @@
 package entity
 
-import "gorm.io/gorm"
+import "time"
 
 type PostCategory struct {
-	*gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"type:timestamptz;index"`
 
 	Name string `gorm:"unique;not null;size:100"`
 	Slug string `gorm:"unique;not null;size:100"`

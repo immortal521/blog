@@ -1,6 +1,6 @@
 package entity
 
-import "gorm.io/gorm"
+import "time"
 
 // LinkStatus represents the status of a link
 type LinkStatus int
@@ -14,7 +14,10 @@ const (
 
 // Link represents a friend link entity
 type Link struct {
-	*gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"type:timestamptz;index"`
 
 	Description string     `gorm:"column:description;size:255"`                    // Link description
 	Enabled     bool       `gorm:"column:enabled;not null;default:false"`          // Whether the link is enabled

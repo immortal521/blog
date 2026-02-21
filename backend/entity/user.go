@@ -2,11 +2,11 @@ package entity
 
 import (
 	"encoding/json"
+	"time"
 
 	"blog-server/utils"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // UserRole represents the role of a user in the system
@@ -35,7 +35,10 @@ func (r UserRole) MarshalJSON() ([]byte, error) {
 
 // User represents a user entity in the system
 type User struct {
-	*gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `gorm:"type:timestamptz;index"`
 
 	UUID     uuid.UUID `gorm:"type:uuid;not null;unique"`           // Unique identifier for the user
 	Avatar   *string   `gorm:"type:varchar(255)"`                   // Avatar image URL (optional)

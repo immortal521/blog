@@ -47,6 +47,7 @@ func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post
 			"posts.updated_at",
 		).
 		Where("status = ?", entity.PostPublished).
+		Where("posts.deleted_at IS NULL").
 		Find(ctx)
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
@@ -73,6 +74,7 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 			"posts.updated_at",
 		).
 		Where("status = ?", entity.PostPublished).
+		Where("posts.deleted_at IS NULL").
 		Find(ctx)
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
@@ -84,6 +86,7 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
 	posts, err := gorm.G[*entity.Post](db).
 		Select("id", "updated_at").
+		Where("deleted_at IS NULL").
 		Find(ctx)
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
@@ -93,7 +96,9 @@ func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Pos
 
 // GetPostCount returns the total count of posts
 func (r *postRepo) GetPostCount(ctx context.Context, db *gorm.DB) (int64, error) {
-	postCount, err := gorm.G[*entity.Post](db).Count(ctx, "id")
+	postCount, err := gorm.G[*entity.Post](db).
+		Where("deleted_at IS NULL").
+		Count(ctx, "id")
 	if err != nil {
 		return 0, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
@@ -120,6 +125,7 @@ func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*enti
 		).
 		Where("status = ?", entity.PostPublished).
 		Where("posts.id = ?", id).
+		Where("posts.deleted_at IS NULL").
 		First(ctx)
 	if err == nil {
 		return post, nil

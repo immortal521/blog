@@ -31,7 +31,9 @@ func NewLinkRepo() ILinkRepo {
 
 // GetAllLinks retrieves all links from the database
 func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
-	links, err := gorm.G[*entity.Link](db).Find(ctx)
+	links, err := gorm.G[*entity.Link](db).
+		Where("deleted_at IS NULL").
+		Find(ctx)
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
@@ -40,7 +42,9 @@ func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link
 
 // GetAllEnabledLinks retrieves all enabled links from the database
 func (r *linkRepo) GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
-	links, err := gorm.G[*entity.Link](db).Where("enabled = ?", true).Find(ctx)
+	links, err := gorm.G[*entity.Link](db).
+		Where("enabled = ? AND deleted_at IS NULL", true).
+		Find(ctx)
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
@@ -100,7 +104,9 @@ func (r *linkRepo) GetOverview(ctx context.Context, db *gorm.DB) (*response.Link
 				"sum(case when status = ? then 1 else 0 end) as normal, "+
 				"sum(case when enabled = ? then 1 else 0 end) as enabled",
 			entity.LinkNormal, true,
-		).Scan(&res).Error
+		).
+		Where("deleted_at IS NULL").
+		Scan(&res).Error
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
 	}

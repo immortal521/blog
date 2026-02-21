@@ -42,7 +42,10 @@ func (u *userRepo) CreateUser(ctx context.Context, db *gorm.DB, user *entity.Use
 
 // GetUserByEmail retrieves a user by email address
 func (u *userRepo) GetUserByEmail(ctx context.Context, db *gorm.DB, email string) (*entity.User, error) {
-	user, err := gorm.G[*entity.User](db).Where("email = ?", email).Take(ctx)
+	user, err := gorm.G[*entity.User](db).
+		Where("email = ?", email).
+		Where("deleted_at IS NULL").
+		Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errs.New(errs.CodeUserNotFound, "user not found", err)
 	}
@@ -69,7 +72,10 @@ func (u *userRepo) ExistsByUUID(ctx context.Context, db *gorm.DB, uuid string) (
 
 // GetRoleByUUID retrieves the user role by UUID
 func (u *userRepo) GetRoleByUUID(ctx context.Context, db *gorm.DB, uuid string) (*entity.UserRole, error) {
-	role, err := gorm.G[*entity.UserRole](db).Where("uuid = ?", uuid).Take(ctx)
+	role, err := gorm.G[*entity.UserRole](db).
+		Where("uuid = ?", uuid).
+		Where("deleted_at IS NULL").
+		Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errs.New(errs.CodeUserNotFound, "user not found", err)
 	}
