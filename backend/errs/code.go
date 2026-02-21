@@ -25,6 +25,7 @@ const (
 	CodeConflict              = 3002 // Resource conflict (e.g., version mismatch)
 	CodeResourceLocked        = 3003 // Resource is locked or occupied
 	CodeNoContent             = 3004 // Request processed but no content returned
+	CodeDuplicate             = 3005
 
 	// Request & Parameter Validation Codes
 	CodeInvalidParam      = 4000 // General parameter error
@@ -56,7 +57,7 @@ func MapToHTTPStatus(code int) int {
 		return http.StatusBadRequest
 	case CodeResourceNotFound, CodeUserNotFound:
 		return http.StatusNotFound
-	case CodeConflict, CodeResourceAlreadyExists, CodeCacheMiss:
+	case CodeConflict, CodeResourceAlreadyExists, CodeCacheMiss, CodeDuplicate:
 		return http.StatusConflict
 	case CodeNotImplemented:
 		return http.StatusNotImplemented
