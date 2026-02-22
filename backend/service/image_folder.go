@@ -142,17 +142,15 @@ func (s *imageFolderService) Move(ctx context.Context, id uuid.UUID, targetParen
 		return err
 	}
 
-	return s.imageFolderRepo.Move(ctx, s.db.Conn(), id, *targetParentID)
+	return s.imageFolderRepo.Move(ctx, s.db.Conn(), id, targetParentID)
 }
 
 func (s *imageFolderService) Delete(ctx context.Context, id uuid.UUID) error {
-	conn := s.db.Conn()
-
 	_, err := s.ensureFolderExists(ctx, id)
 	if err != nil {
 		return err
 	}
-	return s.imageFolderRepo.SoftDelete(ctx, conn, id)
+	return s.imageFolderRepo.SoftDelete(ctx, s.db.Conn(), id)
 }
 
 func NewImageFolderService(db database.DB, imageFolderRepo repository.IImageFolderRepo) IImageFolderService {

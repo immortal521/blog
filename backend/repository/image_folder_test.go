@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func newTestDB(t *testing.T) (*gorm.DB, func()) {
@@ -30,7 +31,11 @@ func newTestDB(t *testing.T) (*gorm.DB, func()) {
 		cfg.Database.Port,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger:                                   logger.Default.LogMode(logger.Info),
+		TranslateError:                           true,
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	require.NoError(t, err)
 
 	tx := db.Begin()
@@ -248,7 +253,7 @@ func TestImageFolderRepo_Move(t *testing.T) {
 
 	time.Sleep(5 * time.Millisecond)
 
-	err := repo.Move(ctx, db, child.ID, parent2.ID)
+	err := repo.Move(ctx, db, child.ID, &parent2.ID)
 	require.NoError(t, err)
 
 	got, err := repo.GetByID(ctx, db, child.ID)

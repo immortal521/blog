@@ -18,12 +18,28 @@ type IImageFolderRepo interface {
 	Exists(ctx context.Context, db *gorm.DB, id uuid.UUID) (bool, error)
 	ListByParent(ctx context.Context, db *gorm.DB, parentID *uuid.UUID, limit, offset int) ([]entity.ImageFolder, error)
 	ExistsBySameNameInParent(ctx context.Context, db *gorm.DB, parentID *uuid.UUID, name string, excludeID *uuid.UUID) (bool, error)
+	CountChildren(ctx context.Context, db *gorm.DB, parentID *uuid.UUID) (int64, error)
 	Rename(ctx context.Context, db *gorm.DB, id uuid.UUID, newName string) error
-	Move(ctx context.Context, db *gorm.DB, id uuid.UUID, newParentID uuid.UUID) error
+	Move(ctx context.Context, db *gorm.DB, id uuid.UUID, newParentID *uuid.UUID) error
 	SoftDelete(ctx context.Context, db *gorm.DB, id uuid.UUID) error
 }
 
 type imageFolderRepo struct{}
+
+func (i *imageFolderRepo) CountChildren(ctx context.Context, db *gorm.DB, parentID *uuid.UUID) (int64, error) {
+	query := gorm.G[entity.ImageFolder](db).
+		Where("deleted_at IS NULL")
+	if parentID != nil {
+		query.Where("parent_id = ?", parentID)
+	} else {
+		query.Where("parent_id IS NULL")
+	}
+	count, err := query.Count(ctx, "id")
+	if err != nil {
+		return 0, errs.New(errs.CodeDatabaseError, "database error", err)
+	}
+	return count, nil
+}
 
 func (i *imageFolderRepo) Create(ctx context.Context, db *gorm.DB, folder *entity.ImageFolder) error {
 	if folder.ID == uuid.Nil {
@@ -59,11 +75,11 @@ func (i *imageFolderRepo) ExistsBySameNameInParent(ctx context.Context, db *gorm
 	if parentID == nil {
 		query = query.Where("parent_id IS NULL")
 	} else {
-		query = query.Where("parent_id = ?", parentID)
+		query = query.Where("parent_id = ?", *parentID)
 	}
 
 	if excludeID != nil {
-		query = query.Where("id <> ?", excludeID)
+		query = query.Where("id <> ?", *excludeID)
 	}
 
 	count, err := query.Count(ctx, "id")
@@ -73,7 +89,6 @@ func (i *imageFolderRepo) ExistsBySameNameInParent(ctx context.Context, db *gorm
 	return count > 0, nil
 }
 
-// GetByID implements [IImageFolderRepo].
 func (i *imageFolderRepo) GetByID(ctx context.Context, db *gorm.DB, id uuid.UUID) (*entity.ImageFolder, error) {
 	folder, err := gorm.G[*entity.ImageFolder](db).
 		Where("id = ? AND deleted_at IS NULL", id).
@@ -112,11 +127,11 @@ func (i *imageFolderRepo) ListByParent(ctx context.Context, db *gorm.DB, parentI
 	return result, nil
 }
 
-func (i *imageFolderRepo) Move(ctx context.Context, db *gorm.DB, id uuid.UUID, newParentID uuid.UUID) error {
+func (i *imageFolderRepo) Move(ctx context.Context, db *gorm.DB, id uuid.UUID, newParentID *uuid.UUID) error {
 	_, err := gorm.G[entity.ImageFolder](db).
-		Where("id = ?", id).
+		Where("id = ? AND deleted_at IS NULL", id).
 		Updates(ctx, entity.ImageFolder{
-			ParentID:  &newParentID,
+			ParentID:  newParentID,
 			UpdatedAt: time.Now(),
 		})
 	if err != nil {
@@ -125,7 +140,6 @@ func (i *imageFolderRepo) Move(ctx context.Context, db *gorm.DB, id uuid.UUID, n
 	return nil
 }
 
-// Rename implements [IImageFolderRepo].
 func (i *imageFolderRepo) Rename(ctx context.Context, db *gorm.DB, id uuid.UUID, newName string) error {
 	_, err := gorm.G[entity.ImageFolder](db).
 		Where("id = ?", id).
