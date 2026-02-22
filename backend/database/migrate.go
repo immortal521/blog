@@ -18,6 +18,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&entity.Post{},
 		&entity.PostCategory{},
 		&entity.PostTag{},
+		&entity.Image{},
 		&entity.ImageFolder{},
 	)
 }

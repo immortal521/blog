@@ -126,6 +126,8 @@ func main() {
 		repository.NewUserRepo,
 		repository.NewPostRepo,
 		repository.NewLinkRepo,
+		repository.NewImageRepo,
+		repository.NewImageFolderRepo,
 
 		// services
 		service.NewAuthService,
@@ -136,6 +138,7 @@ func main() {
 		service.NewRssService,
 		service.NewModelService,
 		service.NewImageService,
+		service.NewImageFolderService,
 		service.NewStatsService,
 
 		// handlers

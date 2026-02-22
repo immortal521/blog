@@ -40,8 +40,9 @@ func newTestDB(t *testing.T) (*gorm.DB, func()) {
 
 	tx := db.Begin()
 	require.NoError(t, tx.Error)
-
-	require.NoError(t, tx.AutoMigrate(&entity.ImageFolder{}))
+	require.NoError(t, tx.Session(&gorm.Session{
+		Logger: tx.Logger.LogMode(logger.Silent),
+	}).AutoMigrate(&entity.ImageFolder{}))
 
 	// 默认每个 test 用事务隔离，结束时回滚
 	cleanup := func() {
