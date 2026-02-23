@@ -41,6 +41,7 @@ const (
 	CodeNetworkError     = 5002 // Network request failure
 	CodeExternalAPIError = 5003 // External API service error
 	CodeFileSystemError  = 5004 // File system operation error
+	CodeStorageError     = 5005
 )
 
 func MapToHTTPStatus(code int) int {
@@ -61,7 +62,7 @@ func MapToHTTPStatus(code int) int {
 		return http.StatusConflict
 	case CodeNotImplemented:
 		return http.StatusNotImplemented
-	case CodeDatabaseError, CodeCacheError, CodeNetworkError, CodeExternalAPIError, CodeFileSystemError:
+	case CodeDatabaseError, CodeCacheError, CodeNetworkError, CodeExternalAPIError, CodeFileSystemError, CodeStorageError:
 		return http.StatusInternalServerError
 	default:
 		return http.StatusInternalServerError

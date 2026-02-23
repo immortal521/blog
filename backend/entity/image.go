@@ -9,7 +9,7 @@ import (
 type Image struct {
 	ID         uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	FolderID   *uuid.UUID `gorm:"type:uuid;index"`
-	StorageKey string     `gorm:"type:text;not null;uniqueIndex"`
+	StorageKey string     `gorm:"type:text;not null;index"`
 	OriginName string     `gorm:"type:text;not null"`
 	Mime       string     `gorm:"type:text;not null"`
 	Size       int64      `gorm:"not null"`

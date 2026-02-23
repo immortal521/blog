@@ -51,7 +51,7 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 	}
 
 	app := fiber.New(fiberCfg)
-	app.Use(middleware.RequestLogger(log))
+	app.Use(middleware.RequestLogger(log, cfg))
 
 	return app, nil
 }

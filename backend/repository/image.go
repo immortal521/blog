@@ -20,9 +20,23 @@ type IImageRepo interface {
 	SoftDelete(ctx context.Context, db *gorm.DB, id uuid.UUID) error
 	CountByFolder(ctx context.Context, db *gorm.DB, folderID *uuid.UUID) (int64, error)
 	ExistsBySameNameInFolder(ctx context.Context, db *gorm.DB, folderID *uuid.UUID, name string, excludeID *uuid.UUID) (bool, error)
+	GetBySha256(ctx context.Context, db *gorm.DB, sha256 string) (*entity.Image, error)
 }
 
 type imageRepo struct{}
+
+func (i *imageRepo) GetBySha256(ctx context.Context, db *gorm.DB, sha256 string) (*entity.Image, error) {
+	image, err := gorm.G[*entity.Image](db).
+		Where("sha256 = ? AND deleted_at IS NULL", sha256).
+		First(ctx)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
+	}
+	return image, err
+}
 
 func (i *imageRepo) CountByFolder(ctx context.Context, db *gorm.DB, folderID *uuid.UUID) (int64, error) {
 	query := gorm.G[entity.Image](db).Where("deleted_at IS NULL")

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"path/filepath"
+	"os"
 
 	"blog-server/errs"
 	"blog-server/request"
@@ -10,7 +10,6 @@ import (
 	"blog-server/validatorx"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
 
 type IImageHandler interface {
@@ -34,7 +33,6 @@ func (i *imageHandler) Download(c *fiber.Ctx) error {
 	panic("unimplemented")
 }
 
-// Upload implements IImageHandler.
 func (i *imageHandler) Upload(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -54,13 +52,22 @@ func (i *imageHandler) Upload(c *fiber.Ctx) error {
 		_ = file.Close()
 	}()
 
-	key := uuid.New().String() + filepath.Ext(fileHeader.Filename)
-	err = i.svc.Upload(c.UserContext(), key, file, fileHeader.Header.Get("Content-Type"))
+	tmp, err := os.CreateTemp("", "upload-*")
+	if err != nil {
+		return errs.New(errs.CodeInternalError, "Failed to create temp file", err)
+	}
+	defer func() {
+		_ = tmp.Close()
+		_ = os.Remove(tmp.Name())
+	}()
+
+	filename := fileHeader.Filename
+	image, err := i.svc.Upload(c.UserContext(), nil, filename, file, fileHeader.Header.Get("Content-Type"), fileHeader.Size)
 	if err != nil {
 		return err
 	}
 
-	res := response.Success(key)
+	res := response.Success(image)
 	return c.JSON(res)
 }
 

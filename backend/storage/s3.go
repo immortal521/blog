@@ -2,20 +2,57 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"io"
+	"net/url"
+	"strings"
 
 	"blog-server/config"
+	"blog-server/errs"
 	"blog-server/logger"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 type S3Storage struct {
 	client *s3.Client
 	log    logger.Logger
+}
+
+func (s *S3Storage) Copy(ctx context.Context, bucket string, srcKey string, dstKey string) error {
+	escapedKey := url.PathEscape(strings.TrimPrefix(srcKey, "/"))
+	copySource := bucket + "/" + escapedKey
+
+	_, err := s.client.CopyObject(ctx, &s3.CopyObjectInput{
+		Bucket:     &bucket,
+		Key:        &dstKey,
+		CopySource: &copySource,
+	})
+	if err != nil {
+		return errs.New(errs.CodeStorageError, "storage error", err)
+	}
+	return nil
+}
+
+func (s *S3Storage) Exists(ctx context.Context, bucket string, key string) (bool, error) {
+	_, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: &bucket,
+		Key:    &key,
+	})
+	if err == nil {
+		return true, nil
+	}
+
+	var nf *types.NotFound
+	if errors.As(err, &nf) {
+		return false, nil
+	}
+
+	return false, errs.New(errs.CodeStorageError, "storage error", err)
 }
 
 func (s *S3Storage) Download(ctx context.Context, bucket string, key string) (io.ReadCloser, string, error) {
