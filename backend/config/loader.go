@@ -126,10 +126,10 @@ func setDefaults() {
 	v.SetDefault("email.password", "123456")
 	v.SetDefault("email.from", "Immortel@immort.top")
 
-	v.SetDefault("region", "us-east-1")
-	v.SetDefault("access_key_id", "rustfsadmin")
-	v.SetDefault("secret_access_key", "rustfsadmin")
-	v.SetDefault("endpoint", "http://localhost:9000")
+	v.SetDefault("rustfs.region", "us-east-1")
+	v.SetDefault("rustfs.access_key_id", "rustfsadmin")
+	v.SetDefault("rustfs.secret_access_key", "rustfsadmin")
+	v.SetDefault("rustfs.endpoint", "http://localhost:9000")
 }
 
 // loadFromFile reads the config file or creates a default one if it doesn't exist
