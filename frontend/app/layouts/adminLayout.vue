@@ -19,7 +19,7 @@ const handleToggle = () => {
     <BaseSidebar ref="sidebar" v-model:open="open" v-model:collapsed="collapsed" :items="menuItems">
       <template #header>
         <div class="logo">
-          <h2>Admin</h2>
+          <img src="/images/logo.png" class="logo-image" />
         </div>
       </template>
     </BaseSidebar>
@@ -57,6 +57,11 @@ const handleToggle = () => {
   justify-content: center;
   align-items: center;
   color: var(--text-color-primary);
+
+  .logo-image {
+    width: 100%;
+    max-width: 140px;
+  }
 }
 
 .header {
