@@ -74,12 +74,12 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-            export PNPM_HOME="/home/immortal/.local/share/pnpm"
+            export PNPM_HOME="$HOME/.local/share/pnpm"
             case ":$PATH:" in
               *":$PNPM_HOME:"*) ;;
               *) export PATH="$PNPM_HOME:$PATH" ;;
             esac
-            APP_DIR="/home/$(whoami)/projects/blog/frontend"
+            APP_DIR="$HOME/projects/blog/frontend"
             cd "$APP_DIR"
 
             echo "📦 解压产物"
