@@ -16,14 +16,14 @@
   },
   "dependencies": {
     "typescript": "^5.9.3",
-    "vue-tsc": "^3.2.3"
+    "vue-tsc": "^3.2.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "eslint": "^9.39.2",
+    "eslint": "^9.39.4",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7"
+    "lint-staged": "^16.3.2"
   },
   "lint-staged": {
     "frontend/**/*.{js,vue,ts}": [
@@ -35,5 +35,5 @@
       "golangci-lint run ./..."
     ]
   },
-  "packageManager": "pnpm@10.15.0"
+  "packageManager": "pnpm@10.30.3"
 }
