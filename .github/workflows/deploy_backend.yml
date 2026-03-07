@@ -80,7 +80,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -lc '
+            zsh -lc '
             set -e
             APP_DIR="/home/$(whoami)/projects/blog/backend"
             cd "$APP_DIR"

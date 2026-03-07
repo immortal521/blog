@@ -70,10 +70,10 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -lc '
+            zsh -lc '
             set -e
 
-            APP_DIR="/home/${whoami}/projects/blog/frontend"
+            APP_DIR="/home/$(whoami)/projects/blog/frontend"
             cd "$APP_DIR"
 
             echo "📦 解压产物"
