@@ -80,9 +80,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            zsh -lc '
             set -e
-            source $HOME/.zshrc
             APP_DIR="/home/$(whoami)/projects/blog/backend"
             cd "$APP_DIR"
 
