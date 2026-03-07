@@ -36,7 +36,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: "1.25.0" # 设置 Go 版本
+          go-version: "1.26.1" # 设置 Go 版本
 
       - name: Fill secrets into config.yml
         run: |
@@ -70,7 +70,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "backend/backend.tar.gz"
-          target: "/var/www/blog-nuxt"
+          target: "~/projects/blog"
 
       # 通过 SSH 在服务器上部署
       - name: Deploy on server
@@ -81,10 +81,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             bash -lc '
-            \. "$HOME/.nvm/nvm.sh"
-
             set -e
-            APP_DIR="/var/www/blog-nuxt/backend"
+            APP_DIR="/home/${whoami}/projects/blog/backend"
             cd "$APP_DIR"
 
             echo "📦 解压产物"
