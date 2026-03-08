@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"blog-server/database"
 	"blog-server/entity"
 	"blog-server/test"
 
@@ -16,7 +17,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func newTestDB(t *testing.T) (*gorm.DB, func()) {
+func newTestDB(t *testing.T) (database.DB, func()) {
 	t.Helper()
 
 	cfg, err := test.LoadConfig()
@@ -40,23 +41,25 @@ func newTestDB(t *testing.T) (*gorm.DB, func()) {
 
 	tx := db.Begin()
 	require.NoError(t, tx.Error)
+
 	require.NoError(t, tx.Session(&gorm.Session{
 		Logger: tx.Logger.LogMode(logger.Silent),
 	}).AutoMigrate(&entity.ImageFolder{}))
 
-	// 默认每个 test 用事务隔离，结束时回滚
+	// 用 TxContext 包装
+	txCtx := database.NewGormTxContext(tx)
 	cleanup := func() {
 		_ = tx.Rollback().Error
 	}
+
 	t.Cleanup(cleanup)
 
-	return tx, func() {
-		// 允许个别 test 选择提交
+	return txCtx, func() {
 		_ = tx.Commit().Error
 	}
 }
 
-func mustCreateFolder(t *testing.T, ctx context.Context, db *gorm.DB, repo IImageFolderRepo, name string, parentID *uuid.UUID) *entity.ImageFolder {
+func mustCreateFolder(t *testing.T, ctx context.Context, db database.DB, repo IImageFolderRepo, name string, parentID *uuid.UUID) *entity.ImageFolder {
 	t.Helper()
 
 	f := &entity.ImageFolder{

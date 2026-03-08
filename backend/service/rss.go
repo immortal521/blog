@@ -19,12 +19,12 @@ type IRssService interface {
 
 type rssService struct {
 	cfg      config.AppConfig
-	db       database.DB
+	db       database.Database
 	postRepo repository.IPostRepo
 }
 
 func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
-	posts, err := r.postRepo.GetAllPosts(ctx, r.db.Conn())
+	posts, err := r.postRepo.GetAllPosts(ctx, r.db)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +75,6 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	return xml.MarshalIndent(feed, "", "  ")
 }
 
-func NewRssService(cfg *config.Config, db database.DB, postRepo repository.IPostRepo) IRssService {
+func NewRssService(cfg *config.Config, db database.Database, postRepo repository.IPostRepo) IRssService {
 	return &rssService{cfg: cfg.App, db: db, postRepo: postRepo}
 }

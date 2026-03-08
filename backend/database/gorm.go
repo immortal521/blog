@@ -4,17 +4,53 @@ import (
 	"context"
 
 	"blog-server/config"
+	"blog-server/errs"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-type db struct {
+type GormDatabase struct {
 	db *gorm.DB
 }
 
-func New(cfg *config.Config) (DB, error) {
+type GormTxContext struct {
+	db *gorm.DB
+}
+
+func (d *GormDatabase) isDB()  {}
+func (t *GormTxContext) isDB() {}
+
+func (d *GormDatabase) Trans(fn func(TxContext) error) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		return fn(&GormTxContext{db: tx})
+	})
+}
+
+func (d *GormDatabase) TransWithContext(ctx context.Context, fn func(txc TxContext) error) error {
+	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return fn(&GormTxContext{db: tx})
+	})
+}
+
+func (d *GormDatabase) Close() error {
+	sqlDB, err := d.db.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
+}
+
+func (d *GormDatabase) Ping() error {
+	sqlDB, err := d.db.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Ping()
+}
+
+func NewGormDatabase(cfg *config.Config) (Database, error) {
 	dsn := cfg.Database.GetDSN()
 	gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:                                   logger.Default.LogMode(logger.Info),
@@ -35,37 +71,20 @@ func New(cfg *config.Config) (DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &db{db: gormDB}, nil
+	return &GormDatabase{db: gormDB}, nil
 }
 
-func (d *db) Trans(fn func(txc *TxContext) error) error {
-	return d.db.Transaction(func(tx *gorm.DB) error {
-		return fn(&TxContext{tx: tx})
-	})
+func NewGormTxContext(tx *gorm.DB) DB {
+	return &GormTxContext{db: tx}
 }
 
-func (d *db) TransWithContext(ctx context.Context, fn func(txc *TxContext) error) error {
-	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		return fn(&TxContext{tx: tx, ctx: ctx})
-	})
-}
-
-func (d *db) Conn() *gorm.DB {
-	return d.db
-}
-
-func (d *db) Close() error {
-	sqlDB, err := d.db.DB()
-	if err != nil {
-		return err
+func ToGormDB(db DB) (*gorm.DB, error) {
+	switch v := db.(type) {
+	case *GormDatabase:
+		return v.db, nil
+	case *GormTxContext:
+		return v.db, nil
+	default:
+		return nil, errs.New(errs.CodeInternalError, "Invalid database type, please use GormDatabase or GormTxContext", nil)
 	}
-	return sqlDB.Close()
-}
-
-func (d *db) Ping() error {
-	sqlDB, err := d.db.DB()
-	if err != nil {
-		return err
-	}
-	return sqlDB.Ping()
 }

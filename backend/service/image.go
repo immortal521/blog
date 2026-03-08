@@ -27,7 +27,7 @@ type IImageService interface {
 }
 
 type imageService struct {
-	db         database.DB
+	db         database.Database
 	store      storage.Storage
 	bucket     string
 	folderRepo repository.IImageFolderRepo
@@ -61,7 +61,7 @@ func (i *imageService) Upload(ctx context.Context, folderID *uuid.UUID, filename
 	}
 
 	if folderID != nil {
-		ok, err := i.folderRepo.Exists(ctx, i.db.Conn(), *folderID)
+		ok, err := i.folderRepo.Exists(ctx, i.db, *folderID)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +99,7 @@ func (i *imageService) Upload(ctx context.Context, folderID *uuid.UUID, filename
 	ext := strings.ToLower(filepath.Ext(filename))
 	finalKey := fmt.Sprintf("%s/%s%s", hashHex[:2], hashHex, ext)
 
-	exist, err := i.imageRepo.GetBySha256(ctx, i.db.Conn(), hashHex)
+	exist, err := i.imageRepo.GetBySha256(ctx, i.db, hashHex)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (i *imageService) Upload(ctx context.Context, folderID *uuid.UUID, filename
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		}
-		if err := i.imageRepo.Create(ctx, i.db.Conn(), img); err != nil {
+		if err := i.imageRepo.Create(ctx, i.db, img); err != nil {
 			return nil, err
 		}
 		return img, nil
@@ -147,12 +147,12 @@ func (i *imageService) Upload(ctx context.Context, folderID *uuid.UUID, filename
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}
-	if err := i.imageRepo.Create(ctx, i.db.Conn(), img); err != nil {
+	if err := i.imageRepo.Create(ctx, i.db, img); err != nil {
 		return nil, err
 	}
 	return img, nil
 }
 
-func NewImageService(db database.DB, storage storage.Storage, folderRepo repository.IImageFolderRepo, imageRepo repository.IImageRepo) IImageService {
+func NewImageService(db database.Database, storage storage.Storage, folderRepo repository.IImageFolderRepo, imageRepo repository.IImageRepo) IImageService {
 	return &imageService{db: db, store: storage, bucket: "images", folderRepo: folderRepo, imageRepo: imageRepo}
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	"blog-server/database"
 	"blog-server/entity"
 	"blog-server/errs"
 	"blog-server/response"
@@ -15,11 +16,11 @@ import (
 
 // ILinkRepo defines the interface for link data access operations
 type ILinkRepo interface {
-	GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error)
-	GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error)
-	CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error
-	UpdateLinkStatusBatch(ctx context.Context, db *gorm.DB, updates map[uint]entity.LinkStatus) error
-	GetOverview(ctx context.Context, db *gorm.DB) (*response.LinkOverview, error)
+	GetAllLinks(ctx context.Context, db database.DB) ([]*entity.Link, error)
+	GetAllEnabledLinks(ctx context.Context, db database.DB) ([]*entity.Link, error)
+	CreateLink(ctx context.Context, db database.DB, link *entity.Link) error
+	UpdateLinkStatusBatch(ctx context.Context, db database.DB, updates map[uint]entity.LinkStatus) error
+	GetOverview(ctx context.Context, db database.DB) (*response.LinkOverview, error)
 }
 
 type linkRepo struct{}
@@ -30,8 +31,10 @@ func NewLinkRepo() ILinkRepo {
 }
 
 // GetAllLinks retrieves all links from the database
-func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
-	links, err := gorm.G[*entity.Link](db).
+func (r *linkRepo) GetAllLinks(ctx context.Context, db database.DB) ([]*entity.Link, error) {
+	gdb := unwrapDB(db)
+
+	links, err := gorm.G[*entity.Link](gdb).
 		Where("deleted_at IS NULL").
 		Find(ctx)
 	if err != nil {
@@ -41,8 +44,10 @@ func (r *linkRepo) GetAllLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link
 }
 
 // GetAllEnabledLinks retrieves all enabled links from the database
-func (r *linkRepo) GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*entity.Link, error) {
-	links, err := gorm.G[*entity.Link](db).
+func (r *linkRepo) GetAllEnabledLinks(ctx context.Context, db database.DB) ([]*entity.Link, error) {
+	gdb := unwrapDB(db)
+
+	links, err := gorm.G[*entity.Link](gdb).
 		Where("enabled = ? AND deleted_at IS NULL", true).
 		Find(ctx)
 	if err != nil {
@@ -52,8 +57,9 @@ func (r *linkRepo) GetAllEnabledLinks(ctx context.Context, db *gorm.DB) ([]*enti
 }
 
 // CreateLink creates a new link in the database
-func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Link) error {
-	if err := gorm.G[entity.Link](db).Create(ctx, link); err != nil {
+func (r *linkRepo) CreateLink(ctx context.Context, db database.DB, link *entity.Link) error {
+	gdb := unwrapDB(db)
+	if err := gorm.G[entity.Link](gdb).Create(ctx, link); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return errs.New(errs.CodeConflict, "link already exists", err)
 		}
@@ -63,7 +69,8 @@ func (r *linkRepo) CreateLink(ctx context.Context, db *gorm.DB, link *entity.Lin
 }
 
 // UpdateLinkStatusBatch batch updates the status of multiple links
-func (r *linkRepo) UpdateLinkStatusBatch(ctx context.Context, db *gorm.DB, updates map[uint]entity.LinkStatus) error {
+func (r *linkRepo) UpdateLinkStatusBatch(ctx context.Context, db database.DB, updates map[uint]entity.LinkStatus) error {
+	gdb := unwrapDB(db)
 	if len(updates) == 0 {
 		return nil
 	}
@@ -80,7 +87,7 @@ func (r *linkRepo) UpdateLinkStatusBatch(ctx context.Context, db *gorm.DB, updat
 	}
 	caseBuilder.WriteString("ELSE status END")
 
-	err := db.Model(&entity.Link{}).
+	err := gdb.Model(&entity.Link{}).
 		Where("id IN (?)", ids).
 		UpdateColumn("status", gorm.Expr(caseBuilder.String(), idArgs...)).Error
 	if err != nil {
@@ -90,7 +97,8 @@ func (r *linkRepo) UpdateLinkStatusBatch(ctx context.Context, db *gorm.DB, updat
 }
 
 // GetOverview retrieves link statistics including total, normal, abnormal, and pending counts
-func (r *linkRepo) GetOverview(ctx context.Context, db *gorm.DB) (*response.LinkOverview, error) {
+func (r *linkRepo) GetOverview(ctx context.Context, db database.DB) (*response.LinkOverview, error) {
+	gdb := unwrapDB(db)
 	type result struct {
 		Total   int
 		Normal  int
@@ -98,7 +106,7 @@ func (r *linkRepo) GetOverview(ctx context.Context, db *gorm.DB) (*response.Link
 	}
 
 	var res result
-	err := db.Table("links").
+	err := gdb.Table("links").
 		Select(
 			"count(id) as total, "+
 				"sum(case when status = ? then 1 else 0 end) as normal, "+

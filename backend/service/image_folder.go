@@ -22,7 +22,7 @@ type IImageFolderService interface {
 }
 
 type imageFolderService struct {
-	db              database.DB
+	db              database.Database
 	imageFolderRepo repository.IImageFolderRepo
 }
 
@@ -31,7 +31,7 @@ func normalizeName(name string) string {
 }
 
 func (s *imageFolderService) ensureFolderExists(ctx context.Context, id uuid.UUID) (*entity.ImageFolder, error) {
-	folder, err := s.imageFolderRepo.GetByID(ctx, s.db.Conn(), id)
+	folder, err := s.imageFolderRepo.GetByID(ctx, s.db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (s *imageFolderService) ensureParentExists(ctx context.Context, parentID *u
 	if parentID == nil {
 		return nil
 	}
-	ok, err := s.imageFolderRepo.Exists(ctx, s.db.Conn(), *parentID)
+	ok, err := s.imageFolderRepo.Exists(ctx, s.db, *parentID)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (s *imageFolderService) ensureParentExists(ctx context.Context, parentID *u
 }
 
 func (s *imageFolderService) ensureNoDuplicateName(ctx context.Context, parentID *uuid.UUID, name string, excludeID *uuid.UUID) error {
-	dup, err := s.imageFolderRepo.ExistsBySameNameInParent(ctx, s.db.Conn(), parentID, name, excludeID)
+	dup, err := s.imageFolderRepo.ExistsBySameNameInParent(ctx, s.db, parentID, name, excludeID)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (s *imageFolderService) Create(ctx context.Context, name string, parentID *
 		ParentID: parentID,
 		Name:     name,
 	}
-	if err := s.imageFolderRepo.Create(ctx, s.db.Conn(), folder); err != nil {
+	if err := s.imageFolderRepo.Create(ctx, s.db, folder); err != nil {
 		return nil, err
 	}
 	return folder, nil
@@ -101,7 +101,7 @@ func (s *imageFolderService) List(ctx context.Context, parentID *uuid.UUID, limi
 		}
 	}
 
-	return s.imageFolderRepo.ListByParent(ctx, s.db.Conn(), parentID, limit, offset)
+	return s.imageFolderRepo.ListByParent(ctx, s.db, parentID, limit, offset)
 }
 
 func (s *imageFolderService) Rename(ctx context.Context, id uuid.UUID, newName string) error {
@@ -119,7 +119,7 @@ func (s *imageFolderService) Rename(ctx context.Context, id uuid.UUID, newName s
 		return err
 	}
 
-	return s.imageFolderRepo.Rename(ctx, s.db.Conn(), id, newName)
+	return s.imageFolderRepo.Rename(ctx, s.db, id, newName)
 }
 
 func (s *imageFolderService) Move(ctx context.Context, id uuid.UUID, targetParentID *uuid.UUID) error {
@@ -142,7 +142,7 @@ func (s *imageFolderService) Move(ctx context.Context, id uuid.UUID, targetParen
 		return err
 	}
 
-	return s.imageFolderRepo.Move(ctx, s.db.Conn(), id, targetParentID)
+	return s.imageFolderRepo.Move(ctx, s.db, id, targetParentID)
 }
 
 func (s *imageFolderService) Delete(ctx context.Context, id uuid.UUID) error {
@@ -150,10 +150,10 @@ func (s *imageFolderService) Delete(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	return s.imageFolderRepo.SoftDelete(ctx, s.db.Conn(), id)
+	return s.imageFolderRepo.SoftDelete(ctx, s.db, id)
 }
 
-func NewImageFolderService(db database.DB, imageFolderRepo repository.IImageFolderRepo) IImageFolderService {
+func NewImageFolderService(db database.Database, imageFolderRepo repository.IImageFolderRepo) IImageFolderService {
 	return &imageFolderService{
 		db:              db,
 		imageFolderRepo: imageFolderRepo,

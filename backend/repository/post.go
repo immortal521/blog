@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	"blog-server/database"
 	"blog-server/entity"
 	"blog-server/errs"
 
@@ -14,12 +15,12 @@ import (
 
 // IPostRepo defines the interface for post data access operations
 type IPostRepo interface {
-	GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
-	GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
-	GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error)
-	GetPostCount(ctx context.Context, db *gorm.DB) (int64, error)
-	GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*entity.Post, error)
-	UpdateViewCounts(ctx context.Context, db *gorm.DB, updates map[uint]int64) error
+	GetAllPosts(ctx context.Context, db database.DB) ([]*entity.Post, error)
+	GetAllPostsWithContent(ctx context.Context, db database.DB) ([]*entity.Post, error)
+	GetPostsMeta(ctx context.Context, db database.DB) ([]*entity.Post, error)
+	GetPostCount(ctx context.Context, db database.DB) (int64, error)
+	GetPostByID(ctx context.Context, db database.DB, id uint) (*entity.Post, error)
+	UpdateViewCounts(ctx context.Context, db database.DB, updates map[uint]int64) error
 }
 
 type postRepo struct{}
@@ -30,8 +31,9 @@ func NewPostRepo() IPostRepo {
 }
 
 // GetAllPosts retrieves all published posts without content
-func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
-	posts, err := gorm.G[*entity.Post](db).
+func (r *postRepo) GetAllPosts(ctx context.Context, db database.DB) ([]*entity.Post, error) {
+	gdb := unwrapDB(db)
+	posts, err := gorm.G[*entity.Post](gdb).
 		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
 			db.Select("username")
 			return nil
@@ -56,8 +58,9 @@ func (r *postRepo) GetAllPosts(ctx context.Context, db *gorm.DB) ([]*entity.Post
 }
 
 // GetAllPostsWithContent retrieves all published posts with full content
-func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
-	posts, err := gorm.G[*entity.Post](db).
+func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db database.DB) ([]*entity.Post, error) {
+	gdb := unwrapDB(db)
+	posts, err := gorm.G[*entity.Post](gdb).
 		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
 			db.Select("username")
 			return nil
@@ -83,8 +86,9 @@ func (r *postRepo) GetAllPostsWithContent(ctx context.Context, db *gorm.DB) ([]*
 }
 
 // GetPostsMeta retrieves metadata (id and updated_at) for all posts
-func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Post, error) {
-	posts, err := gorm.G[*entity.Post](db).
+func (r *postRepo) GetPostsMeta(ctx context.Context, db database.DB) ([]*entity.Post, error) {
+	gdb := unwrapDB(db)
+	posts, err := gorm.G[*entity.Post](gdb).
 		Select("id", "updated_at").
 		Where("deleted_at IS NULL").
 		Find(ctx)
@@ -95,8 +99,9 @@ func (r *postRepo) GetPostsMeta(ctx context.Context, db *gorm.DB) ([]*entity.Pos
 }
 
 // GetPostCount returns the total count of posts
-func (r *postRepo) GetPostCount(ctx context.Context, db *gorm.DB) (int64, error) {
-	postCount, err := gorm.G[*entity.Post](db).
+func (r *postRepo) GetPostCount(ctx context.Context, db database.DB) (int64, error) {
+	gdb := unwrapDB(db)
+	postCount, err := gorm.G[*entity.Post](gdb).
 		Where("deleted_at IS NULL").
 		Count(ctx, "id")
 	if err != nil {
@@ -106,8 +111,9 @@ func (r *postRepo) GetPostCount(ctx context.Context, db *gorm.DB) (int64, error)
 }
 
 // GetPostByID retrieves a single published post by ID
-func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*entity.Post, error) {
-	post, err := gorm.G[*entity.Post](db).
+func (r *postRepo) GetPostByID(ctx context.Context, db database.DB, id uint) (*entity.Post, error) {
+	gdb := unwrapDB(db)
+	post, err := gorm.G[*entity.Post](gdb).
 		Joins(clause.JoinTarget{Association: "User"}, func(db gorm.JoinBuilder, joinTable clause.Table, curTable clause.Table) error {
 			db.Select("username")
 			return nil
@@ -137,7 +143,9 @@ func (r *postRepo) GetPostByID(ctx context.Context, db *gorm.DB, id uint) (*enti
 }
 
 // UpdateViewCounts batch updates view counts for multiple posts
-func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates map[uint]int64) error {
+func (r *postRepo) UpdateViewCounts(ctx context.Context, db database.DB, updates map[uint]int64) error {
+	gdb := unwrapDB(db)
+
 	if len(updates) == 0 {
 		return nil
 	}
@@ -154,7 +162,7 @@ func (r *postRepo) UpdateViewCounts(ctx context.Context, db *gorm.DB, updates ma
 	}
 	caseBuilder.WriteString("ELSE 0 END")
 
-	err := db.Model(&entity.Post{}).
+	err := gdb.Model(&entity.Post{}).
 		Where("id IN (?)", ids).
 		UpdateColumn("view_count", gorm.Expr(caseBuilder.String(), idArgs...)).Error
 	if err != nil {
