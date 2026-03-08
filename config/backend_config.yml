@@ -60,3 +60,8 @@ email:
   from: "${EMAIL_FROM}"
 llm:
   apikey: "${MODEL_API_KEY}"
+rustfs:
+  region: us-east-1
+  accesskeyid: ${RUSTFS_ACCESS_KEY_ID}
+  secretaccesskey: ${RUSTFS_SECRET_ACCESS_KEY}
+  endpoint: ${RUSTFS_ENDPOINT}
