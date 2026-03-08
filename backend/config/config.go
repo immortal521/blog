@@ -29,17 +29,17 @@ type AppConfig struct {
 	Environment string   `mapstructure:"environment"`
 	Debug       bool     `mapstructure:"debug"`
 	Domain      string   `mapstructure:"domain"`
-	CorsOrigins []string `mapstructure:"cors_origins"`
+	CorsOrigins []string `mapstructure:"corsorigins"`
 }
 
 type ServerConfig struct {
 	Host             string        `mapstructure:"host"`
 	Port             int           `mapstructure:"port"`
-	ReadTimeout      time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout     time.Duration `mapstructure:"write_timeout"`
-	IdleTimeout      time.Duration `mapstructure:"idle_timeout"`
-	MaxHeaderBytes   int           `mapstructure:"max_header_bytes"`
-	GracefulShutdown time.Duration `mapstructure:"graceful_shutdown"`
+	ReadTimeout      time.Duration `mapstructure:"readtimeout"`
+	WriteTimeout     time.Duration `mapstructure:"writetimeout"`
+	IdleTimeout      time.Duration `mapstructure:"idletimeout"`
+	MaxHeaderBytes   int           `mapstructure:"maxheaderbytes"`
+	GracefulShutdown time.Duration `mapstructure:"gracefulshutdown"`
 }
 
 func (s ServerConfig) GetAddr() string {
@@ -52,11 +52,11 @@ type DatabaseConfig struct {
 	User            string        `mapstructure:"user"`
 	Password        string        `mapstructure:"password"`
 	Name            string        `mapstructure:"name"`
-	SSLMode         string        `mapstructure:"ssl_mode"`
-	MaxOpenConns    int           `mapstructure:"max_open_conns"`
-	MaxIdleConns    int           `mapstructure:"max_idle_conns"`
-	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
-	ConnMaxIdleTime time.Duration `mapstructure:"conn_max_idle_time"`
+	SSLMode         string        `mapstructure:"sslmode"`
+	MaxOpenConns    int           `mapstructure:"maxopenconns"`
+	MaxIdleConns    int           `mapstructure:"maxidleconns"`
+	ConnMaxLifetime time.Duration `mapstructure:"connmaxlifetime"`
+	ConnMaxIdleTime time.Duration `mapstructure:"connmaxidle_time"`
 	Timeout         time.Duration `mapstructure:"timeout"`
 }
 
@@ -76,30 +76,30 @@ type RedisConfig struct {
 	Port               int           `mapstructure:"port"`
 	Password           string        `mapstructure:"password"`
 	DB                 int           `mapstructure:"db"`
-	PoolSize           int           `mapstructure:"pool_size"`
-	MinIdleConns       int           `mapstructure:"min_idle_conns"`
-	DialTimeout        time.Duration `mapstructure:"dial_timeout"`
-	ReadTimeout        time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout       time.Duration `mapstructure:"write_timeout"`
-	PoolTimeout        time.Duration `mapstructure:"pool_timeout"`
-	IdleTimeout        time.Duration `mapstructure:"idle_timeout"`
-	IdleCheckFrequency time.Duration `mapstructure:"idle_check_frequency"`
+	PoolSize           int           `mapstructure:"poolsize"`
+	MinIdleConns       int           `mapstructure:"minidleconns"`
+	DialTimeout        time.Duration `mapstructure:"dialtimeout"`
+	ReadTimeout        time.Duration `mapstructure:"readtimeout"`
+	WriteTimeout       time.Duration `mapstructure:"writetimeout"`
+	PoolTimeout        time.Duration `mapstructure:"pooltimeout"`
+	IdleTimeout        time.Duration `mapstructure:"idletimeout"`
+	IdleCheckFrequency time.Duration `mapstructure:"idlecheckfrequency"`
 }
 
 type JWTConfig struct {
 	Secret            string        `mapstructure:"secret"`
-	AccessExpiration  time.Duration `mapstructure:"access_expiration"`
-	RefreshExpiration time.Duration `mapstructure:"refresh_expiration"`
+	AccessExpiration  time.Duration `mapstructure:"accessexpiration"`
+	RefreshExpiration time.Duration `mapstructure:"refreshexpiration"`
 	Issuer            string        `mapstructure:"issuer"`
 }
 
 type LogConfig struct {
 	Level      string `mapstructure:"level"`
 	Format     string `mapstructure:"format"`
-	FilePath   string `mapstructure:"file_path"`
-	MaxSize    int    `mapstructure:"max_size"`
-	MaxBackups int    `mapstructure:"max_backups"`
-	MaxAge     int    `mapstructure:"max_age"`
+	FilePath   string `mapstructure:"filepath"`
+	MaxSize    int    `mapstructure:"maxsize"`
+	MaxBackups int    `mapstructure:"maxbackups"`
+	MaxAge     int    `mapstructure:"maxage"`
 	Compress   bool   `mapstructure:"compress"`
 }
 
@@ -117,7 +117,7 @@ type LLMConfig struct {
 
 type RustfsConfig struct {
 	Region          string `mapstructure:"region"`
-	AccessKeyID     string `mapstructure:"access_key_id"`
-	SecretAccessKey string `mapstructure:"secret_access_key"`
+	AccessKeyID     string `mapstructure:"accesskeyid"`
+	SecretAccessKey string `mapstructure:"secretaccesskey"`
 	Endpoint        string `mapstructure:"endpoint"`
 }
