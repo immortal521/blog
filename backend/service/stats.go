@@ -13,12 +13,12 @@ type IStatsService interface {
 }
 
 type statsService struct {
-	db       database.DB
+	db       database.Database
 	postRepo repository.IPostRepo
 }
 
 func (s *statsService) GetDashboardStats(ctx context.Context) (*response.DashboardStatsRes, error) {
-	postCount, err := s.postRepo.GetPostCount(ctx, s.db.Conn())
+	postCount, err := s.postRepo.GetPostCount(ctx, s.db)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (s *statsService) GetDashboardStats(ctx context.Context) (*response.Dashboa
 	}, nil
 }
 
-func NewStatsService(db database.DB, postRepo repository.IPostRepo) IStatsService {
+func NewStatsService(db database.Database, postRepo repository.IPostRepo) IStatsService {
 	return &statsService{
 		db,
 		postRepo,

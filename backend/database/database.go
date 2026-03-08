@@ -4,28 +4,23 @@ package database
 
 import (
 	"context"
-
-	"gorm.io/gorm"
 )
 
 type DB interface {
-	Trans(fn func(txc *TxContext) error) error
-	TransWithContext(ctx context.Context, fn func(txc *TxContext) error) error
-	Conn() *gorm.DB
+	isDB()
+}
+
+type Database interface {
+	DB
+	Trans(fn func(TxContext) error) error
+	TransWithContext(ctx context.Context, fn func(TxContext) error) error
 
 	Close() error
 	Ping() error
 }
 
-type TxContext struct {
-	tx  *gorm.DB
-	ctx context.Context
-}
-
-func (t *TxContext) GetTx() *gorm.DB {
-	return t.tx
-}
-
-func (t *TxContext) Ctx() context.Context {
-	return t.ctx
+type TxContext interface {
+	DB
+	// GetTx() Database
+	// Ctx() context.Context
 }

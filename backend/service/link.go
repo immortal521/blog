@@ -23,23 +23,23 @@ type ILinkService interface {
 }
 
 type linkService struct {
-	db       database.DB
+	db       database.Database
 	linkRepo repository.ILinkRepo
 }
 
 // NewLinkService creates a new link service instance
-func NewLinkService(db database.DB, linkRepo repository.ILinkRepo) ILinkService {
+func NewLinkService(db database.Database, linkRepo repository.ILinkRepo) ILinkService {
 	return &linkService{db: db, linkRepo: linkRepo}
 }
 
 // GetLinks retrieves all enabled links
 func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
-	return s.linkRepo.GetAllEnabledLinks(ctx, s.db.Conn())
+	return s.linkRepo.GetAllEnabledLinks(ctx, s.db)
 }
 
 // GetOverview retrieves link statistics
 func (s *linkService) GetOverview(ctx context.Context) (*response.LinkOverview, error) {
-	return s.linkRepo.GetOverview(ctx, s.db.Conn())
+	return s.linkRepo.GetOverview(ctx, s.db)
 }
 
 // CreateLink creates a new link
@@ -50,13 +50,13 @@ func (s *linkService) CreateLink(ctx context.Context, dto *request.CreateLinkReq
 		Avatar:      dto.Avatar,
 		URL:         dto.URL,
 	}
-	return s.linkRepo.CreateLink(ctx, s.db.Conn(), &link)
+	return s.linkRepo.CreateLink(ctx, s.db, &link)
 }
 
 // CheckLinkStatus checks the status of all links by making HTTP requests
 // Updates the link status in the database if it has changed
 func (s linkService) CheckLinkStatus(ctx context.Context) error {
-	links, err := s.linkRepo.GetAllLinks(ctx, s.db.Conn())
+	links, err := s.linkRepo.GetAllLinks(ctx, s.db)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (s linkService) CheckLinkStatus(ctx context.Context) error {
 	}
 
 	wg.Wait()
-	err = s.linkRepo.UpdateLinkStatusBatch(ctx, s.db.Conn(), updates)
+	err = s.linkRepo.UpdateLinkStatusBatch(ctx, s.db, updates)
 	if err != nil {
 		return err
 	}

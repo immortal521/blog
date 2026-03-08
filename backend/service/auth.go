@@ -53,7 +53,7 @@ type IAuthService interface {
 
 // AuthService implements the IAuthService interface
 type AuthService struct {
-	db          database.DB
+	db          database.Database
 	rc          cache.CacheClient
 	cfg         *config.Config
 	userRepo    repository.IUserRepo
@@ -62,7 +62,7 @@ type AuthService struct {
 }
 
 // NewAuthService creates and returns a new AuthService instance
-func NewAuthService(db database.DB, rc cache.CacheClient, userRepo repository.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
+func NewAuthService(db database.Database, rc cache.CacheClient, userRepo repository.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
 	return &AuthService{
 		db:          db,
 		rc:          rc,
@@ -97,8 +97,8 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 
 	var newUser *entity.User
 
-	err = s.db.Trans(func(txCtx *database.TxContext) error {
-		newUser, err = s.userRepo.CreateUser(ctx, txCtx.GetTx(), user)
+	err = s.db.Trans(func(txCtx database.TxContext) error {
+		newUser, err = s.userRepo.CreateUser(ctx, txCtx, user)
 		if err != nil {
 			return errs.New(errs.CodeDatabaseError, "Create user failed", err)
 		}
@@ -131,7 +131,7 @@ func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*
 
 // Login logs in a user and generates access/refresh tokens
 func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error) {
-	user, err := s.userRepo.GetUserByEmail(ctx, s.db.Conn(), dto.Email)
+	user, err := s.userRepo.GetUserByEmail(ctx, s.db, dto.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*respon
 
 // SendCaptchaMail generates a captcha, stores it in Redis, and sends an email
 func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {
-	userExists, err := s.userRepo.ExistsByEmail(ctx, s.db.Conn(), to)
+	userExists, err := s.userRepo.ExistsByEmail(ctx, s.db, to)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*re
 	}
 	uuid := claims.UserID
 
-	existed, err := s.userRepo.ExistsByUUID(ctx, s.db.Conn(), uuid)
+	existed, err := s.userRepo.ExistsByUUID(ctx, s.db, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +236,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*re
 
 // HasRole checks if a user has any of the specified roles
 func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error) {
-	userRole, err := s.userRepo.GetRoleByUUID(ctx, s.db.Conn(), uuid)
+	userRole, err := s.userRepo.GetRoleByUUID(ctx, s.db, uuid)
 	if err != nil {
 		return false, err
 	}

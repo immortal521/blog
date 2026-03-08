@@ -5,13 +5,15 @@ import (
 	"context"
 	"errors"
 
+	"blog-server/database"
 	"blog-server/errs"
 
 	"gorm.io/gorm"
 )
 
-func ExistsBy[T any](ctx context.Context, db *gorm.DB, field string, value any) (bool, error) {
-	_, err := gorm.G[*T](db).Where(field+" = ?", value).Take(ctx)
+func existsBy[T any](ctx context.Context, db database.DB, field string, value any) (bool, error) {
+	gdb := unwrapDB(db)
+	_, err := gorm.G[*T](gdb).Where(field+" = ?", value).Take(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
@@ -19,4 +21,12 @@ func ExistsBy[T any](ctx context.Context, db *gorm.DB, field string, value any) 
 		return false, errs.New(errs.CodeDatabaseError, "database error", err)
 	}
 	return true, nil
+}
+
+func unwrapDB(db database.DB) *gorm.DB {
+	gdb, err := database.ToGormDB(db)
+	if err != nil {
+		panic(err)
+	}
+	return gdb
 }

@@ -25,29 +25,29 @@ type IPostService interface {
 
 type postService struct {
 	log      logger.Logger
-	db       database.DB
+	db       database.Database
 	rc       cache.CacheClient
 	postRepo repository.IPostRepo
 }
 
 // NewPostService creates a new post service instance
-func NewPostService(log logger.Logger, db database.DB, rc cache.CacheClient, postRepo repository.IPostRepo) IPostService {
+func NewPostService(log logger.Logger, db database.Database, rc cache.CacheClient, postRepo repository.IPostRepo) IPostService {
 	return &postService{log: log, db: db, rc: rc, postRepo: postRepo}
 }
 
 // GetPosts retrieves all published posts without content
 func (p *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
-	return p.postRepo.GetAllPosts(ctx, p.db.Conn())
+	return p.postRepo.GetAllPosts(ctx, p.db)
 }
 
 // GetPostsWithContent retrieves all published posts with full content
 func (p *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
-	return p.postRepo.GetAllPostsWithContent(ctx, p.db.Conn())
+	return p.postRepo.GetAllPostsWithContent(ctx, p.db)
 }
 
 // GetPostsMeta retrieves metadata (id and updated_at) for all posts
 func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
-	posts, err := p.postRepo.GetPostsMeta(ctx, p.db.Conn())
+	posts, err := p.postRepo.GetPostsMeta(ctx, p.db)
 	if err != nil {
 		p.log.Error("get posts meta failed", logger.Error(err))
 		return []*entity.Post{}
@@ -57,7 +57,7 @@ func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
 
 // GetPostByID retrieves a single published post by ID and increments the view count in Redis
 func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
-	post, err := p.postRepo.GetPostByID(ctx, p.db.Conn(), id)
+	post, err := p.postRepo.GetPostByID(ctx, p.db, id)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 
 		if len(updates) > 0 {
-			if err := p.postRepo.UpdateViewCounts(ctx, p.db.Conn(), updates); err != nil {
+			if err := p.postRepo.UpdateViewCounts(ctx, p.db, updates); err != nil {
 				allErrors = append(allErrors, fmt.Errorf("db update failed: %w", err))
 			}
 		}
