@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - "backend/**"
+      - ".github/workflows/deploy_backend.yml"
+      - "config/backend_config.yml"
   workflow_dispatch:
 
 jobs:
@@ -26,6 +28,9 @@ jobs:
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
       MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+      RUSTFS_ACCESS_KEY_ID: ${{ secrets.RUSTFS_ACCESS_KEY_ID }}
+      RUSTFS_SECRET_ACCESS_KEY: ${{ secrets.RUSTFS_SECRET_ACCESS_KEY }}
+      RUSTFS_ENDPOINT: ${{ secrets.RUSTFS_ENDPOINT }}
 
     steps:
       # Checkout code
