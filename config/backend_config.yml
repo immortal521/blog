@@ -4,64 +4,72 @@ app:
   environment: production
   debug: false
   domain: "${APP_DOMAIN}"
-  corsorigins:
+  cors_origins:
     - "localhost:8000"
+
 server:
   host: 0.0.0.0
   port: 8000
-  readtimeout: 30s
-  writetimeout: 30s
-  idletimeout: 1m0s
-  maxheaderbytes: 1048576
-  gracefulshutdown: 10s
+  read_timeout: 30s
+  write_timeout: 30s
+  idle_timeout: 1m0s
+  max_header_bytes: 1048576
+  graceful_shutdown: 10s
+
 database:
   host: "${DB_HOST}"
   port: "${DB_PORT}"
   user: "${DB_USER}"
   password: "${DB_PASSWORD}"
   name: blog
-  sslmode: disable
-  maxopenconns: 25
-  maxidleconns: 5
-  connmaxlifetime: 1h0m0s
-  connmaxidletime: 30m0s
+  ssl_mode: disable
+  max_open_conns: 25
+  max_idle_conns: 5
+  conn_max_lifetime: 1h0m0s
+  conn_max_idle_time: 30m0s
   timeout: 5s
+
 redis:
   host: localhost
   port: 6379
   password: ""
   db: 0
-  poolsize: 10
-  minidleconns: 2
-  dialtimeout: 5s
-  readtimeout: 3s
-  writetimeout: 3s
-  pooltimeout: 0s
-  idletimeout: 0s
-  idlecheckfrequency: 0s
+  pool_size: 10
+  min_idle_conns: 2
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  pool_timeout: 0s
+  idle_timeout: 0s
+  idle_check_frequency: 0s
+
 jwt:
-  secret: "${JWT_SECRET}" # 自行修改
-  accessexpiration: 15m0s
-  refreshexpiration: 168h0m0s
+  secret: "${JWT_SECRET}"
+  access_expiration: 15m0s
+  refresh_expiration: 168h0m0s
   issuer: "${APP_NAME}"
+
 log:
   level: info
   format: json
-  filepath: ""
-  maxsize: 100
-  maxbackups: 3
-  maxage: 30
+  file_path: ""
+  max_size: 100
+  max_backups: 3
+  max_age: 30
   compress: true
+
 email:
   host: "${EMAIL_HOST}"
   port: "${EMAIL_PORT}"
   username: "${EMAIL_USERNAME}"
   password: "${EMAIL_PASSWORD}"
   from: "${EMAIL_FROM}"
+
 llm:
   apikey: "${MODEL_API_KEY}"
+
 rustfs:
   region: us-east-1
-  accesskeyid: ${RUSTFS_ACCESS_KEY_ID}
-  secretaccesskey: ${RUSTFS_SECRET_ACCESS_KEY}
-  endpoint: ${RUSTFS_ENDPOINT}
+  access_key_id: "${RUSTFS_ACCESS_KEY_ID}"
+  secret_access_key: "${RUSTFS_SECRET_ACCESS_KEY}"
+  endpoint: "${RUSTFS_ENDPOINT}"
