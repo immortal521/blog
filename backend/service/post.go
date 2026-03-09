@@ -76,6 +76,7 @@ func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 	var cursor uint64
 	var allErrors []error
+	p.log.Info("Flushing post view count to DB...")
 
 	for {
 		keys, next, err := p.rc.Scan(ctx, "blog:post:view_count:*", cursor, 100)
