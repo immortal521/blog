@@ -35,7 +35,7 @@ type Post struct {
 	UserID uint `gorm:"not null;index"`                  // Foreign key to User
 	User   User `gorm:"foreignKey:UserID;references:ID"` // Author of the post
 
-	PublishedAt *time.Time `gorm:"type:timestampz"` // Publication timestamp
+	PublishedAt *time.Time `gorm:"type:timestamptz"` // Publication timestamp
 
 	Categories []PostCategory `gorm:"many2many:post_category_relations;"` // Many-to-many relationship with categories
 	Tags       []PostTag      `gorm:"many2many:post_tag_relations;"`      // Many-to-many relationship with tags
