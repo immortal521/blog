@@ -50,6 +50,7 @@ func (r *postRepo) GetAllPosts(ctx context.Context, db database.DB) ([]*entity.P
 		).
 		Where("status = ?", entity.PostPublished).
 		Where("posts.deleted_at IS NULL").
+		Order("published_at DESC").
 		Find(ctx)
 	if err != nil {
 		return nil, errs.New(errs.CodeDatabaseError, "database error", err)
