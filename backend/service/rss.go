@@ -37,9 +37,9 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	var pubDate string
 
 	if len(posts) == 0 {
-		pubDate = time.Now().Format(time.RFC822)
+		pubDate = time.Now().Format(time.RFC1123Z)
 	} else {
-		pubDate = posts[0].PublishedAt.Format(time.RFC822)
+		pubDate = posts[0].PublishedAt.Format(time.RFC1123Z)
 	}
 
 	for i, post := range posts {
@@ -48,7 +48,7 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 			Title:       post.Title,
 			Link:        link,
 			GUID:        response.RssGUID{Value: link, IsPermaLink: true},
-			PubDate:     post.PublishedAt.Format(time.RFC822),
+			PubDate:     post.PublishedAt.Format(time.RFC1123Z),
 			Description: response.RssItemDescription{Value: post.Summary},
 		}
 	}

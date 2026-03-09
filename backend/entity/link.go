@@ -1,6 +1,8 @@
 package entity
 
-import "time"
+import (
+	"time"
+)
 
 // LinkStatus represents the status of a link
 type LinkStatus int
