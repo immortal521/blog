@@ -23,6 +23,8 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
 .blur-layer-container {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: -1;
 }
@@ -31,9 +33,11 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
   position: sticky;
   top: 0;
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  max-height: 100vh;
   backdrop-filter: var(--glass-blur);
   backface-visibility: hidden;
   transform: translateZ(0);
+  will-change: transform, opacity;
 }
 </style>
