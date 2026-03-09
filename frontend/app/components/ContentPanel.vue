@@ -12,7 +12,7 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
 <style lang="less" scoped>
 .container {
   background: var(--glass-gradient), var(--bg-content);
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-blur);
   animation: opacity 0.5s ease;
   padding-bottom: 140px;
 }

@@ -87,6 +87,7 @@ onMounted(() => {
   padding: 12px;
   border-radius: var(--radius-nav);
   background: var(--glass-gradient), var(--bg-nav-base);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color-nav);
   box-shadow: var(--shadow-nav);
   transition: var(--transition-nav);
