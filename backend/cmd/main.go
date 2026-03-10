@@ -36,11 +36,10 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 		cfIPs, err := utils.FetchCloudflareIPs()
 		if err != nil {
 			log.Error("fetch cloudflare ips failed", logger.Error(err))
-			return nil, err
 		}
 		ips = append(ips, cfIPs...)
 	}
-	ips = append(ips, "127.0.0.1")
+	ips = append(ips, "127.0.0.1", "::1")
 
 	fiberCfg := fiber.Config{
 		EnableTrustedProxyCheck: true,
@@ -58,12 +57,20 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error)
 
 // scheduler start
 func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
+	var cancel context.CancelFunc
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			scheduler.Start(ctx)
+			jobCtx, c := context.WithCancel(context.Background())
+			cancel = c
+
+			go scheduler.Start(jobCtx)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
+			if cancel != nil {
+				cancel()
+			}
 			return nil
 		},
 	})
@@ -75,7 +82,7 @@ func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log
 			go func() {
 				log.Info("Server is starting")
 				if err := app.Listen(cfg.Server.GetAddr()); err != nil {
-					log.Fatal("Server startup failed", logger.Error(err))
+					log.Error("Server startup failed", logger.Error(err))
 				}
 			}()
 			return nil
@@ -155,8 +162,8 @@ func main() {
 
 	invoke := fx.Invoke(
 		router.RegisterRoutes,
-		runServerLifecycle,
 		runJobsLifecycle,
+		runServerLifecycle,
 		cleanupResources,
 	)
 
