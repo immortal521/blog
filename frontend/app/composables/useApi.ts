@@ -4,6 +4,7 @@ import type { ApiResponse } from "~/types/api";
 type RefreshData = {
   accessToken: string;
 };
+type FetchBody = BodyInit | Record<string, unknown> | null | undefined;
 
 /**
  * Flag indicating whether the Access Token is currently being refreshed
@@ -13,7 +14,7 @@ let isRefreshing = false;
 /**
  * Queue of pending requests while a token refresh is in progress
  */
-const pendingRequests: (() => void)[] = [];
+const pendingRequests: Array<(err?: Error) => void> = [];
 
 /**
  * Base ofetch instance with default baseURL and JSON headers
@@ -70,7 +71,9 @@ export function useClientApi() {
 
     // Wait if a token refresh is in progress
     if (isRefreshing) {
-      await new Promise<void>((resolve) => pendingRequests.push(resolve));
+      await new Promise<void>((resolve, reject) => {
+        pendingRequests.push((err?: Error) => (err ? reject(err) : resolve()));
+      });
     }
 
     try {
@@ -79,12 +82,13 @@ export function useClientApi() {
       const fetchErr = err as FetchError;
       if (fetchErr?.response?.status !== 401) throw fetchErr;
       await refreshAccessToken();
-      return doRequest<T>(url, options).catch((err: FetchError) => {
-        if (err?.response?.status === 401) {
+      return doRequest<T>(url, options).catch((retryErr: FetchError) => {
+        if (retryErr?.response?.status === 401) {
           // TODO: layout logic
-          console.log(err);
+          useAuthStore().lagout();
+          navigateTo("/auth/login");
         }
-        throw err;
+        throw retryErr;
       });
     }
   }
@@ -108,49 +112,32 @@ export function useClientApi() {
 
       // Update the token in Pinia store
       useAuthStore().setAccessToken(res.data.accessToken);
+      pendingRequests.forEach((resolve) => resolve());
+    } catch (err) {
+      pendingRequests.forEach((resolve) => resolve(err as Error));
+      throw err;
     } finally {
       isRefreshing = false;
-      // Resolve all pending requests
-      pendingRequests.forEach((resolve) => resolve());
       pendingRequests.splice(0);
     }
   }
 
-  /**
-   * Convenience wrapper for GET requests
-   */
-  function get<T>(url: string, options: FetchOptions<"json", unknown> = {}) {
+  const get = <T>(url: string, options: FetchOptions<"json", unknown> = {}) => {
     return apiFetch<T>(url, { ...options, method: "get" });
-  }
+  };
 
-  /**
-   * Convenience wrapper for POST requests
-   */
-  function post<Req extends Record<string, unknown>, Res>(
-    url: string,
-    body?: Req,
-    options: FetchOptions<"json", unknown> = {},
-  ) {
-    return apiFetch<Res>(url, { ...options, method: "post", body });
-  }
+  const post = <Res>(url: string, body?: FetchBody, opts: FetchOptions<"json", unknown> = {}) =>
+    apiFetch<Res>(url, { ...opts, method: "post", body });
 
-  /**
-   * Convenience wrapper for PUT requests
-   */
-  function put<Req extends Record<string, unknown>, Res>(
-    url: string,
-    body?: Req,
-    options: FetchOptions<"json", unknown> = {},
-  ) {
-    return apiFetch<Res>(url, { ...options, method: "put", body });
-  }
+  const put = <Res>(url: string, body?: FetchBody, opts: FetchOptions<"json", unknown> = {}) =>
+    apiFetch<Res>(url, { ...opts, method: "put", body });
 
-  /**
-   * Convenience wrapper for DELETE requests
-   */
-  function del<T>(url: string, options: FetchOptions<"json", unknown> = {}) {
+  const patch = <Res>(url: string, body?: FetchBody, opts: FetchOptions<"json", unknown> = {}) =>
+    apiFetch<Res>(url, { ...opts, method: "patch", body });
+
+  const del = <T>(url: string, options: FetchOptions<"json", unknown> = {}) => {
     return apiFetch<T>(url, { ...options, method: "delete" });
-  }
+  };
 
-  return { apiFetch, get, post, put, delete: del };
+  return { apiFetch, get, post, put, delete: del, patch };
 }
