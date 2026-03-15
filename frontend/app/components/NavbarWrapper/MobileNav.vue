@@ -47,6 +47,48 @@ onClickOutside(dropdown, (event) => {
 
   dropdownOpen.value = false;
 });
+
+const onBeforeEnter = (el: Element) => {
+  const e = el as HTMLElement;
+  e.style.height = "0";
+  e.style.opacity = "0";
+  e.style.overflow = "hidden";
+};
+
+const onEnter = (el: Element) => {
+  const e = el as HTMLElement;
+  void e.offsetHeight;
+  e.style.height = `calc(100vh - 60px)`;
+  e.style.opacity = "1";
+};
+
+const onAfterEnter = (el: Element) => {
+  const e = el as HTMLElement;
+  e.style.height = "calc(100vh - 60px)";
+  e.style.overflow = "";
+  e.style.opacity = "";
+};
+
+const onBeforeLeave = (el: Element) => {
+  const e = el as HTMLElement;
+  e.style.height = `calc(100vh - 60px)`;
+  e.style.opacity = "1";
+  e.style.overflow = "hidden";
+};
+
+const onLeave = (el: Element) => {
+  const e = el as HTMLElement;
+  void e.offsetHeight;
+  e.style.height = "0";
+  e.style.opacity = "0";
+};
+
+const onAfterLeave = (el: Element) => {
+  const e = el as HTMLElement;
+  e.style.height = "";
+  e.style.opacity = "";
+  e.style.overflow = "";
+};
 </script>
 
 <template>
@@ -56,7 +98,15 @@ onClickOutside(dropdown, (event) => {
       <Icon :name="dropdownOpen ? 'material-symbols:close' : 'hugeicons:menu-11'" size="28" />
     </button>
     <Teleport to="body">
-      <Transition name="dropdown">
+      <Transition
+        name="dropdown"
+        @before-enter="onBeforeEnter"
+        @enter="onEnter"
+        @after-enter="onAfterEnter"
+        @before-leave="onBeforeLeave"
+        @leave="onLeave"
+        @after-leave="onAfterLeave"
+      >
         <div v-if="dropdownOpen" id="dropdown" ref="dropdown" class="dropdown">
           <ul :class="{ 'nav-menu-mobile': true }">
             <li v-for="item in items" :key="item.to" class="nav-item" @click="dropdownOpen = false">
@@ -116,14 +166,9 @@ onClickOutside(dropdown, (event) => {
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition:
-    opacity 0.3s ease-in-out,
-    transform 0.3s ease-in-out;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+    height 0.3s ease-in-out,
+    opacity 0.2s ease-in-out;
+  overflow: hidden;
 }
 
 .nav-menu-mobile {
@@ -148,13 +193,13 @@ onClickOutside(dropdown, (event) => {
       color: var(--text-color-primary);
       position: relative;
       align-items: center;
-      transition:
-        color 0.3s ease-in-out,
-        border-bottom 0.3s ease-in-out,
-        background-color 0.3s ease-in-out;
       padding: 0 8px;
       border-radius: 10px 10px 0 0;
       border-bottom: 1px solid var(--border-color-divider);
+      transition:
+        color 0.2s ease-in-out,
+        border-bottom 0.2s ease-in-out,
+        background-color 0.3s ease-in-out;
 
       &:active {
         color: var(--color-primary-active);
@@ -163,11 +208,11 @@ onClickOutside(dropdown, (event) => {
       &:hover {
         border-bottom: 1px solid var(--color-primary-base);
         color: var(--color-primary-base);
-        background: var(--glass-gradient), var(--bg-nav-base);
+        background: var(--glass-gradient);
       }
 
       :deep(.svg-icon) {
-        transition: color 0.3s ease-in-out;
+        transition: color 0.2s ease-in-out;
       }
 
       &:hover:deep(.svg-icon) {
