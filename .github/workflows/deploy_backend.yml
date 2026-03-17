@@ -43,9 +43,10 @@ jobs:
 
       # 设置 Go 环境
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: "backend/go.mod"
+          cache-dependency-path: backend/go.sum
           cache: true
 
       - name: Fill secrets into config.yml
