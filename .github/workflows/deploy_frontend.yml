@@ -9,6 +9,10 @@ on:
       - ".github/workflows/deploy_frontend.yml"
   workflow_dispatch:
 
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
