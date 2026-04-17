@@ -15,7 +15,6 @@ type PostHandler interface {
 	GetPosts(c fiber.Ctx) error
 	GetPost(c fiber.Ctx) error
 	GetPostIds(c fiber.Ctx) error
-	Test(c fiber.Ctx) error
 }
 
 type postHandler struct {
@@ -31,12 +30,7 @@ func RegisterPostRoute(r fiber.Router, handler PostHandler) {
 	group := r.Group("/posts")
 	group.Get("/", handler.GetPosts)
 	group.Get("/meta", handler.GetPostIds)
-	group.Get("/test", handler.Test)
 	group.Get("/:id", handler.GetPost)
-}
-
-func (h *postHandler) Test(c fiber.Ctx) error {
-	return h.svc.FlushViewCountToDB(c.Context())
 }
 
 // GetPosts retrieves all published posts
