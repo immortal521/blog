@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type PostTag struct {
+type PostCategory struct {
 	ID uint
 
 	Name string
