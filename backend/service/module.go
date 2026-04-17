@@ -8,6 +8,10 @@ func Module() fx.Option {
 		fx.Provide(
 			NewPostService,
 			NewRssService,
+			NewLinkService,
+			NewAuthService,
+			NewEmailService,
+			NewModelService,
 		),
 	)
 }

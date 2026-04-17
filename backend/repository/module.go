@@ -19,7 +19,7 @@ func Module() fx.Option {
 		"repository",
 		fx.Provide(
 			NewUserRepo,
-			// NewLinkRepo,
+			NewLinkRepo,
 			NewPostRepo,
 		),
 	)
