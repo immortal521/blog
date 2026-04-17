@@ -10,13 +10,13 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-// ILinkHandler defines the interface for link HTTP handlers
-type ILinkHandler interface {
+// LinkHandler defines the interface for link HTTP handlers
+type LinkHandler interface {
 	GetLinks(c fiber.Ctx) error
 	ApplyForALinks(c fiber.Ctx) error
 }
 
-type LinkHandler struct {
+type linkHandler struct {
 	svc      service.LinkService
 	validate validatorx.Validator
 }
@@ -28,12 +28,12 @@ func RegisterLinkRoutes(r fiber.Router, h LinkHandler) {
 }
 
 // NewLinkHandler creates a new link handler instance
-func NewLinkHandler(svc service.LinkService, validate validatorx.Validator) ILinkHandler {
-	return &LinkHandler{svc: svc, validate: validate}
+func NewLinkHandler(svc service.LinkService, validate validatorx.Validator) LinkHandler {
+	return &linkHandler{svc: svc, validate: validate}
 }
 
 // GetLinks retrieves all enabled links
-func (h *LinkHandler) GetLinks(c fiber.Ctx) error {
+func (h *linkHandler) GetLinks(c fiber.Ctx) error {
 	links, err := h.svc.GetLinks(c.Context())
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (h *LinkHandler) GetLinks(c fiber.Ctx) error {
 }
 
 // ApplyForALinks creates a new link application
-func (h *LinkHandler) ApplyForALinks(c fiber.Ctx) error {
+func (h *linkHandler) ApplyForALinks(c fiber.Ctx) error {
 	req := new(request.CreateLinkReq)
 	if err := c.Bind().Body(req); err != nil {
 		return errx.New(errx.CodeInvalidParam, "Failed to parse request body", err)
