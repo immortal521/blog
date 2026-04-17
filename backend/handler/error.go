@@ -1,19 +1,18 @@
-// Package handler provider web api handler
 package handler
 
 import (
 	"blog-server/config"
-	"blog-server/errs"
 	"blog-server/logger"
+	"blog-server/pkg/errx"
 	"blog-server/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func ErrorHandler(log logger.Logger, cfg *config.Config) fiber.ErrorHandler {
-	return func(c *fiber.Ctx, err error) error {
-		appErr := errs.ToAppError(err)
-		httpCode := errs.MapToHTTPStatus(appErr.Code)
+	return func(c fiber.Ctx, err error) error {
+		appErr := errx.ToAppError(err)
+		httpCode := errx.MapToHTTPStatus(appErr.Code)
 
 		msg := appErr.Msg
 		if httpCode == 500 {
@@ -22,7 +21,7 @@ func ErrorHandler(log logger.Logger, cfg *config.Config) fiber.ErrorHandler {
 
 		reqID := c.Get("X-Request-ID")
 
-		errLogger := log.WithFields(
+		errLogger := log.With(
 			logger.String("request_id", reqID),
 			logger.String("method", c.Method()),
 			logger.String("remote_ip", c.IP()),
@@ -33,7 +32,7 @@ func ErrorHandler(log logger.Logger, cfg *config.Config) fiber.ErrorHandler {
 		if cfg.App.Environment == config.EnvDev {
 			errLogger.Error(appErr.FormatStack())
 		} else {
-			errLogger.Error(msg, logger.Error(err))
+			errLogger.Error(msg, logger.Err(err))
 		}
 
 		writeErr := c.Status(httpCode).JSON(response.Error(appErr.Code, msg))
