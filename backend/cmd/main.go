@@ -38,6 +38,8 @@ func main() {
 		),
 		fx.Provide(
 			validatorx.NewValidator,
+			middleware.NewAuthMiddleware,
+			middleware.NewRoleMiddleware,
 			providerFiberApp,
 		),
 		fx.Invoke(
