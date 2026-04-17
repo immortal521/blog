@@ -6,21 +6,27 @@ import (
 	"strings"
 	"sync"
 
-	"blog-server/errs"
+	"blog-server/pkg/errx"
 	"blog-server/service"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
 
-type IModelHandler interface {
-	CreateSummarySession(c *fiber.Ctx) error
-	SummaryStream(c *fiber.Ctx) error
+type ModelHandler interface {
+	CreateSummarySession(c fiber.Ctx) error
+	SummaryStream(c fiber.Ctx) error
 }
 
 type modelHandler struct {
-	svn      service.IModelService
+	svn      service.ModelService
 	sessions *sync.Map
+}
+
+func RegisterModelRoutes(r fiber.Router, h ModelHandler) {
+	group := r.Group("/model")
+	group.Post("/summarize", h.CreateSummarySession)
+	group.Get("/summarize/:sessionId", h.SummaryStream)
 }
 
 type Session struct {
@@ -30,12 +36,12 @@ type Session struct {
 	ErrCh    <-chan error
 }
 
-func (h *modelHandler) CreateSummarySession(c *fiber.Ctx) error {
+func (h *modelHandler) CreateSummarySession(c fiber.Ctx) error {
 	req := new(struct {
 		Content string `json:"content" validate:"required"`
 	})
-	if err := c.BodyParser(req); err != nil {
-		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
+	if err := c.Bind().Body(req); err != nil {
+		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
 	}
 
 	sessionID := uuid.New().String()
@@ -54,12 +60,12 @@ func (h *modelHandler) CreateSummarySession(c *fiber.Ctx) error {
 	})
 }
 
-func (h *modelHandler) SummaryStream(c *fiber.Ctx) error {
+func (h *modelHandler) SummaryStream(c fiber.Ctx) error {
 	sessionID := c.Params("sessionId")
 	return h.stream(c, sessionID)
 }
 
-func (h *modelHandler) stream(c *fiber.Ctx, sessionID string) error {
+func (h *modelHandler) stream(c fiber.Ctx, sessionID string) error {
 	v, ok := h.sessions.Load(sessionID)
 	if !ok {
 		fmt.Println("session not found")
@@ -70,11 +76,11 @@ func (h *modelHandler) stream(c *fiber.Ctx, sessionID string) error {
 	if session.TextCh == nil && session.ErrCh == nil {
 		switch session.TaskType {
 		case "summary":
-			session.TextCh, session.ErrCh = h.svn.GenerateSummary(c.UserContext(), session.Content)
+			session.TextCh, session.ErrCh = h.svn.GenerateSummary(c.Context(), session.Content)
 		// case "translation":
 		// 	session.TextCh, session.ErrCh = h.svn.GenerateTranslation(c.UserContext(), session.Content)
 		default:
-			return errs.New(errs.CodeInvalidParam, "unsupported task type", nil)
+			return errx.New(errx.CodeInvalidParam, "unsupported task type", nil)
 		}
 		h.sessions.Store(sessionID, session)
 	}
@@ -83,7 +89,7 @@ func (h *modelHandler) stream(c *fiber.Ctx, sessionID string) error {
 	c.Set("Cache-Control", "no-cache")
 	c.Set("Connection", "keep-alive")
 
-	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
+	c.RequestCtx().SetBodyStreamWriter(func(w *bufio.Writer) {
 		defer func() {
 			_ = w.Flush()
 		}()
@@ -117,7 +123,7 @@ func (h *modelHandler) stream(c *fiber.Ctx, sessionID string) error {
 	return nil
 }
 
-func NewModelHandler(svn service.IModelService) IModelHandler {
+func NewModelHandler(svn service.ModelService) ModelHandler {
 	return &modelHandler{
 		svn:      svn,
 		sessions: &sync.Map{},

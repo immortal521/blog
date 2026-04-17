@@ -11,11 +11,11 @@ import (
 	"strings"
 
 	"blog-server/config"
-	"blog-server/errs"
 	"blog-server/logger"
+	"blog-server/pkg/errx"
 )
 
-type IModelService interface {
+type ModelService interface {
 	GenerateSummary(ctx context.Context, content string) (<-chan string, <-chan error)
 }
 
@@ -48,7 +48,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		req, err := http.NewRequestWithContext(ctx, "POST",
 			"https://models.inference.ai.azure.com/chat/completions", bytes.NewBuffer(body))
 		if err != nil {
-			errCh <- errs.New(errs.CodeInternalError, "llm request error", err)
+			errCh <- errx.New(errx.CodeInternalError, "llm request error", err)
 			return
 		}
 		req.Header.Set("Authorization", "Bearer "+s.cfg.LLM.APIKey)
@@ -57,13 +57,13 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		client := &http.Client{Timeout: 0}
 		resp, err := client.Do(req)
 		if err != nil {
-			errCh <- errs.New(errs.CodeInternalError, "llm request error", err)
+			errCh <- errx.New(errx.CodeInternalError, "llm request error", err)
 			return
 		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			err = errs.New(errs.CodeInternalError, "llm request error", fmt.Errorf("status code: %d", resp.StatusCode))
+			err = errx.New(errx.CodeInternalError, "llm request error", fmt.Errorf("status code: %d", resp.StatusCode))
 			errCh <- err
-			s.log.Errorf("llm request error %v", err)
+			s.log.Error(fmt.Sprintf("[GenerateSummary] llm request error: %v", err))
 			return
 		}
 		defer func() {
@@ -101,7 +101,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 
 			var respChunk map[string]any
 			if err := json.Unmarshal([]byte(jsonStr), &respChunk); err != nil {
-				s.log.Infof("[GenerateSummary] json parse error: %v, data: %s", err, jsonStr)
+				s.log.Info(fmt.Sprintf("[GenerateSummary] json parse error: %v, data: %s", err, jsonStr))
 				continue
 			}
 
@@ -131,7 +131,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		}
 
 		if err := scanner.Err(); err != nil {
-			s.log.Errorf("[GenerateSummary] scanner error: %v", err)
+			s.log.Error(fmt.Sprint("[GenerateSummary] scanner error: %v", err))
 			errCh <- err
 		}
 	}()
@@ -139,6 +139,6 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 	return textCh, errCh
 }
 
-func NewModelService(cfg *config.Config, log logger.Logger) IModelService {
+func NewModelService(cfg *config.Config, log logger.Logger) ModelService {
 	return &modelService{cfg: cfg, log: log}
 }

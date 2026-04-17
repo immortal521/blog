@@ -1,35 +1,40 @@
 package handler
 
 import (
-	"blog-server/errs"
+	"blog-server/pkg/errx"
+	"blog-server/pkg/validatorx"
 	"blog-server/request"
 	"blog-server/response"
 	"blog-server/service"
-	"blog-server/validatorx"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-// ILinkHandler defines the interface for link HTTP handlers
-type ILinkHandler interface {
-	GetLinks(c *fiber.Ctx) error
-	ApplyForALinks(c *fiber.Ctx) error
-	GetLinksOverview(c *fiber.Ctx) error
+// LinkHandler defines the interface for link HTTP handlers
+type LinkHandler interface {
+	GetLinks(c fiber.Ctx) error
+	ApplyForALinks(c fiber.Ctx) error
 }
 
-type LinkHandler struct {
-	svc      service.ILinkService
+type linkHandler struct {
+	svc      service.LinkService
 	validate validatorx.Validator
 }
 
+func RegisterLinkRoutes(r fiber.Router, h LinkHandler) {
+	group := r.Group("/links")
+	group.Get("/", h.GetLinks)
+	group.Post("/apply-link", h.ApplyForALinks)
+}
+
 // NewLinkHandler creates a new link handler instance
-func NewLinkHandler(svc service.ILinkService, validate validatorx.Validator) ILinkHandler {
-	return &LinkHandler{svc: svc, validate: validate}
+func NewLinkHandler(svc service.LinkService, validate validatorx.Validator) LinkHandler {
+	return &linkHandler{svc: svc, validate: validate}
 }
 
 // GetLinks retrieves all enabled links
-func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
-	links, err := h.svc.GetLinks(c.UserContext())
+func (h *linkHandler) GetLinks(c fiber.Ctx) error {
+	links, err := h.svc.GetLinks(c.Context())
 	if err != nil {
 		return err
 	}
@@ -40,9 +45,8 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 			ID:          link.ID,
 			Name:        link.Name,
 			URL:         link.URL,
-			Description: link.Description,
-			Avatar:      link.Avatar,
-			SortOrder:   link.SortOrder,
+			Description: *link.Description,
+			Avatar:      *link.Avatar,
 		}
 	}
 
@@ -50,28 +54,24 @@ func (h *LinkHandler) GetLinks(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-// GetLinksOverview retrieves link statistics overview
-func (h *LinkHandler) GetLinksOverview(c *fiber.Ctx) error {
-	overview, err := h.svc.GetOverview(c.UserContext())
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(response.Success(overview))
-}
-
 // ApplyForALinks creates a new link application
-func (h *LinkHandler) ApplyForALinks(c *fiber.Ctx) error {
+func (h *linkHandler) ApplyForALinks(c fiber.Ctx) error {
 	req := new(request.CreateLinkReq)
-	if err := c.BodyParser(req); err != nil {
-		return errs.New(errs.CodeInvalidParam, "Failed to parse request body", err)
+	if err := c.Bind().Body(req); err != nil {
+		return errx.New(errx.CodeInvalidParam, "Failed to parse request body", err)
 	}
 
 	if (len(req.URL) == 0) || (len(req.Name) == 0) {
-		return errs.New(errs.CodeInvalidParam, "URL or name is empty", nil)
+		return errx.New(errx.CodeInvalidParam, "URL or name is empty", nil)
 	}
 
-	err := h.svc.CreateLink(c.UserContext(), req)
+	err := h.svc.CreateLink(
+		c.Context(),
+		req.Name,
+		req.Description,
+		req.Avatar,
+		req.URL,
+	)
 	if err != nil {
 		return err
 	}

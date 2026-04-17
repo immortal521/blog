@@ -1,26 +1,25 @@
-// Package middleware provides HTTP middleware for the blog system
 package middleware
 
 import (
 	"time"
 
 	"blog-server/config"
-	"blog-server/errs"
 	"blog-server/logger"
+	"blog-server/pkg/errx"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
 
 // RequestLogger returns a Fiber handler that logs HTTP requests and responses
 // It generates a unique request ID, logs request details, and logs response with latency
 func RequestLogger(log logger.Logger, cfg *config.Config) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		reqID := uuid.New().String()
 
 		c.Set("X-Request-ID", reqID)
 
-		reqLogger := log.WithFields(
+		reqLogger := log.With(
 			logger.Any("request_id", reqID),
 			logger.String("method", c.Method()),
 			logger.String("remote_ip", c.IP()),
@@ -39,8 +38,8 @@ func RequestLogger(log logger.Logger, cfg *config.Config) fiber.Handler {
 		statusCode := c.Response().StatusCode()
 		// 用错误映射推导最终 status，保证和 ErrorHandler 一致
 		if err != nil {
-			appErr := errs.ToAppError(err)
-			statusCode = errs.MapToHTTPStatus(appErr.Code)
+			appErr := errx.ToAppError(err)
+			statusCode = errx.MapToHTTPStatus(appErr.Code)
 		}
 
 		respSize := c.Response().Header.ContentLength()

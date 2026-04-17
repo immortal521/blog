@@ -1,37 +1,45 @@
 package handler
 
 import (
+	"fmt"
 	"strconv"
 
-	"blog-server/errs"
 	"blog-server/response"
 	"blog-server/service"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-// IPostHandler defines the interface for post HTTP handlers
-type IPostHandler interface {
-	GetPosts(c *fiber.Ctx) error
-	GetPost(c *fiber.Ctx) error
-	GetPostIds(c *fiber.Ctx) error
+// PostHandler defines the interface for post HTTP handlers
+type PostHandler interface {
+	GetPosts(c fiber.Ctx) error
+	GetPost(c fiber.Ctx) error
+	GetPostIds(c fiber.Ctx) error
 }
 
 type postHandler struct {
-	svc service.IPostService
+	svc service.PostService
 }
 
 // NewPostHandler creates a new post handler instance
-func NewPostHandler(svc service.IPostService) IPostHandler {
+func NewPostHandler(svc service.PostService) PostHandler {
 	return &postHandler{svc: svc}
 }
 
+func RegisterPostRoute(r fiber.Router, handler PostHandler) {
+	group := r.Group("/posts")
+	group.Get("/", handler.GetPosts)
+	group.Get("/meta", handler.GetPostIds)
+	group.Get("/:id", handler.GetPost)
+}
+
 // GetPosts retrieves all published posts
-func (h *postHandler) GetPosts(c *fiber.Ctx) error {
-	posts, err := h.svc.GetPosts(c.UserContext())
+func (h *postHandler) GetPosts(c fiber.Ctx) error {
+	posts, err := h.svc.GetPosts(c.Context())
 	if err != nil {
 		return err
 	}
+
 	postDTOs := make([]response.PostListRes, len(posts))
 	for i, post := range posts {
 		postDTOs[i] = response.PostListRes{
@@ -43,17 +51,16 @@ func (h *postHandler) GetPosts(c *fiber.Ctx) error {
 			UpdatedAt:       post.UpdatedAt,
 			ReadTimeMinutes: post.ReadTimeMinutes,
 			ViewCount:       post.ViewCount,
-			Author:          post.User.Username,
 		}
 	}
 
-	result := response.Success(postDTOs)
-	return c.JSON(result)
+	return c.JSON(response.Success(postDTOs))
 }
 
 // GetPostIds retrieves metadata (id and updated_at) for all posts
-func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
-	metas := h.svc.GetPostsMeta(c.UserContext())
+func (h *postHandler) GetPostIds(c fiber.Ctx) error {
+	metas := h.svc.GetPostsMeta(c.Context())
+
 	metasDTO := make([]response.PostMetaRes, len(metas))
 	for i, meta := range metas {
 		metasDTO[i] = response.PostMetaRes{
@@ -61,21 +68,23 @@ func (h *postHandler) GetPostIds(c *fiber.Ctx) error {
 			UpdatedAt: meta.UpdatedAt,
 		}
 	}
-	result := response.Success(metasDTO)
-	return c.JSON(result)
+
+	return c.JSON(response.Success(metasDTO))
 }
 
 // GetPost retrieves a single published post by ID
-func (h *postHandler) GetPost(c *fiber.Ctx) error {
+func (h *postHandler) GetPost(c fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return errs.New(errs.CodeInvalidParam, "Invalid post ID", err)
+		return fmt.Errorf("invalid post ID: %w", err)
 	}
-	post, err := h.svc.GetPostByID(c.UserContext(), uint(id))
+
+	post, err := h.svc.GetPostByID(c.Context(), uint(id))
 	if err != nil {
 		return err
 	}
-	result := response.Success(response.PostRes{
+
+	res := response.PostRes{
 		ID:              post.ID,
 		Title:           post.Title,
 		Summary:         post.Summary,
@@ -84,7 +93,8 @@ func (h *postHandler) GetPost(c *fiber.Ctx) error {
 		ReadTimeMinutes: post.ReadTimeMinutes,
 		ViewCount:       post.ViewCount,
 		PublishedAt:     post.PublishedAt,
-		Author:          post.User.Username,
-	})
-	return c.JSON(result)
+		// Author:          safeUsername(post),
+	}
+
+	return c.JSON(response.Success(res))
 }

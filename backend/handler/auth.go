@@ -4,59 +4,76 @@ import (
 	"time"
 
 	"blog-server/config"
-	"blog-server/errs"
+	"blog-server/pkg/errx"
+	"blog-server/pkg/validatorx"
 	"blog-server/request"
 	"blog-server/response"
 	"blog-server/service"
-	"blog-server/validatorx"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-// IAuthHandler defines the interface for authentication HTTP handlers
-type IAuthHandler interface {
-	SendCaptcha(c *fiber.Ctx) error
-	Register(c *fiber.Ctx) error
-	Login(c *fiber.Ctx) error
-	Logout(c *fiber.Ctx) error
-	Refresh(c *fiber.Ctx) error
+// AuthHandler defines the interface for authentication HTTP handlers
+type AuthHandler interface {
+	SendCaptcha(c fiber.Ctx) error
+	Register(c fiber.Ctx) error
+	Login(c fiber.Ctx) error
+	Logout(c fiber.Ctx) error
+	Refresh(c fiber.Ctx) error
 }
 
-type AuthHandler struct {
-	svc      service.IAuthService
+type authHandler struct {
+	svc      service.AuthService
 	validate validatorx.Validator
 }
 
+func RegisterAuthRoutes(r fiber.Router, h AuthHandler) {
+	group := r.Group("/auth")
+	group.Post("/captcha", h.SendCaptcha)
+	group.Post("/register", h.Register)
+	group.Post("/login", h.Login)
+	group.Post("/logout", h.Logout)
+	group.Post("/refresh", h.Refresh)
+}
+
 // NewAuthHandler creates a new auth handler instance
-func NewAuthHandler(authService service.IAuthService, validate validatorx.Validator) IAuthHandler {
-	return &AuthHandler{svc: authService, validate: validate}
+func NewAuthHandler(authService service.AuthService, validate validatorx.Validator) AuthHandler {
+	return &authHandler{svc: authService, validate: validate}
 }
 
 // Register handles user registration
-func (h *AuthHandler) Register(c *fiber.Ctx) error {
+func (h *authHandler) Register(c fiber.Ctx) error {
 	req := new(request.RegisterReq)
 
-	if err := c.BodyParser(req); err != nil {
-		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
+	if err := c.Bind().Body(req); err != nil {
+		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
+		return errx.New(errx.CodeValidationFailed, "Validation failed", err)
 	}
 
-	result, err := h.svc.Register(c.UserContext(), req)
+	accessToken, refreshToken, err := h.svc.Register(
+		c.Context(),
+		req.Email,
+		req.Password,
+		req.Captcha,
+	)
 	if err != nil {
 		return err
 	}
 
-	setRefreshTokenCookie(c, result.RefreshToken)
+	setRefreshTokenCookie(c, refreshToken)
 
-	res := response.Success(result)
+	res := response.Success(&response.LoginRes{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
 	return c.JSON(res)
 }
 
 // Logout handles user logout by clearing the refresh token cookie
-func (h *AuthHandler) Logout(c *fiber.Ctx) error {
+func (h *authHandler) Logout(c fiber.Ctx) error {
 	c.Cookie(&fiber.Cookie{
 		Name:     "refreshToken",
 		Value:    "",
@@ -69,61 +86,67 @@ func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 }
 
 // Login handles user login
-func (h *AuthHandler) Login(c *fiber.Ctx) error {
+func (h *authHandler) Login(c fiber.Ctx) error {
 	req := new(request.LoginReq)
 
-	if err := c.BodyParser(req); err != nil {
-		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
+	if err := c.Bind().Body(req); err != nil {
+		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
+		return errx.New(errx.CodeValidationFailed, "Validation failed", err)
 	}
 
-	result, err := h.svc.Login(c.UserContext(), req)
+	accessToken, refreshToken, err := h.svc.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		return err
 	}
 
-	setRefreshTokenCookie(c, result.RefreshToken)
+	setRefreshTokenCookie(c, refreshToken)
 
-	res := response.Success(result)
+	res := response.Success(&response.LoginRes{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	})
 	return c.JSON(res)
 }
 
 // Refresh handles access token refresh using refresh token from cookie
-func (h *AuthHandler) Refresh(c *fiber.Ctx) error {
+func (h *authHandler) Refresh(c fiber.Ctx) error {
 	token := c.Cookies("refreshToken")
 	if token == "" {
-		return errs.New(errs.CodeUnauthorized, "Missing refresh token", nil)
+		return errx.New(errx.CodeUnauthorized, "Missing refresh token", nil)
 	}
-	newTokens, err := h.svc.RefreshAccessToken(c.UserContext(), token)
+	accessToken, refreshToken, err := h.svc.RefreshAccessToken(c.Context(), token)
 	if err != nil {
 		return err
 	}
 
-	setRefreshTokenCookie(c, newTokens.RefreshToken)
+	setRefreshTokenCookie(c, refreshToken)
 
-	return c.JSON(response.Success(newTokens))
+	return c.JSON(response.Success(&response.RefreshRes{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}))
 }
 
 // SendCaptcha handles sending captcha email for verification
-func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
+func (h *authHandler) SendCaptcha(c fiber.Ctx) error {
 	req := new(request.GetCaptchaReq)
 
-	if err := c.BodyParser(req); err != nil {
-		return errs.New(errs.CodeInvalidParam, "Invalid request body", err)
+	if err := c.Bind().Body(req); err != nil {
+		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errs.New(errs.CodeValidationFailed, "Validation failed", err)
+		return errx.New(errx.CodeValidationFailed, "Validation failed", err)
 	}
 
 	if req.Type == "" {
 		req.Type = string(service.Register)
 	}
 
-	err := h.svc.SendCaptchaMail(c.UserContext(), req.Email, service.CaptchaType(req.Type))
+	err := h.svc.SendCaptchaMail(c.Context(), req.Email, service.CaptchaType(req.Type))
 	if err != nil {
 		return err
 	}
@@ -132,7 +155,7 @@ func (h *AuthHandler) SendCaptcha(c *fiber.Ctx) error {
 }
 
 // setRefreshTokenCookie sets the refresh token as an HTTP-only cookie
-func setRefreshTokenCookie(c *fiber.Ctx, value string) {
+func setRefreshTokenCookie(c fiber.Ctx, value string) {
 	maxAge := config.Get().JWT.RefreshExpiration
 	c.Cookie(&fiber.Cookie{
 		Name:     "refreshToken",

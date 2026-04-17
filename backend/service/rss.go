@@ -8,63 +8,101 @@ import (
 	"time"
 
 	"blog-server/config"
-	"blog-server/database"
 	"blog-server/repository"
-	"blog-server/response"
 )
 
-type IRssService interface {
+type RSS struct {
+	XMLName xml.Name   `xml:"rss"`
+	Version string     `xml:"version,attr"`
+	Channel RssChannel `xml:"channel"`
+	XMLNs   string     `xml:"xmlns:atom,attr"`
+	Content string     `xml:"xmlns:content,attr"`
+	DC      string     `xml:"xmlns:dc,attr"`
+}
+
+type RssChannel struct {
+	Title       string    `xml:"title"`
+	Link        string    `xml:"link"`
+	Description string    `xml:"description"`
+	LastBuild   string    `xml:"lastBuildDate"`
+	Items       []RssItem `xml:"item"`
+	AtomLink    AtomLink  `xml:"atom:link"`
+}
+
+type AtomLink struct {
+	Href string `xml:"href,attr"`
+	Rel  string `xml:"rel,attr"`
+	Type string `xml:"type,attr"`
+}
+
+type RssItemDescription struct {
+	Value *string `xml:",cdata"`
+}
+
+type RssGUID struct {
+	Value       string `xml:",chardata"`
+	IsPermaLink bool   `xml:"isPermaLink,attr"`
+}
+
+type RssItem struct {
+	Title       string             `xml:"title"`
+	Link        string             `xml:"link"`
+	GUID        RssGUID            `xml:"guid"`
+	PubDate     string             `xml:"pubDate"`
+	Description RssItemDescription `xml:"description"`
+}
+
+type RssService interface {
 	GenerateRSSFeedXML(ctx context.Context) ([]byte, error)
 }
 
 type rssService struct {
 	cfg      config.AppConfig
-	db       database.Database
-	postRepo repository.IPostRepo
+	postRepo repository.PostRepo
 }
 
 func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
-	posts, err := r.postRepo.GetAllPosts(ctx, r.db)
+	ps, err := r.postRepo.GetPublishedMeta(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Slice(posts, func(i int, j int) bool {
-		return posts[i].UpdatedAt.After(posts[j].UpdatedAt)
+	sort.Slice(ps, func(i int, j int) bool {
+		return ps[i].UpdatedAt.After(ps[j].UpdatedAt)
 	})
 
-	items := make([]response.RssItem, len(posts))
+	items := make([]RssItem, len(ps))
 	var pubDate string
 
-	if len(posts) == 0 {
+	if len(ps) == 0 {
 		pubDate = time.Now().Format(time.RFC1123Z)
 	} else {
-		pubDate = posts[0].PublishedAt.Format(time.RFC1123Z)
+		pubDate = ps[0].PublishedAt.Format(time.RFC1123Z)
 	}
 
-	for i, post := range posts {
+	for i, post := range ps {
 		link := r.cfg.Domain + "/blog/" + strconv.Itoa(int(post.ID))
-		items[i] = response.RssItem{
+		items[i] = RssItem{
 			Title:       post.Title,
 			Link:        link,
-			GUID:        response.RssGUID{Value: link, IsPermaLink: true},
+			GUID:        RssGUID{Value: link, IsPermaLink: true},
 			PubDate:     post.PublishedAt.Format(time.RFC1123Z),
-			Description: response.RssItemDescription{Value: post.Summary},
+			Description: RssItemDescription{Value: post.Summary},
 		}
 	}
 
-	feed := response.RSS{
+	feed := RSS{
 		Version: "2.0",
 		XMLNs:   "http://www.w3.org/2005/Atom",
 		Content: "http://purl.org/rss/1.0/modules/content/",
 		DC:      "http://purl.org/dc/elements/1.1/",
-		Channel: response.RssChannel{
+		Channel: RssChannel{
 			Title:       r.cfg.Name,
 			Link:        r.cfg.Domain,
 			Description: "Latest posts",
 			Items:       items,
 			LastBuild:   pubDate,
-			AtomLink: response.AtomLink{
+			AtomLink: AtomLink{
 				Href: r.cfg.Domain + "/api/v1/rss",
 				Rel:  "self",
 				Type: "application/rss+xml",
@@ -75,6 +113,6 @@ func (r *rssService) GenerateRSSFeedXML(ctx context.Context) ([]byte, error) {
 	return xml.MarshalIndent(feed, "", "  ")
 }
 
-func NewRssService(cfg *config.Config, db database.Database, postRepo repository.IPostRepo) IRssService {
-	return &rssService{cfg: cfg.App, db: db, postRepo: postRepo}
+func NewRssService(cfg *config.Config, postRepo repository.PostRepo) RssService {
+	return &rssService{cfg: cfg.App, postRepo: postRepo}
 }

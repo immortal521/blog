@@ -1,4 +1,5 @@
-// Package config provider config
+// Package config provides application configuration structures and helpers
+// for loading and accessing runtime settings.
 package config
 
 import (
@@ -11,6 +12,8 @@ const (
 	EnvDev  = "development"
 )
 
+// Config represents the root configuration structure of the application.
+// It aggregates all subsystem configurations.
 type Config struct {
 	App      AppConfig      `mapstructure:"app" yaml:"app"`
 	Server   ServerConfig   `mapstructure:"server" yaml:"server"`
@@ -23,6 +26,8 @@ type Config struct {
 	Rustfs   RustfsConfig   `mapstructure:"rustfs" yaml:"rustfs"`
 }
 
+// AppConfig contains general application-level settings such as environment,
+// version, and runtime behavior flags.
 type AppConfig struct {
 	Name        string   `mapstructure:"name" yaml:"name"`
 	Version     string   `mapstructure:"version" yaml:"version"`
@@ -32,6 +37,18 @@ type AppConfig struct {
 	CorsOrigins []string `mapstructure:"cors_origins" yaml:"cors_origins"`
 }
 
+// IsProd reports whether the application is running in production environment.
+func (a AppConfig) IsProd() bool {
+	return a.Environment == EnvProd
+}
+
+// IsDev reports whether the application is running in development environment.
+func (a AppConfig) IsDev() bool {
+	return a.Environment == EnvDev
+}
+
+// ServerConfig defines HTTP server configuration including network settings
+// and timeout controls.
 type ServerConfig struct {
 	Host             string        `mapstructure:"host" yaml:"host"`
 	Port             int           `mapstructure:"port" yaml:"port"`
@@ -42,10 +59,12 @@ type ServerConfig struct {
 	GracefulShutdown time.Duration `mapstructure:"graceful_shutdown" yaml:"graceful_shutdown"`
 }
 
-func (s ServerConfig) GetAddr() string {
+// Addr returns the server address in "host:port" format.
+func (s ServerConfig) Addr() string {
 	return fmt.Sprintf("%s:%d", s.Host, s.Port)
 }
 
+// DatabaseConfig contains relational database connection and pool settings.
 type DatabaseConfig struct {
 	Host            string        `mapstructure:"host" yaml:"host"`
 	Port            int           `mapstructure:"port" yaml:"port"`
@@ -60,17 +79,7 @@ type DatabaseConfig struct {
 	Timeout         time.Duration `mapstructure:"timeout" yaml:"timeout"`
 }
 
-func (d DatabaseConfig) GetDSN() string {
-	return fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable connect_timeout=%d",
-		d.User,
-		d.Password,
-		d.Host,
-		d.Port,
-		d.Name,
-		int(d.Timeout.Seconds()),
-	)
-}
-
+// RedisConfig defines Redis connection and pool configuration.
 type RedisConfig struct {
 	Host               string        `mapstructure:"host" yaml:"host"`
 	Port               int           `mapstructure:"port" yaml:"port"`
@@ -86,6 +95,7 @@ type RedisConfig struct {
 	IdleCheckFrequency time.Duration `mapstructure:"idle_check_frequency" yaml:"idle_check_frequency"`
 }
 
+// JWTConfig contains configuration for JWT authentication and token lifecycle.
 type JWTConfig struct {
 	Secret            string        `mapstructure:"secret" yaml:"secret"`
 	AccessExpiration  time.Duration `mapstructure:"access_expiration" yaml:"access_expiration"`
@@ -93,6 +103,7 @@ type JWTConfig struct {
 	Issuer            string        `mapstructure:"issuer" yaml:"issuer"`
 }
 
+// LogConfig defines logging configuration including output format and rotation policy.
 type LogConfig struct {
 	Level      string `mapstructure:"level" yaml:"level"`
 	Format     string `mapstructure:"format" yaml:"format"`
@@ -103,6 +114,7 @@ type LogConfig struct {
 	Compress   bool   `mapstructure:"compress" yaml:"compress"`
 }
 
+// EmailConfig contains SMTP configuration for sending emails.
 type EmailConfig struct {
 	Host     string `mapstructure:"host" yaml:"host"`
 	Port     int    `mapstructure:"port" yaml:"port"`
@@ -111,10 +123,12 @@ type EmailConfig struct {
 	From     string `mapstructure:"from" yaml:"from"`
 }
 
+// LLMConfig contains configuration for large language model integration.
 type LLMConfig struct {
 	APIKey string `mapstructure:"apikey" yaml:"apikey"`
 }
 
+// RustfsConfig contains configuration for RustFS or S3-compatible object storage service.
 type RustfsConfig struct {
 	Region          string `mapstructure:"region" yaml:"region"`
 	AccessKeyID     string `mapstructure:"access_key_id" yaml:"access_key_id"`

@@ -5,12 +5,7 @@ import (
 )
 
 type Comment struct {
-	ID        uint `gorm:"primarykey"`
+	ID        uint
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt *time.Time `gorm:"type:timestamptz;index"`
-}
-
-func (c Comment) TableName() string {
-	return "comments"
 }

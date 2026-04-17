@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"encoding/json"
 	"time"
 
 	"blog-server/utils"
@@ -9,54 +8,40 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserRole represents the role of a user in the system
-type UserRole int
+type UserRole string
 
 const (
-	// RoleReader represents a regular user with read-only access
-	RoleReader UserRole = iota + 1
-	// RoleAdmin represents an administrator with full access
-	RoleAdmin
+	UserRoleReader UserRole = "reader"
+	UserRoleAdmin  UserRole = "admin"
 )
 
-// MarshalJSON converts UserRole to string for JSON serialization
-func (r UserRole) MarshalJSON() ([]byte, error) {
-	var s string
-	switch r {
-	default:
-		s = "unknown"
-	case RoleReader:
-		s = "reader"
-	case RoleAdmin:
-		s = "admin"
+func (UserRole) Values() []string {
+	return []string{
+		string(UserRoleReader),
+		string(UserRoleAdmin),
 	}
-	return json.Marshal(s)
 }
 
-// User represents a user entity in the system
 type User struct {
-	ID        uint `gorm:"primarykey"`
+	ID   uint
+	UUID uuid.UUID
+
+	Username string
+	Email    string
+	Avatar   *string
+
+	Role UserRole
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt *time.Time `gorm:"type:timestamptz;index"`
+}
 
-	UUID     uuid.UUID `gorm:"type:uuid;not null;unique"`           // Unique identifier for the user
-	Avatar   *string   `gorm:"type:varchar(255)"`                   // Avatar image URL (optional)
-	Email    string    `gorm:"type:varchar(100);not null;unique"`   // User email (unique)
-	Password string    `gorm:"type:varchar(255);not null" json:"-"` // Hashed password (excluded from JSON)
-	Role     UserRole  `gorm:"type:smallint;default:1;not null"`    // User role
-	Username string    `gorm:"type:varchar(50);not null"`           // Display username
-
-	Posts []Post `gorm:"foreignKey:UserID;references:ID"` // Posts created by this user
-
-	// Comments []Comment `gorm:"foreignKey:UserID;references:ID" json:"comments,omitempty"` // Comments by this user (reserved)
+type UserAuth struct {
+	UUID     uuid.UUID
+	Password string
+	Role     UserRole
 }
 
 func GenerateUsername() string {
 	return "user_" + utils.RandomString(6, "abcdefghijklmnopqrstuvwxyz0123456789")
-}
-
-// TableName returns the table name for User model
-func (User) TableName() string {
-	return "users"
 }

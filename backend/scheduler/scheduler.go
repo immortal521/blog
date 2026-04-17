@@ -9,11 +9,11 @@ import (
 )
 
 type Scheduler struct {
-	postService service.IPostService
-	linkService service.ILinkService
+	postService service.PostService
+	linkService service.LinkService
 }
 
-func NewScheduler(postService service.IPostService, linkService service.ILinkService) *Scheduler {
+func NewScheduler(postService service.PostService, linkService service.LinkService) *Scheduler {
 	return &Scheduler{postService, linkService}
 }
 
