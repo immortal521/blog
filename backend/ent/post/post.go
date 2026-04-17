@@ -141,7 +141,7 @@ const DefaultStatus entity.PostStatus = "archived"
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s entity.PostStatus) error {
 	switch s {
-	case "draft", "publish", "archived":
+	case "draft", "published", "archived":
 		return nil
 	default:
 		return fmt.Errorf("post: invalid enum value for status field: %q", s)

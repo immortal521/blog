@@ -6,7 +6,7 @@ type PostStatus string
 
 const (
 	PostStatusDraft    PostStatus = "draft"
-	PostStatusPublish  PostStatus = "publish"
+	PostStatusPublish  PostStatus = "published"
 	PostStatusArchived PostStatus = "archived"
 )
 
