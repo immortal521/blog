@@ -15,7 +15,7 @@ import (
 	"blog-server/logger"
 )
 
-type IModelService interface {
+type ModelService interface {
 	GenerateSummary(ctx context.Context, content string) (<-chan string, <-chan error)
 }
 
@@ -63,7 +63,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			err = errs.New(errs.CodeInternalError, "llm request error", fmt.Errorf("status code: %d", resp.StatusCode))
 			errCh <- err
-			s.log.Errorf("llm request error %v", err)
+			s.log.Error(fmt.Sprintf("[GenerateSummary] llm request error: %v", err))
 			return
 		}
 		defer func() {
@@ -101,7 +101,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 
 			var respChunk map[string]any
 			if err := json.Unmarshal([]byte(jsonStr), &respChunk); err != nil {
-				s.log.Infof("[GenerateSummary] json parse error: %v, data: %s", err, jsonStr)
+				s.log.Info(fmt.Sprintf("[GenerateSummary] json parse error: %v, data: %s", err, jsonStr))
 				continue
 			}
 
@@ -131,7 +131,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		}
 
 		if err := scanner.Err(); err != nil {
-			s.log.Errorf("[GenerateSummary] scanner error: %v", err)
+			s.log.Error(fmt.Sprint("[GenerateSummary] scanner error: %v", err))
 			errCh <- err
 		}
 	}()
@@ -139,6 +139,6 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 	return textCh, errCh
 }
 
-func NewModelService(cfg *config.Config, log logger.Logger) IModelService {
+func NewModelService(cfg *config.Config, log logger.Logger) ModelService {
 	return &modelService{cfg: cfg, log: log}
 }
