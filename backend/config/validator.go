@@ -2,34 +2,32 @@ package config
 
 import (
 	"fmt"
-	"time"
+	"strings"
 )
 
-func validateConfig(cfg *Config) error {
+// validate performs basic validation on the loaded configuration.
+//
+// It ensures required fields are present and enforces environment-specific rules.
+// In production mode, it additionally checks for sensitive configuration values
+// such as database credentials and JWT secrets.
+func validate(cfg *Config) error {
+	var errs []string
+
 	if cfg.App.Name == "" {
-		return fmt.Errorf("app name is required")
+		errs = append(errs, "app.name is required")
 	}
-
 	if cfg.Server.Port <= 0 || cfg.Server.Port > 65535 {
-		return fmt.Errorf("invalid server port: %d", cfg.Server.Port)
+		errs = append(errs, "server.port must be between 1 and 65535")
+	}
+	if cfg.App.IsProd() && cfg.JWT.Secret == "" {
+		errs = append(errs, "jwt.secret is required in production (set JWT_SECRET env var)")
+	}
+	if cfg.App.IsProd() && cfg.Database.Password == "" {
+		errs = append(errs, "database.password is required in production (set DATABASE_PASSWORD env var)")
 	}
 
-	if cfg.Database.Host == "" {
-		return fmt.Errorf("database host is required")
+	if len(errs) > 0 {
+		return fmt.Errorf("config validation failed:\n  - %s", strings.Join(errs, "\n  - "))
 	}
-
-	if cfg.JWT.Secret == "your-default-jwt-secret-change-in-production" &&
-		cfg.App.Environment == "production" {
-		return fmt.Errorf("JWT secret must be changed in production environment")
-	}
-
-	if cfg.JWT.AccessExpiration < time.Minute {
-		return fmt.Errorf("JWT access expiration must be at least 1 minute")
-	}
-
-	if cfg.Redis.PoolSize <= 0 {
-		return fmt.Errorf("redis pool size must be positive")
-	}
-
 	return nil
 }
