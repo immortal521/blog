@@ -136,7 +136,7 @@ var (
 	DefaultViewCount uint
 )
 
-const DefaultStatus entity.PostStatus = "archived"
+const DefaultStatus entity.PostStatus = "draft"
 
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s entity.PostStatus) error {

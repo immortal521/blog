@@ -46,7 +46,7 @@ func (Post) Fields() []ent.Field {
 
 		field.Enum("status").
 			GoType(entity.PostStatus("")).
-			Default(string(entity.PostStatusArchived)),
+			Default(string(entity.PostStatusDraft)),
 
 		field.Time("published_at").
 			Optional().

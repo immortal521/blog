@@ -78,7 +78,7 @@ var (
 		{Name: "cover", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "read_time_minutes", Type: field.TypeUint},
 		{Name: "view_count", Type: field.TypeUint, Default: 0},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published", "archived"}, Default: "archived"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published", "archived"}, Default: "draft"},
 		{Name: "published_at", Type: field.TypeTime, Nullable: true},
 		{Name: "user_id", Type: field.TypeUint},
 	}
