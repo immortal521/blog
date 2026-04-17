@@ -6,168 +6,97 @@ import (
 
 	"blog-server/cache"
 	"blog-server/config"
-	"blog-server/database"
+	"blog-server/datastore"
 	"blog-server/handler"
 	"blog-server/logger"
 	"blog-server/middleware"
+	"blog-server/pkg/validatorx"
 	"blog-server/repository"
-	"blog-server/router"
 	"blog-server/scheduler"
 	"blog-server/service"
-	"blog-server/storage"
-	"blog-server/utils"
-	"blog-server/validatorx"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/fx"
 )
 
-func provideConfig() (*config.Config, error) {
-	_, err := config.Load("./config.yml")
-	if err != nil {
-		return nil, err
-	}
-	return config.Get(), nil
+// main initializes the application using Uber Fx and starts the dependency
+// injection container.
+//
+// It registers configuration, logging, datastore, HTTP server, and lifecycle
+// hooks required to run the service.
+func main() {
+	app := fx.New(
+		fx.Options(
+			config.Module(),
+			logger.Module(),
+			cache.Module(),
+			datastore.Module(),
+			repository.Module(),
+			service.Module(),
+			handler.Module(),
+			scheduler.Module(),
+		),
+		fx.Provide(
+			validatorx.NewValidator,
+			providerFiberApp,
+		),
+		fx.Invoke(
+			runServerLifecycle,
+		),
+	)
+	app.Run()
 }
 
-func providerFiberApp(cfg *config.Config, log logger.Logger) (*fiber.App, error) {
-	var ips []string
-	if cfg.App.Environment == config.EnvProd {
-		cfIPs, err := utils.FetchCloudflareIPs()
-		if err != nil {
-			log.Error("fetch cloudflare ips failed", logger.Error(err))
-		}
-		ips = append(ips, cfIPs...)
-	}
-	ips = append(ips, "127.0.0.1", "::1")
-
+// providerFiberApp constructs and configures the Fiber HTTP server instance.
+//
+// It applies base server configuration such as proxy handling and request limits.
+func providerFiberApp(cfg *config.Config, log logger.Logger) *fiber.App {
 	fiberCfg := fiber.Config{
-		EnableTrustedProxyCheck: true,
-		ErrorHandler:            handler.ErrorHandler(log, cfg),
-		TrustedProxies:          ips,
-		ProxyHeader:             fiber.HeaderXForwardedFor,
-		BodyLimit:               10 * 1024 * 1024,
+		ErrorHandler: handler.ErrorHandler(log, cfg),
+		TrustProxy:   true,
+		ProxyHeader:  fiber.HeaderXForwardedFor,
+		BodyLimit:    10 * 1024 * 1024,
 	}
 
 	app := fiber.New(fiberCfg)
 	app.Use(middleware.RequestLogger(log, cfg))
-
-	return app, nil
+	return app
 }
 
-// scheduler start
-func runJobsLifecycle(lc fx.Lifecycle, scheduler *scheduler.Scheduler) {
-	var cancel context.CancelFunc
-
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			jobCtx, c := context.WithCancel(context.Background())
-			cancel = c
-
-			go scheduler.Start(jobCtx)
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			if cancel != nil {
-				cancel()
-			}
-			return nil
-		},
-	})
-}
-
+// runServerLifecycle registers Fiber server startup and graceful shutdown
+// hooks into the Fx application lifecycle.
+//
+// OnStart:
+//   - Starts the HTTP server in a separate goroutine
+//
+// OnStop:
+//   - Performs graceful shutdown using configured timeout
+//   - Ensures in-flight requests are completed before exit
 func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log logger.Logger) {
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
+		OnStart: func(ctx context.Context) error {
 			go func() {
 				log.Info("Server is starting")
-				if err := app.Listen(cfg.Server.GetAddr()); err != nil {
-					log.Error("Server startup failed", logger.Error(err))
+				if err := app.Listen(cfg.Server.Addr()); err != nil {
+					log.Error("Server startup failed", logger.Err(err))
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			log.Info("Shutting down server gracefully...")
 			timeout := cfg.Server.GracefulShutdown
 			if timeout <= 0 {
 				timeout = 5 * time.Second
 			}
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
+			shutdownCtx, cancel := context.WithTimeout(ctx, timeout)
 			defer cancel()
 
 			if err := app.ShutdownWithContext(shutdownCtx); err != nil {
-				log.Error("Server shutdown failed", logger.Error(err))
+				log.Error("Server shutdown failed", logger.Err(err))
 			} else {
 				log.Info("Server has been shut down successfully.")
 			}
-
 			return nil
 		},
 	})
-}
-
-func cleanupResources(ls fx.Lifecycle, db database.Database, rc cache.CacheClient) {
-	ls.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			_ = db.Close()
-			_ = rc.Close()
-			return nil
-		},
-	})
-}
-
-func main() {
-	provider := fx.Provide(
-		logger.NewLogger,
-		provideConfig,
-		database.NewGormDatabase,
-		cache.NewCacheClient,
-		validatorx.NewValidator,
-		providerFiberApp,
-
-		scheduler.NewScheduler,
-		middleware.NewAuthMiddleware,
-
-		// repos
-		repository.NewUserRepo,
-		repository.NewPostRepo,
-		repository.NewLinkRepo,
-		repository.NewImageRepo,
-		repository.NewImageFolderRepo,
-
-		// services
-		service.NewAuthService,
-		service.NewPostService,
-		service.NewJwtService,
-		service.NewLinkService,
-		service.NewEmailService,
-		service.NewRssService,
-		service.NewModelService,
-		service.NewImageService,
-		service.NewImageFolderService,
-		service.NewStatsService,
-
-		// handlers
-		handler.NewAuthHandler,
-		handler.NewPostHandler,
-		handler.NewLinkHandler,
-		handler.NewRssHandler,
-		handler.NewModelHandler,
-		handler.NewImageHandler,
-		handler.NewStatsHandler,
-
-		storage.NewS3Storage,
-	)
-
-	invoke := fx.Invoke(
-		router.RegisterRoutes,
-		runJobsLifecycle,
-		runServerLifecycle,
-		cleanupResources,
-	)
-
-	app := fx.New(provider, invoke)
-
-	app.Run()
 }
