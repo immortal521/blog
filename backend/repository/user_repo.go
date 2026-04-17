@@ -37,7 +37,7 @@ type UserRepo interface {
 	// ExistsByUUID reports whether a non-soft-deleted user exists with the given UUID.
 	//
 	// Returns false with a non-nil error if the existence check fails.
-	ExistsByUUID(ctx context.Context, uuid uuid.UUID) (bool, error)
+	ExistsByUUID(ctx context.Context, uuidStr string) (bool, error)
 
 	// ExistsByID reports whether a non-soft-deleted user exists with the given ID.
 	//
@@ -49,6 +49,8 @@ type UserRepo interface {
 	// Only a subset of fields required for authentication is returned.
 	// Returns (nil, nil) if no active (non-soft-deleted) user exists with the given email.
 	GetAuthByEmail(ctx context.Context, email string) (*entity.UserAuth, error)
+
+	GetAuthByUUID(ctx context.Context, uuidStr string) (*entity.UserAuth, error)
 }
 
 type userRepo struct {
@@ -75,7 +77,12 @@ func (r *userRepo) ExistsByID(ctx context.Context, id uint) (bool, error) {
 // ExistsByUUID reports whether a non-soft-deleted user exists with the given UUID.
 //
 // Returns false with a non-nil error if the query fails.
-func (r *userRepo) ExistsByUUID(ctx context.Context, uuid uuid.UUID) (bool, error) {
+func (r *userRepo) ExistsByUUID(ctx context.Context, uuidStr string) (bool, error) {
+	uuid, err := uuid.Parse(uuidStr)
+	if err != nil {
+		return false, err
+	}
+
 	exists, err := r.ds.Client(ctx).User.
 		Query().
 		Where(
@@ -99,6 +106,37 @@ func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.Us
 		Query().
 		Where(
 			user.EmailEQ(email),
+			user.DeletedAtIsNil(),
+		).
+		Select(
+			user.FieldUUID,
+			user.FieldPassword,
+			user.FieldRole,
+		).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &entity.UserAuth{
+		UUID:     u.UUID,
+		Password: u.Password,
+		Role:     u.Role,
+	}, nil
+}
+
+func (r *userRepo) GetAuthByUUID(ctx context.Context, uuidStr string) (*entity.UserAuth, error) {
+	uuid, err := uuid.Parse(uuidStr)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := r.ds.Client(ctx).User.
+		Query().
+		Where(
+			user.UUIDEQ(uuid),
 			user.DeletedAtIsNil(),
 		).
 		Select(

@@ -10,12 +10,11 @@ import (
 
 	"blog-server/cache"
 	"blog-server/config"
-	"blog-server/database"
+	"blog-server/datastore"
 	"blog-server/entity"
-	"blog-server/errs"
+	"blog-server/pkg/errx"
+	"blog-server/pkg/jwt"
 	"blog-server/repository"
-	"blog-server/request"
-	"blog-server/response"
 	"blog-server/utils"
 
 	"github.com/google/uuid"
@@ -43,131 +42,110 @@ const (
 )
 
 // IAuthService defines the interface for authentication services
-type IAuthService interface {
+type AuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
-	Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error)
-	Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error)
+	Register(ctx context.Context, email, password, captcha string) (string, string, error)
+	Login(ctx context.Context, email, password string) (string, string, error)
 	HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error)
-	RefreshAccessToken(context context.Context, token string) (*response.RefreshRes, error)
+	RefreshAccessToken(context.Context, string) (string, string, error)
 }
 
 // AuthService implements the IAuthService interface
-type AuthService struct {
-	db          database.Database
+type authService struct {
+	ds          *datastore.DataStore
 	rc          cache.CacheClient
 	cfg         *config.Config
-	userRepo    repository.IUserRepo
-	jwtService  IJwtService
+	userRepo    repository.UserRepo
 	mailService IMailService
 }
 
 // NewAuthService creates and returns a new AuthService instance
-func NewAuthService(db database.Database, rc cache.CacheClient, userRepo repository.IUserRepo, jwtService IJwtService, mailService IMailService) IAuthService {
-	return &AuthService{
-		db:          db,
+func NewAuthService(ds *datastore.DataStore, rc cache.CacheClient, userRepo repository.UserRepo, mailService IMailService) AuthService {
+	return &authService{
+		ds:          ds,
 		rc:          rc,
 		cfg:         config.Get(),
 		userRepo:    userRepo,
-		jwtService:  jwtService,
 		mailService: mailService,
 	}
 }
 
 // Register registers a new user and generates access/refresh tokens
-func (s *AuthService) Register(ctx context.Context, dto *request.RegisterReq) (*response.LoginRes, error) {
-	email := dto.Email
-
+func (s *authService) Register(ctx context.Context, email, password, captcha string) (string, string, error) {
 	// Verify captcha
 	cachedCaptcha, err := s.rc.Get(ctx, fmt.Sprintf("Register:%s", email))
-	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(dto.Captcha)) {
-		return nil, errs.New(errs.CodeInvalidParam, "Invalid captcha", nil)
+	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(captcha)) {
+		return "", "", errx.New(errx.CodeInvalidParam, "Invalid captcha", nil)
 	}
 
-	hashPassword, err := utils.HashPassword(dto.Password)
+	hashPassword, err := utils.HashPassword(password)
 	if err != nil {
-		return nil, errs.New(errs.CodeInternalError, "Hash password failed", err)
+		return "", "", errx.New(errx.CodeInternalError, "Hash password failed", err)
 	}
 
 	user := &entity.User{
 		UUID:     uuid.New(),
-		Email:    dto.Email,
-		Password: hashPassword,
+		Email:    email,
 		Username: entity.GenerateUsername(),
 	}
 
-	var newUser *entity.User
-
-	err = s.db.Trans(func(txCtx database.TxContext) error {
-		newUser, err = s.userRepo.CreateUser(ctx, txCtx, user)
+	err = s.ds.WithTx(ctx, func(ctx context.Context) error {
+		_, err = s.userRepo.Create(ctx, user, hashPassword)
 		if err != nil {
-			return errs.New(errs.CodeDatabaseError, "Create user failed", err)
+			return errx.New(errx.CodeDatabaseError, "Create user failed", err)
 		}
 		return nil
 	})
 	if err != nil {
-		return nil, errs.New(errs.CodeInternalError, "Register transaction failed", err)
+		return "", "", errx.New(errx.CodeInternalError, "Register transaction failed", err)
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
+	j := jwt.New(s.cfg.JWT)
+
+	accessToken, refreshToken, err := j.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return nil, errs.New(errs.CodeCacheError, "Cache refresh token failed", err)
+		return "", "", errx.New(errx.CodeCacheError, "Cache refresh token failed", err)
 	}
 
-	result := &response.LoginRes{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		UUID:         newUser.UUID.String(),
-		Username:     newUser.Username,
-		Avatar:       newUser.Avatar,
-		Role:         newUser.Role,
-	}
-
-	return result, nil
+	return accessToken, refreshToken, nil
 }
 
 // Login logs in a user and generates access/refresh tokens
-func (s *AuthService) Login(ctx context.Context, dto *request.LoginReq) (*response.LoginRes, error) {
-	user, err := s.userRepo.GetUserByEmail(ctx, s.db, dto.Email)
+func (s *authService) Login(ctx context.Context, email, password string) (string, string, error) {
+	user, err := s.userRepo.GetAuthByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
-	if !utils.VerifyPassword(dto.Password, user.Password) {
-		return nil, errs.New(errs.CodeInvalidParam, "Invalid password", nil)
+	if !utils.VerifyPassword(password, user.Password) {
+		return "", "", errx.New(errx.CodeInvalidParam, "Invalid password", nil)
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(user.UUID.String())
+	j := jwt.New(s.cfg.JWT)
+
+	accessToken, refreshToken, err := j.GenerateAllTokens(user.UUID.String())
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return nil, err
+		return "", "", err
 	}
 
-	result := &response.LoginRes{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		UUID:         user.UUID.String(),
-		Username:     user.Username,
-		Avatar:       user.Avatar,
-		Role:         user.Role,
-	}
-
-	return result, nil
+	return accessToken, refreshToken, nil
 }
 
 // SendCaptchaMail generates a captcha, stores it in Redis, and sends an email
-func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {
-	userExists, err := s.userRepo.ExistsByEmail(ctx, s.db, to)
+func (s *authService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {
+	exists, err := s.userRepo.ExistsByEmail(ctx, to)
 	if err != nil {
 		return err
 	}
-	if userExists {
-		return errs.New(errs.CodeConflict, fmt.Sprintf("Sent captcha failed to %s: user exists", to), nil)
+	if exists {
+		return errx.New(errx.CodeConflict, fmt.Sprintf("Sent captcha failed to %s: user exists", to), nil)
 	}
 
 	if captchaType == "" {
@@ -183,7 +161,7 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	data.Captcha = captcha
 
 	if err := s.rc.Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute); err != nil {
-		return errs.New(errs.CodeCacheError, "Set captcha in Redis failed", err)
+		return errx.New(errx.CodeCacheError, "Set captcha in Redis failed", err)
 	}
 
 	templateName := "captcha.html"
@@ -195,68 +173,67 @@ func (s *AuthService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 }
 
 // RefreshAccessToken refreshes the access token using a valid refresh token
-func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (*response.RefreshRes, error) {
-	claims, err := s.jwtService.ParseToken(token)
+func (s *authService) RefreshAccessToken(ctx context.Context, token string) (string, string, error) {
+	j := jwt.New(s.cfg.JWT)
+	claims, err := j.Parse(token)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
+
 	uuid := claims.UserID
 
-	existed, err := s.userRepo.ExistsByUUID(ctx, s.db, uuid)
+	existed, err := s.userRepo.ExistsByUUID(ctx, uuid)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 	if !existed {
-		return nil, errs.New(errs.CodeUserNotFound, "User not found", nil)
+		return "", "", errx.New(errx.CodeUserNotFound, "User not found", nil)
 	}
 
 	cacheRefreshToken, err := s.rc.Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid))
 	if err != nil {
-		return nil, errs.New(errs.CodeCacheError, "Get refresh token from Redis failed", err)
+		return "", "", errx.New(errx.CodeCacheError, "Get refresh token from Redis failed", err)
 	}
 
 	if !strings.EqualFold(token, cacheRefreshToken) {
-		return nil, errs.New(errs.CodeUnauthorized, "Invalid token", nil)
+		return "", "", errx.New(errx.CodeUnauthorized, "Invalid token", nil)
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateAllTokens(uuid)
+	accessToken, refreshToken, err := j.GenerateAllTokens(uuid)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
 	if err := s.cacheRefreshToken(ctx, uuid, refreshToken); err != nil {
-		return nil, err
+		return "", "", err
 	}
 
-	return &response.RefreshRes{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return accessToken, refreshToken, nil
 }
 
 // HasRole checks if a user has any of the specified roles
-func (s *AuthService) HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error) {
-	userRole, err := s.userRepo.GetRoleByUUID(ctx, s.db, uuid)
+func (s *authService) HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error) {
+	user, err := s.userRepo.GetAuthByUUID(ctx, uuid)
 	if err != nil {
 		return false, err
 	}
 
-	if userRole == nil {
-		return false, errs.New(errs.CodeUserNotFound, "User not found", nil)
+	if user == nil {
+		return false, errx.New(errx.CodeUserNotFound, "User not found", nil)
 	}
 
-	if slices.Contains(roles, *userRole) {
+	if slices.Contains(roles, user.Role) {
 		return true, nil
 	}
 	return false, nil
 }
 
 // cacheRefreshToken stores the refresh token in Redis
-func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
+func (s *authService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
 	key := fmt.Sprintf("RefreshToken:%s", userUUID)
 	if err := s.rc.Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration); err != nil {
-		return errs.New(
-			errs.CodeCacheError,
+		return errx.New(
+			errx.CodeCacheError,
 			fmt.Sprintf("Failed to cache refresh token for user %s", userUUID),
 			err,
 		)
@@ -268,8 +245,8 @@ func (s *AuthService) cacheRefreshToken(ctx context.Context, userUUID string, re
 func getCaptchaEmailMeta(t CaptchaType) (*AuthMailData, error) {
 	data, ok := captchaMetaMap[t]
 	if !ok {
-		return nil, errs.New(
-			errs.CodeInvalidParam,
+		return nil, errx.New(
+			errx.CodeInvalidParam,
 			fmt.Sprintf("Unknown captcha type: %s", t),
 			nil,
 		)

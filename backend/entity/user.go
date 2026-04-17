@@ -3,6 +3,8 @@ package entity
 import (
 	"time"
 
+	"blog-server/utils"
+
 	"github.com/google/uuid"
 )
 
@@ -38,4 +40,8 @@ type UserAuth struct {
 	UUID     uuid.UUID
 	Password string
 	Role     UserRole
+}
+
+func GenerateUsername() string {
+	return "user_" + utils.RandomString(6, "abcdefghijklmnopqrstuvwxyz0123456789")
 }
