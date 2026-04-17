@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"time"
 
@@ -11,105 +11,169 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// zapLogger is a Logger implementation backed by Uber Zap.
+// It wraps zap.Logger to provide a simplified structured logging interface.
 type zapLogger struct {
 	l *zap.Logger
 }
 
-func NewLogger(cfg *config.Config) Logger {
-	var encoder zapcore.Encoder
-	var level zapcore.Level
+// Debug logs a message at debug level with structured fields.
+func (z *zapLogger) Debug(msg string, fields ...Field) { z.log(zap.DebugLevel, msg, fields...) }
 
-	if cfg.App.Environment == "production" {
-		encoderCfg := zap.NewProductionEncoderConfig()
-		encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-		encoder = zapcore.NewJSONEncoder(encoderCfg)
-		level = zap.InfoLevel
-	} else {
-		encoderCfg := zapcore.EncoderConfig{
-			TimeKey:       "time",
-			LevelKey:      "level",
-			CallerKey:     "caller",
-			MessageKey:    "msg",
-			StacktraceKey: "stack_trace",
+// Info logs a message at info level with structured fields.
+func (z *zapLogger) Info(msg string, fields ...Field) { z.log(zap.InfoLevel, msg, fields...) }
 
-			EncodeDuration: zapcore.StringDurationEncoder,
+// Warn logs a message at warn level with structured fields.
+func (z *zapLogger) Warn(msg string, fields ...Field) { z.log(zap.WarnLevel, msg, fields...) }
 
-			EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-				enc.AppendString("[" + t.Format("2006-01-02 15:04:05 -0700") + "]")
-			},
+// Error logs a message at error level with structured fields.
+func (z *zapLogger) Error(msg string, fields ...Field) { z.log(zap.ErrorLevel, msg, fields...) }
 
-			EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-				var color string
-				switch l {
-				case zapcore.DebugLevel, zapcore.InfoLevel:
-					color = "\033[32m" // green
-				case zapcore.WarnLevel:
-					color = "\033[33m" // yellow
-				case zapcore.ErrorLevel, zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
-					color = "\033[31m" // red
-				default:
-					color = "\033[0m"
-				}
-				enc.AppendString(fmt.Sprintf("%s[%s]%s", color, l.CapitalString(), "\033[0m"))
-			},
+// Sync flushes any buffered log entries.
+//
+// It is safe to call multiple times. It ignores the common "invalid argument"
+// error returned by stderr/stdout sync on some platforms.
+func (z *zapLogger) Sync() error {
+	err := z.l.Sync()
+	if err != nil && err.Error() == "invalid argument" {
+		return nil
+	}
+	return err
+}
 
-			EncodeCaller: func(ec zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
-				enc.AppendString("[" + ec.TrimmedPath() + "]")
-			},
-		}
-		encoder = zapcore.NewConsoleEncoder(encoderCfg)
-		level = zap.DebugLevel
+// With returns a new Logger instance enriched with the provided structured fields.
+func (z *zapLogger) With(fields ...Field) Logger {
+	return &zapLogger{
+		l: z.l.With(convert(fields)...),
+	}
+}
+
+// WithContext extracts supported values from context and attaches them as fields.
+//
+// Currently supported keys:
+//   - request_id
+//   - trace_id
+//
+// If no known values exist in the context, the original logger is returned.
+func (z *zapLogger) WithContext(ctx context.Context) Logger {
+	if ctx == nil {
+		return z
 	}
 
+	fields := make([]Field, 0, 2)
+
+	if v := ctx.Value("request_id"); v != nil {
+		if s, ok := v.(string); ok {
+			fields = append(fields, String("request_id", s))
+		}
+	}
+
+	if v := ctx.Value("trace_id"); v != nil {
+		if s, ok := v.(string); ok {
+			fields = append(fields, String("trace_id", s))
+		}
+	}
+
+	if len(fields) == 0 {
+		return z
+	}
+
+	return z.With(fields...)
+}
+
+// NewLogger creates a new Logger instance based on application configuration.
+//
+// It configures zap encoder, log level, and output format depending on
+// the current environment (development or production).
+func NewLogger(cfg *config.Config) Logger {
+	enc, level := buildEncoder(cfg)
+
 	core := zapcore.NewCore(
-		encoder,
-		zapcore.AddSync(zapcore.Lock(os.Stdout)),
+		enc,
+		zapcore.AddSync(os.Stdout),
 		level,
 	)
 
-	l := zap.New(core, zap.AddCaller())
+	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+
 	return &zapLogger{l: l}
 }
 
-func (z *zapLogger) log(level zapcore.Level, msg string, fields ...Field) {
-	z.l.Log(level, msg, convertFields(fields)...)
+// buildEncoder constructs zap encoder and log level based on environment.
+//
+// In production:
+//   - Uses JSON encoder
+//   - ISO8601 time format
+//   - Info level and above
+//
+// In development:
+//   - Uses colored console encoder
+//   - Human-readable timestamps
+//   - Debug level and above
+func buildEncoder(cfg *config.Config) (zapcore.Encoder, zapcore.Level) {
+	if cfg.App.IsProd() {
+		ec := zap.NewProductionEncoderConfig()
+		ec.EncodeTime = zapcore.ISO8601TimeEncoder
+		return zapcore.NewJSONEncoder(ec), zap.InfoLevel
+	}
+
+	ec := zapcore.EncoderConfig{
+		TimeKey:       "time",
+		LevelKey:      "level",
+		CallerKey:     "caller",
+		MessageKey:    "msg",
+		StacktraceKey: "stack",
+
+		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+			enc.AppendString(t.Format("2006-01-02 15:04:05"))
+		},
+
+		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+		EncodeDuration: zapcore.StringDurationEncoder,
+	}
+
+	return zapcore.NewConsoleEncoder(ec), zap.DebugLevel
 }
 
-func (z *zapLogger) logf(level zapcore.Level, format string, args ...any) {
-	z.l.Log(level, fmt.Sprintf(format, args...))
-}
+// convert transforms internal Field types into zap.Field slice.
+//
+// It handles special cases such as error fields (zap.Error vs named errors)
+// and falls back to zap.Any for generic values.
+func convert(fields []Field) []zap.Field {
+	if len(fields) == 0 {
+		return nil
+	}
 
-func (z *zapLogger) Debug(msg string, fields ...Field) { z.log(zap.DebugLevel, msg, fields...) }
-func (z *zapLogger) Info(msg string, fields ...Field)  { z.log(zap.InfoLevel, msg, fields...) }
-func (z *zapLogger) Warn(msg string, fields ...Field)  { z.log(zap.WarnLevel, msg, fields...) }
-func (z *zapLogger) Error(msg string, fields ...Field) { z.log(zap.ErrorLevel, msg, fields...) }
-func (z *zapLogger) Fatal(msg string, fields ...Field) { z.log(zap.FatalLevel, msg, fields...) }
-func (z *zapLogger) Panic(msg string, fields ...Field) { z.log(zap.PanicLevel, msg, fields...) }
+	out := make([]zap.Field, 0, len(fields))
 
-func (z *zapLogger) Debugf(format string, args ...any) { z.logf(zap.DebugLevel, format, args...) }
-func (z *zapLogger) Infof(format string, args ...any)  { z.logf(zap.InfoLevel, format, args...) }
-func (z *zapLogger) Warnf(format string, args ...any)  { z.logf(zap.WarnLevel, format, args...) }
-func (z *zapLogger) Errorf(format string, args ...any) { z.logf(zap.ErrorLevel, format, args...) }
-func (z *zapLogger) Fatalf(format string, args ...any) { z.logf(zap.FatalLevel, format, args...) }
-func (z *zapLogger) Panicf(format string, args ...any) { z.logf(zap.PanicLevel, format, args...) }
-
-func (z *zapLogger) WithFields(fields ...Field) Logger {
-	return &zapLogger{l: z.l.With(convertFields(fields)...)}
-}
-
-func (z *zapLogger) Sync() error {
-	return z.l.Sync()
-}
-
-func convertFields(fields []Field) []zap.Field {
-	zf := make([]zap.Field, 0, len(fields))
 	for _, f := range fields {
-		switch f.Type {
-		case fieldError:
-			zf = append(zf, zap.Error(f.Err))
+		switch v := f.Value.(type) {
+		case error:
+			if f.Key == "error" {
+				out = append(out, zap.Error(v))
+			} else {
+				out = append(out, zap.NamedError(f.Key, v))
+			}
 		default:
-			zf = append(zf, zap.Any(f.Key, f.Any))
+			out = append(out, zap.Any(f.Key, v))
 		}
 	}
-	return zf
+
+	return out
+}
+
+// log writes a log entry at the specified level with structured fields.
+func (z *zapLogger) log(level zapcore.Level, msg string, fields ...Field) {
+	z.l.Log(level, msg, convert(fields)...)
+}
+
+// Fatal logs a message at fatal level and then exits the application.
+func (z *zapLogger) Fatal(msg string, fields ...Field) {
+	z.l.Fatal(msg, convert(fields)...)
+}
+
+// Panic logs a message at panic level and then panics.
+func (z *zapLogger) Panic(msg string, fields ...Field) {
+	z.l.Panic(msg, convert(fields)...)
 }
