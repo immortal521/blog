@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"blog-server/config"
-	"blog-server/errs"
 	"blog-server/logger"
+	"blog-server/pkg/errx"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
@@ -33,7 +33,7 @@ func (s *S3Storage) Copy(ctx context.Context, bucket string, srcKey string, dstK
 		CopySource: &copySource,
 	})
 	if err != nil {
-		return errs.New(errs.CodeStorageError, "storage error", err)
+		return errx.New(errx.CodeStorageError, "storage error", err)
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func (s *S3Storage) Exists(ctx context.Context, bucket string, key string) (bool
 		return false, nil
 	}
 
-	return false, errs.New(errs.CodeStorageError, "storage error", err)
+	return false, errx.New(errx.CodeStorageError, "storage error", err)
 }
 
 func (s *S3Storage) Download(ctx context.Context, bucket string, key string) (io.ReadCloser, string, error) {

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"blog-server/config"
-	"blog-server/errs"
+	"blog-server/pkg/errx"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -72,7 +72,7 @@ func (c *client) Get(ctx context.Context, key string) (string, error) {
 		return result, nil
 	}
 	if err == redis.Nil {
-		return "", errs.New(errs.CodeCacheMiss, "cache not found", err)
+		return "", errx.New(errx.CodeCacheMiss, "cache not found", err)
 	}
 	return "", err
 }

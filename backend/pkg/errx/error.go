@@ -1,5 +1,5 @@
-// Package errs
-package errs
+// Package errx
+package errx
 
 import (
 	"errors"
