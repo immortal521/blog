@@ -5,12 +5,13 @@ import (
 	"go.uber.org/fx"
 )
 
-func RegisterRoutes(app *fiber.App, ph PostHandler, rh RssHandler, ah AuthHandler) {
+func RegisterRoutes(app *fiber.App, ph PostHandler, rh RssHandler, ah AuthHandler, lh LinkHandler) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 	RegisterPostRoute(v1, ph)
 	RegisterRssRoute(v1, rh)
 	RegisterAuthRoutes(v1, ah)
+	RegisterLinkRoutes(v1, lh)
 }
 
 func Module() fx.Option {
@@ -20,6 +21,7 @@ func Module() fx.Option {
 			NewPostHandler,
 			NewRssHandler,
 			NewAuthHandler,
+			NewLinkHandler,
 		),
 		fx.Invoke(
 			RegisterRoutes,
