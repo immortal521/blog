@@ -9,7 +9,7 @@ import (
 	"blog-server/service"
 )
 
-func StartViewFlushJob(ctx context.Context, svc service.IPostService) {
+func StartViewFlushJob(ctx context.Context, svc service.PostService) {
 	for {
 		now := time.Now()
 		next := now.Truncate(time.Hour).Add(time.Hour)

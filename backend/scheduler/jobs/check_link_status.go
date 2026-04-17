@@ -8,7 +8,7 @@ import (
 	"blog-server/service"
 )
 
-func StartCheckLinkStatusJob(ctx context.Context, svc service.ILinkService) {
+func StartCheckLinkStatusJob(ctx context.Context, svc service.LinkService) {
 	for {
 		now := time.Now()
 		next := now.Truncate(time.Hour).Add(time.Hour)
