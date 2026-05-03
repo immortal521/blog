@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { debounce } from "lodash-es";
+import { useDebounceFn } from "@vueuse/core";
 
 const { width = 40 } = defineProps<{
   width?: number | string;
@@ -23,7 +23,7 @@ const handleScroll = () => {
   }
 };
 
-const debouncedHandleScroll = debounce(handleScroll, 50); // 50ms 防抖间隔
+const debouncedHandleScroll = useDebounceFn(handleScroll, 50); // 50ms 防抖间隔
 
 onMounted(() => {
   nextTick(() => {
@@ -34,7 +34,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("scroll", debouncedHandleScroll);
-  debouncedHandleScroll.cancel();
 });
 </script>
 <template>

@@ -3,6 +3,9 @@ export default {
   extends: [
     "stylelint-config-standard",
     "stylelint-config-standard-less",
-    "stylelint-config-standard-vue",
+    "stylelint-config-recommended-vue",
   ],
+  rules: {
+    "value-keyword-case": null,
+  },
 };

@@ -80,6 +80,9 @@ export default defineNuxtConfig({
     css: {
       devSourcemap: true, // 开启 CSS Source Map，方便调试
     },
+    optimizeDeps: {
+      include: ["tinycolor2", "@vueuse/core", "lodash-es"],
+    },
   },
 
   // 全局样式
