@@ -23,7 +23,7 @@ func ToPost(p *ent.Post) *entity.Post {
 		Summary: p.Summary,
 		Cover:   p.Cover,
 
-		Author: extractAuthor(p),
+		User:   extractAuthor(p),
 
 		Content:         p.Content,
 		ReadTimeMinutes: p.ReadTimeMinutes,

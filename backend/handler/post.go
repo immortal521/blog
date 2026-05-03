@@ -3,7 +3,10 @@ package handler
 import (
 	"fmt"
 	"strconv"
+	"unicode/utf8"
 
+	"blog-server/pkg/errx"
+	"blog-server/request"
 	"blog-server/response"
 	"blog-server/service"
 
@@ -15,6 +18,7 @@ type PostHandler interface {
 	GetPosts(c fiber.Ctx) error
 	GetPost(c fiber.Ctx) error
 	GetPostIds(c fiber.Ctx) error
+	CreatePost(c fiber.Ctx) error
 }
 
 type postHandler struct {
@@ -28,9 +32,51 @@ func NewPostHandler(svc service.PostService) PostHandler {
 
 func RegisterPostRoute(r fiber.Router, handler PostHandler) {
 	group := r.Group("/posts")
+	group.Post("/", handler.CreatePost)
 	group.Get("/", handler.GetPosts)
 	group.Get("/meta", handler.GetPostIds)
 	group.Get("/:id", handler.GetPost)
+}
+
+func (h *postHandler) CreatePost(c fiber.Ctx) error {
+	req := new(request.CreatePostReq)
+	if err := c.Bind().Body(req); err != nil {
+		return errx.New(errx.CodeInvalidParam, "Failed to parse request body", err)
+	}
+
+	contentLength := utf8.RuneCountInString(req.Content)
+
+	readTime := uint(max(1, (contentLength+199)/200))
+
+	input := &service.CreatePostInput{
+		Title:           req.Title,
+		Summary:         req.Summary,
+		Cover:           req.Cover,
+		Content:         req.Content,
+		UserID:          req.UserID,
+		ReadTimeMinutes: readTime,
+		Status:          req.Status,
+		Tags:            req.Tags,
+		CategoryIDs:     req.CategoryIDs,
+	}
+
+	post, err := h.svc.CreatePost(c.Context(), input)
+	if err != nil {
+		return err
+	}
+
+	res := &response.PostRes{
+		ID:              post.ID,
+		Title:           post.Title,
+		Summary:         post.Summary,
+		Content:         post.Content,
+		Cover:           post.Cover,
+		ReadTimeMinutes: post.ReadTimeMinutes,
+		ViewCount:       post.ViewCount,
+		PublishedAt:     post.PublishedAt,
+	}
+
+	return c.JSON(response.Success(res))
 }
 
 // GetPosts retrieves all published posts

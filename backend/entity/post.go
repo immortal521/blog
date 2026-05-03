@@ -24,11 +24,14 @@ type Post struct {
 	Summary *string
 	Cover   *string
 
-	Author string
+	User   string
+	UserID uint
 
 	Content         string
 	ReadTimeMinutes uint
 	ViewCount       uint
+
+	Status PostStatus
 
 	PublishedAt *time.Time
 	CreatedAt   time.Time

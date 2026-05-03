@@ -47,7 +47,8 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 		SetTitle(p.Title).
 		SetContent(p.Content).
 		SetReadTimeMinutes(p.ReadTimeMinutes).
-		SetStatus(p.Status)
+		SetStatus(p.Status).
+		SetUserID(p.UserID)
 
 	if p.Summary != nil {
 		builder.SetSummary(*p.Summary)
@@ -83,7 +84,7 @@ func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) erro
 
 	return r.ds.Client(ctx).Post.
 		UpdateOneID(postID).
-		AddCategoryIDs(tagIDs...).
+		AddTagIDs(tagIDs...).
 		Exec(ctx)
 }
 
