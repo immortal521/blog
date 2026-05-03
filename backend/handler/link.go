@@ -65,12 +65,19 @@ func (h *linkHandler) ApplyForALinks(c fiber.Ctx) error {
 		return errx.New(errx.CodeInvalidParam, "URL or name is empty", nil)
 	}
 
+	input := &service.CreateLinkInput{
+		Name:        req.Name,
+		Description: &req.Description,
+		Avatar:      &req.Avatar,
+		URL:         req.URL,
+	}
+	if err := h.validate.Struct(input); err != nil {
+		return err
+	}
+
 	err := h.svc.CreateLink(
 		c.Context(),
-		req.Name,
-		req.Description,
-		req.Avatar,
-		req.URL,
+		input,
 	)
 	if err != nil {
 		return err

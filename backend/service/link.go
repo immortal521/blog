@@ -16,7 +16,7 @@ import (
 type LinkService interface {
 	GetLinks(ctx context.Context) ([]*entity.Link, error)
 	CheckLinkStatus(ctx context.Context) error
-	CreateLink(ctx context.Context, name, description, avatar, url string) error
+	CreateLink(ctx context.Context, input *CreateLinkInput) error
 	// GetOverview(ctx context.Context) (*response.LinkOverview, error)
 }
 
@@ -39,15 +39,22 @@ func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
 // 	return s.linkRepo.GetOverview(ctx, s.db)
 // }
 
+type CreateLinkInput struct {
+	Name        string
+	Description *string
+	Avatar      *string
+	URL         string
+}
+
 // CreateLink creates a new link
-func (s *linkService) CreateLink(ctx context.Context, name, description, avatar, url string) error {
-	link := entity.Link{
-		Name:        name,
-		Description: &description,
-		Avatar:      &avatar,
-		URL:         url,
+func (s *linkService) CreateLink(ctx context.Context, input *CreateLinkInput) error {
+	link := &entity.Link{
+		Name:        input.Name,
+		Description: input.Description,
+		Avatar:      input.Avatar,
+		URL:         input.URL,
 	}
-	_, err := s.linkRepo.Create(ctx, &link)
+	_, err := s.linkRepo.Create(ctx, link)
 	return err
 }
 
