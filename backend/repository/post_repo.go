@@ -17,30 +17,16 @@ import (
 //
 // Implementations are expected to apply visibility constraints consistently across all read methods.
 type PostRepo interface {
-	// GetAllPublished returns all posts that are published and not soft-deleted,
-	// ordered by publication time in descending order.
-	//
-	// The returned slice is non-nil on success, even when no posts exist.
-	// The result excludes unpublished or soft-deleted entries.
 	GetAllPublished(ctx context.Context) ([]*entity.Post, error)
-
-	// GetPublishedByID returns a single published, non-deleted post by its identifier.
-	//
-	// If no such post exists, an error is returned. Callers should treat not-found
-	// errors distinctly from other failures if needed.
 	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
-
-	// UpdateViewCounts applies batched increments to post view counts.
-	//
-	// Each entry in updates represents a delta applied atomically per row.
-	// An empty input results in a no-op and no error.
-	//
-	// Behavior is undefined if ids do not exist or refer to non-published posts.
 	UpdateViewCounts(ctx context.Context, updates map[uint]int64) error
-
 	GetPublishedSiteMap(ctx context.Context) ([]*entity.Post, error)
-
 	GetPublishedMeta(ctx context.Context) ([]*entity.Post, error)
+	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
+	AddTags(ctx context.Context, postID uint, tagIDs []uint) error
+	ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) error
+	AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error
+	ReplaceCategories(ctx context.Context, postID uint, categoryIDs []uint) error
 }
 
 type postRepo struct {
@@ -53,6 +39,76 @@ type postRepo struct {
 // datastore client is concurrency-safe.
 func NewPostRepo(ds *datastore.DataStore) PostRepo {
 	return &postRepo{ds: ds}
+}
+
+func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, error) {
+	builder := r.ds.Client(ctx).Post.
+		Create().
+		SetTitle(p.Title).
+		SetContent(p.Content).
+		SetReadTimeMinutes(p.ReadTimeMinutes).
+		SetStatus(p.Status)
+
+	if p.Summary != nil {
+		builder.SetSummary(*p.Summary)
+	}
+
+	if p.Cover != nil {
+		builder.SetCover(*p.Cover)
+	}
+
+	ep, err := builder.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.ToPost(ep), nil
+}
+
+func (r *postRepo) AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
+	if len(categoryIDs) == 0 {
+		return nil
+	}
+
+	return r.ds.Client(ctx).Post.
+		UpdateOneID(postID).
+		AddCategoryIDs(categoryIDs...).
+		Exec(ctx)
+}
+
+func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) error {
+	if len(tagIDs) == 0 {
+		return nil
+	}
+
+	return r.ds.Client(ctx).Post.
+		UpdateOneID(postID).
+		AddCategoryIDs(tagIDs...).
+		Exec(ctx)
+}
+
+func (r *postRepo) ReplaceCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
+	builder := r.ds.Client(ctx).Post.
+		UpdateOneID(postID).
+		ClearCategories()
+
+	if len(categoryIDs) > 0 {
+		builder.AddCategoryIDs(categoryIDs...)
+	}
+
+	return builder.Exec(ctx)
+}
+
+func (r *postRepo) ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) error {
+	builder := r.ds.Client(ctx).Post.
+		UpdateOneID(postID).
+		ClearTags()
+
+	if len(tagIDs) > 0 {
+		builder.AddTagIDs(tagIDs...)
+	}
+
+	return builder.Exec(ctx)
 }
 
 // GetAllPublished returns all published, non-deleted posts with selected fields
