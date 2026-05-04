@@ -33,7 +33,6 @@ func createSchema(client *ent.Client) {
 		migrate.WithDropIndex(true),
 		migrate.WithDropColumn(true),
 		migrate.WithForeignKeys(false),
-		migrate.WithGlobalUniqueID(true),
 	); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
