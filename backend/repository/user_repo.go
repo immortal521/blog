@@ -40,11 +40,9 @@ func (r *userRepo) baseQuery(ctx context.Context) *ent.UserQuery {
 		Where(user.DeletedAtIsNil())
 }
 
-func (r *userRepo) exists(ctx context.Context, predicates ...func(*ent.UserQuery)) (bool, error) {
+func (r *userRepo) exists(ctx context.Context, predicate func(*ent.UserQuery)) (bool, error) {
 	q := r.baseQuery(ctx)
-	for _, p := range predicates {
-		p(q)
-	}
+	predicate(q)
 	exists, err := q.Exist(ctx)
 	if err != nil {
 		return false, errx.New(errx.CodeInternalError, err)
@@ -55,14 +53,9 @@ func (r *userRepo) exists(ctx context.Context, predicates ...func(*ent.UserQuery
 func (r *userRepo) getOne(
 	ctx context.Context,
 	predicate func(*ent.UserQuery),
-	selector ...string,
 ) (*ent.User, error) {
 	q := r.baseQuery(ctx)
 	predicate(q)
-
-	if len(selector) > 0 {
-		q.Select(selector...)
-	}
 
 	u, err := q.Only(ctx)
 	if err != nil {
@@ -150,19 +143,17 @@ func (r *userRepo) ExistsByEmail(ctx context.Context, email string) (bool, error
 // Returns (nil, nil) if no active (non-soft-deleted) user exists with the given email.
 // Errors unrelated to absence are returned as-is.
 func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.UserAuth, error) {
-	u, err := r.baseQuery(ctx).
-		Where(user.EmailEQ(email)).
-		Select(
+	u, err := r.getOne(ctx, func(q *ent.UserQuery) {
+		q.Where(
+			user.EmailEQ(email),
+		).Select(
 			user.FieldID,
 			user.FieldPassword,
 			user.FieldRole,
-		).
-		Only(ctx)
+		)
+	})
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errx.New(errx.CodeNotFound, err)
-		}
-		return nil, errx.New(errx.CodeInternalError, err)
+		return nil, err
 	}
 	return &entity.UserAuth{
 		ID:       u.ID,
@@ -172,21 +163,17 @@ func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.Us
 }
 
 func (r *userRepo) GetAuthByID(ctx context.Context, id uint) (*entity.UserAuth, error) {
-	u, err := r.baseQuery(ctx).
-		Where(
+	u, err := r.getOne(ctx, func(q *ent.UserQuery) {
+		q.Where(
 			user.IDEQ(id),
-		).
-		Select(
+		).Select(
 			user.FieldID,
 			user.FieldPassword,
 			user.FieldRole,
-		).
-		Only(ctx)
+		)
+	})
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errx.New(errx.CodeNotFound, err)
-		}
-		return nil, errx.New(errx.CodeInternalError, err)
+		return nil, err
 	}
 	return &entity.UserAuth{
 		ID:       u.ID,
