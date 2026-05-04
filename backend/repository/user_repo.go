@@ -13,66 +13,46 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserRepo handles persistence and read operations for user domain data.
+// UserRepo defines persistence operations for user aggregate.
+//
+// It encapsulates both write and read access, including authentication-related projections
+// and existence checks. All queries automatically exclude soft-deleted records.
 type UserRepo interface {
 	Create(ctx context.Context, user *entity.User, hashPassword string) (*entity.User, error)
 	GetByEmail(ctx context.Context, email string) (*entity.User, error)
+
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	ExistsByUUID(ctx context.Context, uuidStr string) (bool, error)
 	ExistsByID(ctx context.Context, id uint) (bool, error)
+
 	GetAuthByEmail(ctx context.Context, email string) (*entity.UserAuth, error)
 	GetAuthByID(ctx context.Context, id uint) (*entity.UserAuth, error)
 }
 
+// userRepo implements UserRepo using ent ORM.
 type userRepo struct {
-	store *datastore.DataStore
+	ds *datastore.DataStore
 }
 
-// NewUserRepo creates a new UserRepo instance.
+// NewUserRepo constructs a UserRepo backed by DataStore.
 func NewUserRepo(ds *datastore.DataStore) UserRepo {
-	return &userRepo{store: ds}
+	return &userRepo{ds: ds}
 }
 
-// baseQuery returns a pre-configured UserQuery with soft-delete filter applied.
+// baseQuery returns a query builder with global constraints applied.
+//
+// Currently enforces soft-delete filtering (DeletedAt IS NULL).
 func (r *userRepo) baseQuery(ctx context.Context) *ent.UserQuery {
-	return r.store.Client(ctx).User.
+	return r.ds.Client(ctx).User.
 		Query().
 		Where(user.DeletedAtIsNil())
 }
 
-func (r *userRepo) exists(ctx context.Context, predicate func(*ent.UserQuery)) (bool, error) {
-	q := r.baseQuery(ctx)
-	predicate(q)
-	exists, err := q.Exist(ctx)
-	if err != nil {
-		return false, errx.New(errx.CodeInternalError, err)
-	}
-	return exists, nil
-}
-
-func (r *userRepo) getOne(
-	ctx context.Context,
-	predicate func(*ent.UserQuery),
-) (*ent.User, error) {
-	q := r.baseQuery(ctx)
-	predicate(q)
-
-	u, err := q.Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errx.New(errx.CodeNotFound, err)
-		}
-		return nil, errx.New(errx.CodeInternalError, err)
-	}
-	return u, nil
-}
-
-// Create persists a new user with the provided hashed password.
+// Create inserts a new user record with hashed password.
 //
-// The input entity is not mutated. Avatar is optional and only set if non-nil.
-// Returns the stored entity representation or an error if the operation fails.
+// The input entity is not modified. Optional fields (e.g. Avatar) are applied only if present.
 func (r *userRepo) Create(ctx context.Context, u *entity.User, hashPassword string) (*entity.User, error) {
-	c := r.store.Client(ctx).User.Create().
+	c := r.ds.Client(ctx).User.Create().
 		SetUUID(u.UUID).
 		SetEmail(u.Email).
 		SetPassword(hashPassword).
@@ -93,8 +73,8 @@ func (r *userRepo) Create(ctx context.Context, u *entity.User, hashPassword stri
 
 // GetByEmail retrieves a user by email.
 //
-// Returns (nil, nil) if no active (non-soft-deleted) user exists with the given email.
-// Errors unrelated to absence are returned as-is.
+// Only non-soft-deleted users are returned.
+// Returns ErrNotFound wrapped in domain error if no match exists.
 func (r *userRepo) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
 	u, err := r.baseQuery(ctx).
 		Where(user.EmailEQ(email)).
@@ -109,9 +89,9 @@ func (r *userRepo) GetByEmail(ctx context.Context, email string) (*entity.User, 
 	return mapper.ToUser(u), nil
 }
 
-// ExistsByID reports whether a non-soft-deleted user exists with the given ID.
+// ExistsByID checks whether a user exists by ID.
 //
-// Returns false with a non-nil error if the query fails.
+// Soft-deleted users are excluded.
 func (r *userRepo) ExistsByID(ctx context.Context, id uint) (bool, error) {
 	exists, err := r.baseQuery(ctx).
 		Where(user.IDEQ(id)).
@@ -122,9 +102,10 @@ func (r *userRepo) ExistsByID(ctx context.Context, id uint) (bool, error) {
 	return exists, nil
 }
 
-// ExistsByUUID reports whether a non-soft-deleted user exists with the given UUID.
+// ExistsByUUID checks whether a user exists by UUID.
 //
-// Returns false with a non-nil error if the query fails.
+// Input UUID string must be valid RFC4122 format.
+// Soft-deleted users are excluded.
 func (r *userRepo) ExistsByUUID(ctx context.Context, uuidStr string) (bool, error) {
 	uid, err := uuid.Parse(uuidStr)
 	if err != nil {
@@ -140,9 +121,9 @@ func (r *userRepo) ExistsByUUID(ctx context.Context, uuidStr string) (bool, erro
 	return exists, nil
 }
 
-// ExistsByEmail reports whether a non-soft-deleted user exists with the given email.
+// ExistsByEmail checks whether a user exists by email.
 //
-// Returns false with a non-nil error if the query fails.
+// Soft-deleted users are excluded.
 func (r *userRepo) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	exists, err := r.baseQuery(ctx).
 		Where(user.EmailEQ(email)).
@@ -153,11 +134,10 @@ func (r *userRepo) ExistsByEmail(ctx context.Context, email string) (bool, error
 	return exists, nil
 }
 
-// GetAuthByEmail retrieves authentication fields for a user identified by email.
+// GetAuthByEmail returns authentication projection for a user identified by email.
 //
-// The returned struct includes only fields required for authentication workflows.
-// Returns (nil, nil) if no active (non-soft-deleted) user exists with the given email.
-// Errors unrelated to absence are returned as-is.
+// Only minimal fields required for authentication are selected (ID, Password, Role).
+// Soft-deleted users are excluded.
 func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.UserAuth, error) {
 	u, err := r.baseQuery(ctx).
 		Where(user.EmailEQ(email)).
@@ -181,6 +161,10 @@ func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.Us
 	}, nil
 }
 
+// GetAuthByID returns authentication projection for a user identified by ID.
+//
+// Only minimal authentication fields are selected.
+// Soft-deleted users are excluded.
 func (r *userRepo) GetAuthByID(ctx context.Context, id uint) (*entity.UserAuth, error) {
 	u, err := r.baseQuery(ctx).
 		Where(user.IDEQ(id)).

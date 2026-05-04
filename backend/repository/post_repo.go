@@ -10,13 +10,16 @@ import (
 	"blog-server/ent/user"
 	"blog-server/entity"
 	"blog-server/mapper"
+	"blog-server/pkg/errx"
 
 	"entgo.io/ent/dialect/sql"
 )
 
-// PostRepo defines read and write operations for posts.
+// PostRepo defines persistence operations for the Post aggregate.
 //
-// Implementations are expected to apply visibility constraints consistently across all read methods.
+// All read operations implicitly apply:
+// - published status filter
+// - soft-delete filter (DeletedAt IS NULL)
 type PostRepo interface {
 	GetAllPublished(ctx context.Context) ([]*entity.Post, error)
 	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
@@ -35,7 +38,12 @@ type postRepo struct {
 	ds *datastore.DataStore
 }
 
-// IsOwner implements [PostRepo].
+// NewPostRepo creates a PostRepo instance using the given datastore.
+func NewPostRepo(ds *datastore.DataStore) PostRepo {
+	return &postRepo{ds: ds}
+}
+
+// IsOwner checks whether a user is the author of a given post.
 func (r *postRepo) IsOwner(ctx context.Context, userID uint, postID uint) (bool, error) {
 	count, err := r.ds.Client(ctx).Post.
 		Query().
@@ -51,22 +59,24 @@ func (r *postRepo) IsOwner(ctx context.Context, userID uint, postID uint) (bool,
 	return count > 0, nil
 }
 
-// NewPostRepo returns a PostRepo backed by the provided datastore.
+// Create inserts a new post record.
 //
-// The returned implementation is safe for concurrent use provided the underlying
-// datastore client is concurrency-safe.
-func NewPostRepo(ds *datastore.DataStore) PostRepo {
-	return &postRepo{ds: ds}
-}
-
+// Behavior:
+// - Automatically sets created_at and updated_at timestamps
+// - If status is Published, published_at is set automatically
+// - Optional fields (summary, cover) are only set when provided
 func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, error) {
+	now := time.Now()
+
 	builder := r.ds.Client(ctx).Post.
 		Create().
 		SetTitle(p.Title).
 		SetContent(p.Content).
 		SetReadTimeMinutes(p.ReadTimeMinutes).
 		SetStatus(p.Status).
-		SetUserID(p.UserID)
+		SetUserID(p.UserID).
+		SetCreatedAt(now).
+		SetUpdatedAt(now)
 
 	if p.Summary != nil {
 		builder.SetSummary(*p.Summary)
@@ -76,45 +86,51 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 		builder.SetCover(*p.Cover)
 	}
 
-	now := time.Now()
-	builder.SetCreatedAt(now)
-
 	if p.Status == entity.PostStatusPublish {
 		builder.SetPublishedAt(now)
 	}
 
-	builder.SetUpdatedAt(now)
-
 	ep, err := builder.Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	return mapper.ToPost(ep), nil
 }
 
+// AddCategories attaches categories to a post without removing existing relations.
 func (r *postRepo) AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
 	if len(categoryIDs) == 0 {
 		return nil
 	}
 
-	return r.ds.Client(ctx).Post.
+	err := r.ds.Client(ctx).Post.
 		UpdateOneID(postID).
 		AddCategoryIDs(categoryIDs...).
 		Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
 }
 
+// AddTags attaches tags to a post without removing existing relations.
 func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) error {
 	if len(tagIDs) == 0 {
 		return nil
 	}
 
-	return r.ds.Client(ctx).Post.
+	err := r.ds.Client(ctx).Post.
 		UpdateOneID(postID).
 		AddTagIDs(tagIDs...).
 		Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
 }
 
+// ReplaceCategories replaces all categories of a post (clear then add).
 func (r *postRepo) ReplaceCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
 	builder := r.ds.Client(ctx).Post.
 		UpdateOneID(postID).
@@ -124,9 +140,14 @@ func (r *postRepo) ReplaceCategories(ctx context.Context, postID uint, categoryI
 		builder.AddCategoryIDs(categoryIDs...)
 	}
 
-	return builder.Exec(ctx)
+	err := builder.Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
 }
 
+// ReplaceTags replaces all tags of a post (clear then add).
 func (r *postRepo) ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) error {
 	builder := r.ds.Client(ctx).Post.
 		UpdateOneID(postID).
@@ -136,14 +157,19 @@ func (r *postRepo) ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) 
 		builder.AddTagIDs(tagIDs...)
 	}
 
-	return builder.Exec(ctx)
+	err := builder.Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
 }
 
-// GetAllPublished returns all published, non-deleted posts with selected fields
-// and eagerly loaded relations required for listing views.
+// GetAllPublished returns all published posts for list views.
 //
-// The query avoids loading full entities to reduce I/O overhead. Ordering is by
-// publication time descending. Related author, categories, and tags are preloaded.
+// Optimizations:
+// - Selects only fields required for listing (no content field)
+// - Preloads author, categories, and tags
+// - Ordered by published time descending
 func (r *postRepo) GetAllPublished(ctx context.Context) ([]*entity.Post, error) {
 	ps, err := r.ds.Client(ctx).Post.
 		Query().
@@ -168,25 +194,24 @@ func (r *postRepo) GetAllPublished(ctx context.Context) ([]*entity.Post, error) 
 			post.DeletedAtIsNil(),
 		).
 		Order(
-			post.ByPublishedAt(
-				sql.OrderDesc(),
-			),
+			post.ByPublishedAt(sql.OrderDesc()),
 		).
 		All(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	return mapper.ToPosts(ps), nil
 }
 
-// GetPublishedByID returns a single published, non-deleted post with selected
-// fields and author information.
+// GetPublishedByID returns a single published post by ID.
 //
-// Only a subset of fields is loaded to minimize query cost. If no matching post
-// exists, the underlying query returns an error.
+// Notes:
+// - Includes full content field
+// - Preloads author information
+// - Returns NotFound error if no matching record exists
 func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error) {
-	entPost, err := r.ds.Client(ctx).Post.
+	p, err := r.ds.Client(ctx).Post.
 		Query().
 		Select(
 			post.FieldID,
@@ -210,12 +235,15 @@ func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post,
 		).
 		First(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeNotFound, err)
 	}
 
-	return mapper.ToPost(entPost), nil
+	return mapper.ToPost(p), nil
 }
 
+// GetPublishedSiteMap returns minimal post data for sitemap generation.
+//
+// Only ID and UpdatedAt are selected for lightweight crawling support.
 func (r *postRepo) GetPublishedSiteMap(ctx context.Context) ([]*entity.Post, error) {
 	ps, err := r.ds.Client(ctx).Post.
 		Query().
@@ -229,12 +257,15 @@ func (r *postRepo) GetPublishedSiteMap(ctx context.Context) ([]*entity.Post, err
 		).
 		All(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	return mapper.ToPosts(ps), nil
 }
 
+// GetPublishedMeta returns lightweight post metadata for SEO and previews.
+//
+// Ordered by published time descending.
 func (r *postRepo) GetPublishedMeta(ctx context.Context) ([]*entity.Post, error) {
 	ps, err := r.ds.Client(ctx).Post.
 		Query().
@@ -250,28 +281,25 @@ func (r *postRepo) GetPublishedMeta(ctx context.Context) ([]*entity.Post, error)
 			post.DeletedAtIsNil(),
 		).
 		Order(
-			post.ByPublishedAt(
-				sql.OrderDesc(),
-			),
+			post.ByPublishedAt(sql.OrderDesc()),
 		).
 		All(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	return mapper.ToPosts(ps), nil
 }
 
-// UpdateViewCounts performs a bulk, per-row increment of view counts using a
-// single SQL statement.
+// UpdateViewCounts performs a bulk increment of view counts.
 //
-// Each id is updated with its corresponding delta via a CASE expression, ensuring
-// atomicity at the row level. This avoids multiple round-trips but generates a
-// query proportional to the number of ids, which may impact performance for large
-// batches.
+// Implementation details:
+// - Uses a single SQL UPDATE with CASE expression
+// - Each post ID is updated atomically
+// - Invalid (non-positive) deltas are ignored
+// - Missing IDs are silently skipped by the database
 //
-// Passing an empty map results in a no-op. The method does not validate existence
-// of ids; missing rows are silently ignored by the underlying UPDATE.
+// Note: query complexity grows linearly with batch size.
 func (r *postRepo) UpdateViewCounts(ctx context.Context, updates map[uint]int64) error {
 	for id, delta := range updates {
 		if delta <= 0 {
@@ -313,5 +341,8 @@ func (r *postRepo) UpdateViewCounts(ctx context.Context, updates map[uint]int64)
 			u.Set(post.FieldViewCount, sql.ExprFunc(caseExpr))
 		}).
 		Exec(ctx)
-	return err
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
 }
