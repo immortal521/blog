@@ -37,7 +37,7 @@ type User struct {
 }
 
 type UserAuth struct {
-	UUID     uuid.UUID
+	ID       uint
 	Password string
 	Role     UserRole
 }

@@ -6,7 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"blog-server/authz"
 	"blog-server/cache"
+	"blog-server/contextx"
 	"blog-server/datastore"
 	"blog-server/entity"
 	"blog-server/logger"
@@ -19,7 +21,7 @@ type PostService interface {
 	GetPostsMeta(ctx context.Context) []*entity.Post
 	GetPostByID(ctx context.Context, id uint) (*entity.Post, error)
 	FlushViewCountToDB(ctx context.Context) error
-	CreatePost(ctx context.Context, input *CreatePostInput) (*entity.Post, error)
+	CreatePost(ctx context.Context, user contextx.User, input *CreatePostInput) (*entity.Post, error)
 }
 
 type postService struct {
@@ -27,6 +29,7 @@ type postService struct {
 	rc        cache.CacheClient
 	postRepo  repository.PostRepo
 	datastore *datastore.DataStore
+	authz     *authz.Authorizer
 }
 
 type CreatePostInput struct {
@@ -43,12 +46,16 @@ type CreatePostInput struct {
 	Tags        []uint
 }
 
-func (p *postService) CreatePost(ctx context.Context, input *CreatePostInput) (*entity.Post, error) {
+func (s *postService) CreatePost(ctx context.Context, user contextx.User, input *CreatePostInput) (*entity.Post, error) {
+	if err := s.authz.Authorize(ctx, user.ID, user.Role, authz.ResourcePost, authz.ActionCreate, nil); err != nil {
+		return nil, err
+	}
+
 	var post *entity.Post
 	var err error
 
-	err = p.datastore.WithTx(ctx, func(ctx context.Context) error {
-		post, err = p.postRepo.Create(ctx, &entity.Post{
+	err = s.datastore.WithTx(ctx, func(ctx context.Context) error {
+		post, err = s.postRepo.Create(ctx, &entity.Post{
 			Title:           input.Title,
 			Summary:         input.Summary,
 			Cover:           input.Cover,
@@ -61,11 +68,11 @@ func (p *postService) CreatePost(ctx context.Context, input *CreatePostInput) (*
 			return err
 		}
 
-		if err = p.postRepo.ReplaceTags(ctx, post.ID, input.Tags); err != nil {
+		if err = s.postRepo.ReplaceTags(ctx, post.ID, input.Tags); err != nil {
 			return err
 		}
 
-		if err = p.postRepo.ReplaceCategories(ctx, post.ID, input.CategoryIDs); err != nil {
+		if err = s.postRepo.ReplaceCategories(ctx, post.ID, input.CategoryIDs); err != nil {
 			return err
 		}
 
@@ -78,13 +85,13 @@ func (p *postService) CreatePost(ctx context.Context, input *CreatePostInput) (*
 	return post, nil
 }
 
-func (p *postService) FlushViewCountToDB(ctx context.Context) error {
+func (s *postService) FlushViewCountToDB(ctx context.Context) error {
 	var cursor uint64
 	var allErrors []error
-	p.log.Info("Flushing post view count to DB...")
+	s.log.Info("Flushing post view count to DB...")
 
 	for {
-		keys, next, err := p.rc.Scan(ctx, "blog:post:view_count:*", cursor, 100)
+		keys, next, err := s.rc.Scan(ctx, "blog:post:view_count:*", cursor, 100)
 		if err != nil {
 			return fmt.Errorf("failed to scan Redis keys for post view count %w", err)
 		}
@@ -97,7 +104,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 			continue
 		}
 
-		data, err := p.rc.PopBatch(ctx, keys)
+		data, err := s.rc.PopBatch(ctx, keys)
 		if err != nil {
 			allErrors = append(allErrors, fmt.Errorf("PopBatch failed: %w", err))
 		}
@@ -122,7 +129,7 @@ func (p *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 
 		if len(updates) > 0 {
-			if err := p.postRepo.UpdateViewCounts(ctx, updates); err != nil {
+			if err := s.postRepo.UpdateViewCounts(ctx, updates); err != nil {
 				allErrors = append(allErrors, fmt.Errorf("db update failed: %w", err))
 			}
 		}
@@ -142,46 +149,48 @@ func NewPostService(
 	rc cache.CacheClient,
 	postRepo repository.PostRepo,
 	datastore *datastore.DataStore,
+	authz *authz.Authorizer,
 ) PostService {
 	return &postService{
 		log:       log,
 		rc:        rc,
 		datastore: datastore,
 		postRepo:  postRepo,
+		authz:     authz,
 	}
 }
 
 // GetPosts retrieves all published posts
-func (p *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
-	return p.postRepo.GetAllPublished(ctx)
+func (s *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
+	return s.postRepo.GetAllPublished(ctx)
 }
 
 // GetPostsWithContent retrieves all posts with content
 // WARNING:  The current repo does not support it yet, so reuse it for now.
-func (p *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
-	return p.postRepo.GetAllPublished(ctx)
+func (s *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
+	return s.postRepo.GetAllPublished(ctx)
 }
 
 // GetPostsMeta retrieves metadata
-func (p *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
-	posts, err := p.postRepo.GetAllPublished(ctx)
+func (s *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
+	posts, err := s.postRepo.GetAllPublished(ctx)
 	if err != nil {
-		p.log.Error("get posts meta failed", logger.Err(err))
+		s.log.Error("get posts meta failed", logger.Err(err))
 		return []*entity.Post{}
 	}
 	return posts
 }
 
 // GetPostByID retrieves a single post and async
-func (p *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
-	post, err := p.postRepo.GetPublishedByID(ctx, id)
+func (s *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
+	post, err := s.postRepo.GetPublishedByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	go func(postID uint) {
-		if _, err := p.rc.Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", postID)); err != nil {
-			p.log.Error("incr post view count failed", logger.Err(err))
+		if _, err := s.rc.Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", postID)); err != nil {
+			s.log.Error("incr post view count failed", logger.Err(err))
 		}
 	}(post.ID)
 

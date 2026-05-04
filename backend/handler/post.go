@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"unicode/utf8"
 
+	"blog-server/contextx"
+	"blog-server/middleware"
 	"blog-server/pkg/errx"
 	"blog-server/request"
 	"blog-server/response"
@@ -30,9 +32,9 @@ func NewPostHandler(svc service.PostService) PostHandler {
 	return &postHandler{svc: svc}
 }
 
-func RegisterPostRoute(r fiber.Router, handler PostHandler) {
+func RegisterPostRoute(r fiber.Router, handler PostHandler, am *middleware.AuthMiddleware) {
 	group := r.Group("/posts")
-	group.Post("/", handler.CreatePost)
+	group.Post("/", am.Handler(), handler.CreatePost)
 	group.Get("/", handler.GetPosts)
 	group.Get("/meta", handler.GetPostIds)
 	group.Get("/:id", handler.GetPost)
@@ -41,26 +43,31 @@ func RegisterPostRoute(r fiber.Router, handler PostHandler) {
 func (h *postHandler) CreatePost(c fiber.Ctx) error {
 	req := new(request.CreatePostReq)
 	if err := c.Bind().Body(req); err != nil {
-		return errx.New(errx.CodeInvalidParam, "Failed to parse request body", err)
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	contentLength := utf8.RuneCountInString(req.Content)
 
 	readTime := uint(max(1, (contentLength+199)/200))
 
+	u, ok := contextx.GetUser(c.Context())
+	if !ok {
+		return errx.New(errx.CodeUnauthorized, fmt.Errorf("missing user in context"))
+	}
+
 	input := &service.CreatePostInput{
 		Title:           req.Title,
 		Summary:         req.Summary,
 		Cover:           req.Cover,
 		Content:         req.Content,
-		UserID:          req.UserID,
+		UserID:          u.ID,
 		ReadTimeMinutes: readTime,
 		Status:          req.Status,
 		Tags:            req.Tags,
 		CategoryIDs:     req.CategoryIDs,
 	}
 
-	post, err := h.svc.CreatePost(c.Context(), input)
+	post, err := h.svc.CreatePost(c.Context(), u, input)
 	if err != nil {
 		return err
 	}
@@ -123,7 +130,7 @@ func (h *postHandler) GetPostIds(c fiber.Ctx) error {
 func (h *postHandler) GetPost(c fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return fmt.Errorf("invalid post ID: %w", err)
+		return errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid post id"))
 	}
 
 	post, err := h.svc.GetPostByID(c.Context(), uint(id))
@@ -140,7 +147,6 @@ func (h *postHandler) GetPost(c fiber.Ctx) error {
 		ReadTimeMinutes: post.ReadTimeMinutes,
 		ViewCount:       post.ViewCount,
 		PublishedAt:     post.PublishedAt,
-		// Author:          safeUsername(post),
 	}
 
 	return c.JSON(response.Success(res))

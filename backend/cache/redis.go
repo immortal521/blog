@@ -72,7 +72,7 @@ func (c *client) Get(ctx context.Context, key string) (string, error) {
 		return result, nil
 	}
 	if err == redis.Nil {
-		return "", errx.New(errx.CodeCacheMiss, "cache not found", err)
+		return "", errx.New(errx.CodeNotFound, err)
 	}
 	return "", err
 }

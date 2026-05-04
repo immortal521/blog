@@ -41,7 +41,7 @@ func (h *modelHandler) CreateSummarySession(c fiber.Ctx) error {
 		Content string `json:"content" validate:"required"`
 	})
 	if err := c.Bind().Body(req); err != nil {
-		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	sessionID := uuid.New().String()
@@ -80,7 +80,7 @@ func (h *modelHandler) stream(c fiber.Ctx, sessionID string) error {
 		// case "translation":
 		// 	session.TextCh, session.ErrCh = h.svn.GenerateTranslation(c.UserContext(), session.Content)
 		default:
-			return errx.New(errx.CodeInvalidParam, "unsupported task type", nil)
+			return errx.New(errx.CodeInvalidParam, fmt.Errorf("unsupported task type"))
 		}
 		h.sessions.Store(sessionID, session)
 	}

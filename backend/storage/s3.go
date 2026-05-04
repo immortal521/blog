@@ -33,7 +33,7 @@ func (s *S3Storage) Copy(ctx context.Context, bucket string, srcKey string, dstK
 		CopySource: &copySource,
 	})
 	if err != nil {
-		return errx.New(errx.CodeStorageError, "storage error", err)
+		return errx.New(errx.CodeInternalError, err)
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func (s *S3Storage) Exists(ctx context.Context, bucket string, key string) (bool
 		return false, nil
 	}
 
-	return false, errx.New(errx.CodeStorageError, "storage error", err)
+	return false, errx.New(errx.CodeInternalError, err)
 }
 
 func (s *S3Storage) Download(ctx context.Context, bucket string, key string) (io.ReadCloser, string, error) {

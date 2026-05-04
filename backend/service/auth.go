@@ -46,7 +46,7 @@ type AuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
 	Register(ctx context.Context, email, password, captcha string) (string, string, error)
 	Login(ctx context.Context, email, password string) (string, string, error)
-	HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error)
+	HasRole(ctx context.Context, id uint, roles ...entity.UserRole) (bool, error)
 	RefreshAccessToken(context.Context, string) (string, string, error)
 }
 
@@ -75,12 +75,12 @@ func (s *authService) Register(ctx context.Context, email, password, captcha str
 	// Verify captcha
 	cachedCaptcha, err := s.rc.Get(ctx, fmt.Sprintf("Register:%s", email))
 	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(captcha)) {
-		return "", "", errx.New(errx.CodeInvalidParam, "Invalid captcha", nil)
+		return "", "", errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid captcha: %s", email))
 	}
 
 	hashPassword, err := utils.HashPassword(password)
 	if err != nil {
-		return "", "", errx.New(errx.CodeInternalError, "Hash password failed", err)
+		return "", "", errx.New(errx.CodeInternalError, err)
 	}
 
 	user := &entity.User{
@@ -92,23 +92,23 @@ func (s *authService) Register(ctx context.Context, email, password, captcha str
 	err = s.ds.WithTx(ctx, func(ctx context.Context) error {
 		_, err = s.userRepo.Create(ctx, user, hashPassword)
 		if err != nil {
-			return errx.New(errx.CodeDatabaseError, "Create user failed", err)
+			return err
 		}
 		return nil
 	})
 	if err != nil {
-		return "", "", errx.New(errx.CodeInternalError, "Register transaction failed", err)
+		return "", "", errx.New(errx.CodeInternalError, err)
 	}
 
 	j := jwt.New(s.cfg.JWT)
 
-	accessToken, refreshToken, err := j.GenerateAllTokens(user.UUID.String())
+	accessToken, refreshToken, err := j.GenerateAllTokens(user.ID, user.Role)
 	if err != nil {
 		return "", "", err
 	}
 
-	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
-		return "", "", errx.New(errx.CodeCacheError, "Cache refresh token failed", err)
+	if err := s.cacheRefreshToken(ctx, user.ID, refreshToken); err != nil {
+		return "", "", errx.New(errx.CodeInternalError, err)
 	}
 
 	return accessToken, refreshToken, nil
@@ -121,17 +121,17 @@ func (s *authService) Login(ctx context.Context, email, password string) (string
 		return "", "", err
 	}
 	if !utils.VerifyPassword(password, user.Password) {
-		return "", "", errx.New(errx.CodeInvalidParam, "Invalid password", nil)
+		return "", "", errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid password: %s", email))
 	}
 
 	j := jwt.New(s.cfg.JWT)
 
-	accessToken, refreshToken, err := j.GenerateAllTokens(user.UUID.String())
+	accessToken, refreshToken, err := j.GenerateAllTokens(user.ID, user.Role)
 	if err != nil {
 		return "", "", err
 	}
 
-	if err := s.cacheRefreshToken(ctx, user.UUID.String(), refreshToken); err != nil {
+	if err := s.cacheRefreshToken(ctx, user.ID, refreshToken); err != nil {
 		return "", "", err
 	}
 
@@ -145,7 +145,7 @@ func (s *authService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 		return err
 	}
 	if exists {
-		return errx.New(errx.CodeConflict, fmt.Sprintf("Sent captcha failed to %s: user exists", to), nil)
+		return errx.New(errx.CodeConflict, fmt.Errorf("sent captcha failed to %s: user exists", to))
 	}
 
 	if captchaType == "" {
@@ -161,7 +161,7 @@ func (s *authService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	data.Captcha = captcha
 
 	if err := s.rc.Set(ctx, fmt.Sprintf("%s:%s", captchaType, to), captcha, 5*time.Minute); err != nil {
-		return errx.New(errx.CodeCacheError, "Set captcha in Redis failed", err)
+		return errx.New(errx.CodeInternalError, err)
 	}
 
 	templateName := "captcha.html"
@@ -180,31 +180,32 @@ func (s *authService) RefreshAccessToken(ctx context.Context, token string) (str
 		return "", "", err
 	}
 
-	uuid := claims.UserID
+	userID := claims.ID
+	role := claims.Role
 
-	existed, err := s.userRepo.ExistsByUUID(ctx, uuid)
+	existed, err := s.userRepo.ExistsByID(ctx, userID)
 	if err != nil {
 		return "", "", err
 	}
 	if !existed {
-		return "", "", errx.New(errx.CodeUserNotFound, "User not found", nil)
+		return "", "", errx.New(errx.CodeNotFound, fmt.Errorf("user %d not found", userID))
 	}
 
-	cacheRefreshToken, err := s.rc.Get(ctx, fmt.Sprintf("RefreshToken:%s", uuid))
+	cacheRefreshToken, err := s.rc.Get(ctx, fmt.Sprintf("RefreshToken:%d", userID))
 	if err != nil {
-		return "", "", errx.New(errx.CodeCacheError, "Get refresh token from Redis failed", err)
+		return "", "", errx.New(errx.CodeInternalError, err)
 	}
 
 	if !strings.EqualFold(token, cacheRefreshToken) {
-		return "", "", errx.New(errx.CodeUnauthorized, "Invalid token", nil)
+		return "", "", errx.New(errx.CodeUnauthorized, fmt.Errorf("invalid refresh token"))
 	}
 
-	accessToken, refreshToken, err := j.GenerateAllTokens(uuid)
+	accessToken, refreshToken, err := j.GenerateAllTokens(userID, role)
 	if err != nil {
 		return "", "", err
 	}
 
-	if err := s.cacheRefreshToken(ctx, uuid, refreshToken); err != nil {
+	if err := s.cacheRefreshToken(ctx, userID, refreshToken); err != nil {
 		return "", "", err
 	}
 
@@ -212,14 +213,14 @@ func (s *authService) RefreshAccessToken(ctx context.Context, token string) (str
 }
 
 // HasRole checks if a user has any of the specified roles
-func (s *authService) HasRole(ctx context.Context, uuid string, roles ...entity.UserRole) (bool, error) {
-	user, err := s.userRepo.GetAuthByUUID(ctx, uuid)
+func (s *authService) HasRole(ctx context.Context, id uint, roles ...entity.UserRole) (bool, error) {
+	user, err := s.userRepo.GetAuthByID(ctx, id)
 	if err != nil {
 		return false, err
 	}
 
 	if user == nil {
-		return false, errx.New(errx.CodeUserNotFound, "User not found", nil)
+		return false, errx.New(errx.CodeNotFound, fmt.Errorf("user %d not found", id))
 	}
 
 	if slices.Contains(roles, user.Role) {
@@ -229,13 +230,12 @@ func (s *authService) HasRole(ctx context.Context, uuid string, roles ...entity.
 }
 
 // cacheRefreshToken stores the refresh token in Redis
-func (s *authService) cacheRefreshToken(ctx context.Context, userUUID string, refreshToken string) error {
-	key := fmt.Sprintf("RefreshToken:%s", userUUID)
+func (s *authService) cacheRefreshToken(ctx context.Context, id uint, refreshToken string) error {
+	key := fmt.Sprintf("RefreshToken:%d", id)
 	if err := s.rc.Set(ctx, key, refreshToken, s.cfg.JWT.RefreshExpiration); err != nil {
 		return errx.New(
-			errx.CodeCacheError,
-			fmt.Sprintf("Failed to cache refresh token for user %s", userUUID),
-			err,
+			errx.CodeInternalError,
+			fmt.Errorf("failed to cache refresh token for user %d", id),
 		)
 	}
 	return nil
@@ -247,8 +247,7 @@ func getCaptchaEmailMeta(t CaptchaType) (*AuthMailData, error) {
 	if !ok {
 		return nil, errx.New(
 			errx.CodeInvalidParam,
-			fmt.Sprintf("Unknown captcha type: %s", t),
-			nil,
+			fmt.Errorf("unknown captcha type: %s", t),
 		)
 	}
 	copyData := *data

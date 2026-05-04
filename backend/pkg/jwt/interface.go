@@ -1,9 +1,11 @@
 package jwt
 
+import "blog-server/entity"
+
 type Jwt interface {
-	GenerateAccessToken(userID string) (string, error)
-	GenerateRefreshToken(userID string) (string, error)
-	GenerateAllTokens(userID string) (accessToken, refreshToken string, err error)
+	GenerateAccessToken(userID uint, role entity.UserRole) (string, error)
+	GenerateRefreshToken(userID uint, role entity.UserRole) (string, error)
+	GenerateAllTokens(userID uint, role entity.UserRole) (string, string, error)
 
 	Validate(token string) (bool, error)
 	Parse(token string) (*Claims, error)

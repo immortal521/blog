@@ -17,10 +17,27 @@ type LinkRepo interface {
 	GetAllEnabled(ctx context.Context) ([]*entity.Link, error)
 	Create(ctx context.Context, link *entity.Link) (*entity.Link, error)
 	UpdateStatusBatch(ctx context.Context, updates map[uint]entity.LinkStatus) error
+	IsOwner(ctx context.Context, userID uint, linkID uint) (bool, error)
 }
 
 type linkRepo struct {
 	ds *datastore.DataStore
+}
+
+// IsOwner implements [LinkRepo].
+func (r *linkRepo) IsOwner(ctx context.Context, userID uint, linkID uint) (bool, error) {
+	count, err := r.ds.Client(ctx).Link.
+		Query().
+		Where(
+			link.IDEQ(linkID),
+			link.IDEQ(userID),
+		).
+		Count(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 func NewLinkRepo(ds *datastore.DataStore) LinkRepo {

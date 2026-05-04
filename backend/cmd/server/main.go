@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"blog-server/authz"
 	"blog-server/cache"
 	"blog-server/config"
 	"blog-server/datastore"
@@ -32,6 +33,7 @@ func main() {
 			cache.Module(),
 			datastore.Module(),
 			repository.Module(),
+			authz.Module(),
 			service.Module(),
 			handler.Module(),
 			scheduler.Module(),
@@ -39,7 +41,6 @@ func main() {
 		fx.Provide(
 			validatorx.NewValidator,
 			middleware.NewAuthMiddleware,
-			middleware.NewRoleMiddleware,
 			providerFiberApp,
 		),
 		fx.Invoke(

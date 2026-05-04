@@ -1,8 +1,13 @@
 package jwt
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"blog-server/entity"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type Claims struct {
-	UserID string `json:"userID"`
+	ID   uint            `json:"id"`
+	Role entity.UserRole `json:"role"`
 	jwt.RegisteredClaims
 }

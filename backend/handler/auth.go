@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"time"
 
 	"blog-server/config"
@@ -46,11 +47,11 @@ func (h *authHandler) Register(c fiber.Ctx) error {
 	req := new(request.RegisterReq)
 
 	if err := c.Bind().Body(req); err != nil {
-		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errx.New(errx.CodeValidationFailed, "Validation failed", err)
+		return errx.New(errx.CodeValidationFailed, err)
 	}
 
 	accessToken, refreshToken, err := h.svc.Register(
@@ -90,11 +91,11 @@ func (h *authHandler) Login(c fiber.Ctx) error {
 	req := new(request.LoginReq)
 
 	if err := c.Bind().Body(req); err != nil {
-		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errx.New(errx.CodeValidationFailed, "Validation failed", err)
+		return errx.New(errx.CodeValidationFailed, err)
 	}
 
 	accessToken, refreshToken, err := h.svc.Login(c.Context(), req.Email, req.Password)
@@ -115,7 +116,7 @@ func (h *authHandler) Login(c fiber.Ctx) error {
 func (h *authHandler) Refresh(c fiber.Ctx) error {
 	token := c.Cookies("refreshToken")
 	if token == "" {
-		return errx.New(errx.CodeUnauthorized, "Missing refresh token", nil)
+		return errx.New(errx.CodeUnauthorized, fmt.Errorf("Missing refresh token"))
 	}
 	accessToken, refreshToken, err := h.svc.RefreshAccessToken(c.Context(), token)
 	if err != nil {
@@ -135,11 +136,11 @@ func (h *authHandler) SendCaptcha(c fiber.Ctx) error {
 	req := new(request.GetCaptchaReq)
 
 	if err := c.Bind().Body(req); err != nil {
-		return errx.New(errx.CodeInvalidParam, "Invalid request body", err)
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	if err := h.validate.Struct(req); err != nil {
-		return errx.New(errx.CodeValidationFailed, "Validation failed", err)
+		return errx.New(errx.CodeValidationFailed, err)
 	}
 
 	if req.Type == "" {

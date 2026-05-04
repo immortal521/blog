@@ -28,7 +28,7 @@ func NewEmailService() (IMailService, error) {
 
 	t, err := template.ParseFS(templates.FS, "*.html")
 	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, "failed to parse email templates", err)
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	return &mailService{
@@ -41,7 +41,7 @@ func NewEmailService() (IMailService, error) {
 func (s *mailService) Send(to, subject, templateName string, data any) error {
 	var body bytes.Buffer
 	if err := s.template.ExecuteTemplate(&body, templateName, data); err != nil {
-		return errx.New(errx.CodeInternalError, fmt.Sprintf("Failed to execute email template %s", templateName), err)
+		return errx.New(errx.CodeInternalError, fmt.Errorf("Failed to execute email template %s: %w", templateName, err))
 	}
 
 	m := gomail.NewMessage()
@@ -51,7 +51,7 @@ func (s *mailService) Send(to, subject, templateName string, data any) error {
 	m.SetBody("text/html", body.String())
 
 	if err := s.dialer.DialAndSend(m); err != nil {
-		return errx.New(errx.CodeExternalAPIError, fmt.Sprintf("Failed to send email to %s", to), err)
+		return errx.New(errx.CodeExternalError, fmt.Errorf("Failed to send email to %s: %w", to, err))
 	}
 
 	return nil

@@ -1,18 +1,40 @@
 package handler
 
 import (
+	"blog-server/middleware"
+
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/fx"
 )
 
-func RegisterRoutes(app *fiber.App, ph PostHandler, rh RssHandler, ah AuthHandler, lh LinkHandler, mh ModelHandler) {
+type Handlers struct {
+	fx.In
+
+	Post  PostHandler
+	Rss   RssHandler
+	Auth  AuthHandler
+	Link  LinkHandler
+	Model ModelHandler
+}
+
+type Middlewares struct {
+	fx.In
+
+	Auth *middleware.AuthMiddleware
+}
+
+func RegisterRoutes(
+	app *fiber.App,
+	h Handlers,
+	m Middlewares,
+) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
-	RegisterPostRoute(v1, ph)
-	RegisterRssRoute(v1, rh)
-	RegisterAuthRoutes(v1, ah)
-	RegisterLinkRoutes(v1, lh)
-	RegisterModelRoutes(v1, mh)
+	RegisterPostRoute(v1, h.Post, m.Auth)
+	RegisterRssRoute(v1, h.Rss)
+	RegisterAuthRoutes(v1, h.Auth)
+	RegisterLinkRoutes(v1, h.Link)
+	RegisterModelRoutes(v1, h.Model)
 }
 
 func Module() fx.Option {

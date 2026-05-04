@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"blog-server/pkg/errx"
 	"blog-server/pkg/validatorx"
 	"blog-server/request"
@@ -58,11 +60,11 @@ func (h *linkHandler) GetLinks(c fiber.Ctx) error {
 func (h *linkHandler) ApplyForALinks(c fiber.Ctx) error {
 	req := new(request.CreateLinkReq)
 	if err := c.Bind().Body(req); err != nil {
-		return errx.New(errx.CodeInvalidParam, "Failed to parse request body", err)
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	if (len(req.URL) == 0) || (len(req.Name) == 0) {
-		return errx.New(errx.CodeInvalidParam, "URL or name is empty", nil)
+		return errx.New(errx.CodeInvalidParam, fmt.Errorf("URL or name cannot be empty"))
 	}
 
 	input := &service.CreateLinkInput{

@@ -48,7 +48,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		req, err := http.NewRequestWithContext(ctx, "POST",
 			"https://models.inference.ai.azure.com/chat/completions", bytes.NewBuffer(body))
 		if err != nil {
-			errCh <- errx.New(errx.CodeInternalError, "llm request error", err)
+			errCh <- errx.New(errx.CodeExternalError, fmt.Errorf("llm request error: %w", err))
 			return
 		}
 		req.Header.Set("Authorization", "Bearer "+s.cfg.LLM.APIKey)
@@ -57,11 +57,11 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		client := &http.Client{Timeout: 0}
 		resp, err := client.Do(req)
 		if err != nil {
-			errCh <- errx.New(errx.CodeInternalError, "llm request error", err)
+			errCh <- errx.New(errx.CodeExternalError, fmt.Errorf("llm request error: %w", err))
 			return
 		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			err = errx.New(errx.CodeInternalError, "llm request error", fmt.Errorf("status code: %d", resp.StatusCode))
+			err = errx.New(errx.CodeExternalError, fmt.Errorf("status code: %d", resp.StatusCode))
 			errCh <- err
 			s.log.Error(fmt.Sprintf("[GenerateSummary] llm request error: %v", err))
 			return

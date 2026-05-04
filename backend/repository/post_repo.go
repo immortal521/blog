@@ -28,10 +28,27 @@ type PostRepo interface {
 	ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) error
 	AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error
 	ReplaceCategories(ctx context.Context, postID uint, categoryIDs []uint) error
+	IsOwner(ctx context.Context, userID uint, postID uint) (bool, error)
 }
 
 type postRepo struct {
 	ds *datastore.DataStore
+}
+
+// IsOwner implements [PostRepo].
+func (r *postRepo) IsOwner(ctx context.Context, userID uint, postID uint) (bool, error) {
+	count, err := r.ds.Client(ctx).Post.
+		Query().
+		Where(
+			post.IDEQ(postID),
+			post.UserIDEQ(userID),
+		).
+		Count(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 // NewPostRepo returns a PostRepo backed by the provided datastore.

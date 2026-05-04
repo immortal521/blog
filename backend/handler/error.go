@@ -14,32 +14,25 @@ func ErrorHandler(log logger.Logger, cfg *config.Config) fiber.ErrorHandler {
 		appErr := errx.ToAppError(err)
 		httpCode := errx.MapToHTTPStatus(appErr.Code)
 
-		msg := appErr.Msg
-		if httpCode == 500 {
-			msg = "Internal Server Error"
-		}
-
 		reqID := c.Get("X-Request-ID")
 
-		errLogger := log.With(
+		logCtx := log.With(
 			logger.String("request_id", reqID),
 			logger.String("method", c.Method()),
-			logger.String("remote_ip", c.IP()),
 			logger.String("path", c.Path()),
-			logger.String("original_url", c.OriginalURL()),
 		)
 
 		if cfg.App.Environment == config.EnvDev {
-			errLogger.Error(appErr.FormatStack())
+			logCtx.Error(appErr.Error() + "\n" + appErr.StackString())
 		} else {
-			errLogger.Error(msg, logger.Err(err))
+			logCtx.Error("request failed", logger.Err(err))
 		}
 
-		writeErr := c.Status(httpCode).JSON(response.Error(appErr.Code, msg))
-		if writeErr != nil {
-			return c.Status(httpCode).SendString(msg)
-		}
+		publicMsg := errx.MessageForCode(appErr.Code)
 
-		return nil
+		return c.Status(httpCode).JSON(response.Error(
+			appErr.Code,
+			publicMsg,
+		))
 	}
 }

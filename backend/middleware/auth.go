@@ -1,69 +1,61 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 
+	"blog-server/authz"
 	"blog-server/config"
-	"blog-server/entity"
+	"blog-server/contextx"
 	"blog-server/pkg/errx"
 	"blog-server/pkg/jwt"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/google/uuid"
-)
-
-const (
-	// ContextUserIDKey is the key used to store user ID in Fiber context
-	ContextUserIDKey = "user_id"
 )
 
 // AuthMiddleware handles JWT authentication for protected routes
 type AuthMiddleware struct {
-	j jwt.Jwt
+	jwt jwt.Jwt
 }
 
 // NewAuthMiddleware creates a new auth middleware instance
 func NewAuthMiddleware(cfg *config.Config) *AuthMiddleware {
 	return &AuthMiddleware{
-		j: jwt.New(cfg.JWT),
+		jwt: jwt.New(cfg.JWT),
 	}
 }
 
 // Handler returns a Fiber handler that validates JWT tokens
 // Optional roles can be specified for role-based access control
-func (a *AuthMiddleware) Handler(roles ...entity.UserRole) fiber.Handler {
+func (m *AuthMiddleware) Handler() fiber.Handler {
 	return func(c fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return errx.New(errx.CodeUnauthorized, "missing authorization header", nil)
-		}
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			return errx.New(errx.CodeUnauthorized, "invalid authorization header", nil)
-		}
-		token := parts[1]
-		if token == "" {
-			return errx.New(errx.CodeUnauthorized, "empty token", nil)
+			return errx.New(errx.CodeUnauthorized, fmt.Errorf("missing authorization header"))
 		}
 
-		claims, err := a.j.Parse(token)
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+			return errx.New(errx.CodeUnauthorized, fmt.Errorf("invalid authorization header"))
+		}
+
+		tokenStr := parts[1]
+		if tokenStr == "" {
+			return errx.New(errx.CodeUnauthorized, fmt.Errorf("empty token"))
+		}
+
+		claims, err := m.jwt.Parse(tokenStr)
 		if err != nil {
 			return err
 		}
 
-		if _, err := uuid.Parse(claims.UserID); err != nil {
-			return errx.New(errx.CodeUnauthorized, "invalid user id in token", nil)
+		user := contextx.User{
+			ID:   claims.ID,
+			Role: authz.FromEntityRole(claims.Role),
 		}
 
-		c.Locals(ContextUserIDKey, claims.UserID)
+		c.SetContext(contextx.SetUser(c.Context(), user))
 
 		return c.Next()
 	}
-}
-
-// GetUserUUID retrieves the user UUID from the Fiber context
-func GetUserUUID(c fiber.Ctx) (string, bool) {
-	value := c.Locals(ContextUserIDKey)
-	uuid, ok := value.(string)
-	return uuid, ok
 }
