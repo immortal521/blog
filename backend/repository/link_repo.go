@@ -8,10 +8,15 @@ import (
 	"blog-server/ent/link"
 	"blog-server/entity"
 	"blog-server/mapper"
+	"blog-server/pkg/errx"
 
 	"entgo.io/ent/dialect/sql"
 )
 
+// LinkRepo defines persistence operations for the Link aggregate.
+//
+// All read operations implicitly apply:
+// - soft-delete filter (DeletedAt IS NULL)
 type LinkRepo interface {
 	GetAll(ctx context.Context) ([]*entity.Link, error)
 	GetAllEnabled(ctx context.Context) ([]*entity.Link, error)
@@ -24,7 +29,12 @@ type linkRepo struct {
 	ds *datastore.DataStore
 }
 
-// IsOwner implements [LinkRepo].
+// NewLinkRepo creates a LinkRepo instance backed by datastore.
+func NewLinkRepo(ds *datastore.DataStore) LinkRepo {
+	return &linkRepo{ds: ds}
+}
+
+// IsOwner checks whether a user owns the specified link.
 func (r *linkRepo) IsOwner(ctx context.Context, userID uint, linkID uint) (bool, error) {
 	count, err := r.ds.Client(ctx).Link.
 		Query().
@@ -34,16 +44,13 @@ func (r *linkRepo) IsOwner(ctx context.Context, userID uint, linkID uint) (bool,
 		).
 		Count(ctx)
 	if err != nil {
-		return false, err
+		return false, errx.New(errx.CodeInternalError, err)
 	}
 
 	return count > 0, nil
 }
 
-func NewLinkRepo(ds *datastore.DataStore) LinkRepo {
-	return &linkRepo{ds: ds}
-}
-
+// GetAll returns all non-deleted links ordered by ID descending.
 func (r *linkRepo) GetAll(ctx context.Context) ([]*entity.Link, error) {
 	links, err := r.ds.Client(ctx).Link.
 		Query().
@@ -51,17 +58,17 @@ func (r *linkRepo) GetAll(ctx context.Context) ([]*entity.Link, error) {
 			link.DeletedAtIsNil(),
 		).
 		Order(
-			link.ByID(
-				sql.OrderDesc(),
-			),
+			link.ByID(sql.OrderDesc()),
+			link.BySortOrder(sql.OrderAsc()),
 		).
 		All(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 	return mapper.ToLinks(links), nil
 }
 
+// GetAllEnabled returns all enabled and non-deleted links ordered by ID descending.
 func (r *linkRepo) GetAllEnabled(ctx context.Context) ([]*entity.Link, error) {
 	links, err := r.ds.Client(ctx).Link.
 		Query().
@@ -70,17 +77,19 @@ func (r *linkRepo) GetAllEnabled(ctx context.Context) ([]*entity.Link, error) {
 			link.DeletedAtIsNil(),
 		).
 		Order(
-			link.ByID(
-				sql.OrderDesc(),
-			),
+			link.ByID(sql.OrderDesc()),
+			link.BySortOrder(sql.OrderAsc()),
 		).
 		All(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 	return mapper.ToLinks(links), nil
 }
 
+// Create inserts a new link record.
+//
+// Optional fields (description, avatar) are only persisted if non-empty after trimming.
 func (r *linkRepo) Create(ctx context.Context, l *entity.Link) (*entity.Link, error) {
 	c := r.ds.Client(ctx).Link.
 		Create().
@@ -94,14 +103,20 @@ func (r *linkRepo) Create(ctx context.Context, l *entity.Link) (*entity.Link, er
 		c.SetAvatar(*l.Avatar)
 	}
 
-	link, err := c.Save(ctx)
+	created, err := c.Save(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
-	return mapper.ToLink(link), nil
+	return mapper.ToLink(created), nil
 }
 
+// UpdateStatusBatch performs a bulk update of link status values.
+//
+// Implementation details:
+// - Uses a single SQL UPDATE with CASE expression
+// - Each ID is mapped to its corresponding status value
+// - Empty input results in a no-op
 func (r *linkRepo) UpdateStatusBatch(ctx context.Context, updates map[uint]entity.LinkStatus) error {
 	if len(updates) == 0 {
 		return nil
@@ -128,6 +143,7 @@ func (r *linkRepo) UpdateStatusBatch(ctx context.Context, updates map[uint]entit
 					b.Arg(updates[id])
 					b.WriteString(" ")
 				}
+
 				b.WriteString("ELSE ")
 				b.Ident(link.FieldStatus)
 				b.WriteString(" END")
@@ -135,6 +151,9 @@ func (r *linkRepo) UpdateStatusBatch(ctx context.Context, updates map[uint]entit
 			u.Set(link.FieldStatus, sql.ExprFunc(caseExpr))
 		}).
 		Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
 
-	return err
+	return nil
 }
