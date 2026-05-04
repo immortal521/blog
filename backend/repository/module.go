@@ -3,17 +3,10 @@ package repository
 
 import "go.uber.org/fx"
 
-// Module returns an fx.Option that registers repository constructors within
-// the "repository" module scope.
+// Package repository wires repository-layer dependencies using Uber Fx.
 //
-// The returned option is intended to be composed into a larger fx.App. It groups
-// repository providers under a named module to improve graph organization and
-// debugging visibility.
-//
-// Only explicitly listed constructors are registered; omitted providers are not
-// part of the dependency graph.
-//
-// This function is stateless and safe for concurrent use.
+// This module groups all repository providers under a single Fx module scope
+// to improve dependency graph structure and debugging clarity.
 func Module() fx.Option {
 	return fx.Module(
 		"repository",
