@@ -96,12 +96,16 @@ func (r *userRepo) Create(ctx context.Context, u *entity.User, hashPassword stri
 // Returns (nil, nil) if no active (non-soft-deleted) user exists with the given email.
 // Errors unrelated to absence are returned as-is.
 func (r *userRepo) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
-	u, err := r.getOne(ctx, func(q *ent.UserQuery) {
-		q.Where(user.EmailEQ(email))
-	})
+	u, err := r.baseQuery(ctx).
+		Where(user.EmailEQ(email)).
+		Only(ctx)
 	if err != nil {
-		return nil, err
+		if ent.IsNotFound(err) {
+			return nil, errx.New(errx.CodeNotFound, err)
+		}
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
+
 	return mapper.ToUser(u), nil
 }
 
@@ -109,32 +113,44 @@ func (r *userRepo) GetByEmail(ctx context.Context, email string) (*entity.User, 
 //
 // Returns false with a non-nil error if the query fails.
 func (r *userRepo) ExistsByID(ctx context.Context, id uint) (bool, error) {
-	return r.exists(ctx, func(q *ent.UserQuery) {
-		q.Where(user.IDEQ(id))
-	})
+	exists, err := r.baseQuery(ctx).
+		Where(user.IDEQ(id)).
+		Exist(ctx)
+	if err != nil {
+		return false, errx.New(errx.CodeInternalError, err)
+	}
+	return exists, nil
 }
 
 // ExistsByUUID reports whether a non-soft-deleted user exists with the given UUID.
 //
 // Returns false with a non-nil error if the query fails.
 func (r *userRepo) ExistsByUUID(ctx context.Context, uuidStr string) (bool, error) {
-	uuid, err := uuid.Parse(uuidStr)
+	uid, err := uuid.Parse(uuidStr)
 	if err != nil {
 		return false, errx.New(errx.CodeInternalError, err)
 	}
 
-	return r.exists(ctx, func(q *ent.UserQuery) {
-		q.Where(user.UUIDEQ(uuid))
-	})
+	exists, err := r.baseQuery(ctx).
+		Where(user.UUIDEQ(uid)).
+		Exist(ctx)
+	if err != nil {
+		return false, errx.New(errx.CodeInternalError, err)
+	}
+	return exists, nil
 }
 
 // ExistsByEmail reports whether a non-soft-deleted user exists with the given email.
 //
 // Returns false with a non-nil error if the query fails.
 func (r *userRepo) ExistsByEmail(ctx context.Context, email string) (bool, error) {
-	return r.exists(ctx, func(q *ent.UserQuery) {
-		q.Where(user.EmailEQ(email))
-	})
+	exists, err := r.baseQuery(ctx).
+		Where(user.EmailEQ(email)).
+		Exist(ctx)
+	if err != nil {
+		return false, errx.New(errx.CodeInternalError, err)
+	}
+	return exists, nil
 }
 
 // GetAuthByEmail retrieves authentication fields for a user identified by email.
@@ -143,18 +159,21 @@ func (r *userRepo) ExistsByEmail(ctx context.Context, email string) (bool, error
 // Returns (nil, nil) if no active (non-soft-deleted) user exists with the given email.
 // Errors unrelated to absence are returned as-is.
 func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.UserAuth, error) {
-	u, err := r.getOne(ctx, func(q *ent.UserQuery) {
-		q.Where(
-			user.EmailEQ(email),
-		).Select(
+	u, err := r.baseQuery(ctx).
+		Where(user.EmailEQ(email)).
+		Select(
 			user.FieldID,
 			user.FieldPassword,
 			user.FieldRole,
-		)
-	})
+		).
+		Only(ctx)
 	if err != nil {
-		return nil, err
+		if ent.IsNotFound(err) {
+			return nil, errx.New(errx.CodeNotFound, err)
+		}
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
+
 	return &entity.UserAuth{
 		ID:       u.ID,
 		Password: u.Password,
@@ -163,18 +182,21 @@ func (r *userRepo) GetAuthByEmail(ctx context.Context, email string) (*entity.Us
 }
 
 func (r *userRepo) GetAuthByID(ctx context.Context, id uint) (*entity.UserAuth, error) {
-	u, err := r.getOne(ctx, func(q *ent.UserQuery) {
-		q.Where(
-			user.IDEQ(id),
-		).Select(
+	u, err := r.baseQuery(ctx).
+		Where(user.IDEQ(id)).
+		Select(
 			user.FieldID,
 			user.FieldPassword,
 			user.FieldRole,
-		)
-	})
+		).
+		Only(ctx)
 	if err != nil {
-		return nil, err
+		if ent.IsNotFound(err) {
+			return nil, errx.New(errx.CodeNotFound, err)
+		}
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
+
 	return &entity.UserAuth{
 		ID:       u.ID,
 		Password: u.Password,
