@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"blog-server/datastore"
 	"blog-server/ent"
@@ -57,6 +58,15 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 	if p.Cover != nil {
 		builder.SetCover(*p.Cover)
 	}
+
+	now := time.Now()
+	builder.SetCreatedAt(now)
+
+	if p.Status == entity.PostStatusPublish {
+		builder.SetPublishedAt(now)
+	}
+
+	builder.SetUpdatedAt(now)
 
 	ep, err := builder.Save(ctx)
 	if err != nil {

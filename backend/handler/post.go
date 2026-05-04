@@ -74,6 +74,7 @@ func (h *postHandler) CreatePost(c fiber.Ctx) error {
 		ReadTimeMinutes: post.ReadTimeMinutes,
 		ViewCount:       post.ViewCount,
 		PublishedAt:     post.PublishedAt,
+		UpdatedAt:       post.UpdatedAt,
 	}
 
 	return c.JSON(response.Success(res))
