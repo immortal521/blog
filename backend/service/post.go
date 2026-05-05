@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"blog-server/authz"
 	"blog-server/cache"
@@ -33,12 +34,11 @@ type postService struct {
 }
 
 type CreatePostInput struct {
-	Title           string
-	Summary         *string
-	Content         string
-	Cover           *string
-	ReadTimeMinutes uint
-	Status          entity.PostStatus
+	Title   string
+	Summary *string
+	Content string
+	Cover   *string
+	Status  entity.PostStatus
 
 	UserID uint
 
@@ -50,6 +50,9 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 	if err := s.authz.Authorize(ctx, user.ID, user.Role, authz.ResourcePost, authz.ActionCreate, nil); err != nil {
 		return nil, err
 	}
+	contentLength := utf8.RuneCountInString(input.Content)
+
+	readTime := uint(max(1, (contentLength+199)/200))
 
 	var post *entity.Post
 	var err error
@@ -60,8 +63,8 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 			Summary:         input.Summary,
 			Cover:           input.Cover,
 			Content:         input.Content,
+			ReadTimeMinutes: readTime,
 			UserID:          input.UserID,
-			ReadTimeMinutes: input.ReadTimeMinutes,
 			Status:          input.Status,
 		})
 		if err != nil {

@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"strconv"
-	"unicode/utf8"
 
 	"blog-server/contextx"
 	"blog-server/middleware"
@@ -46,25 +45,20 @@ func (h *postHandler) CreatePost(c fiber.Ctx) error {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
-	contentLength := utf8.RuneCountInString(req.Content)
-
-	readTime := uint(max(1, (contentLength+199)/200))
-
 	u, ok := contextx.GetUser(c.Context())
 	if !ok {
 		return errx.New(errx.CodeUnauthorized, fmt.Errorf("missing user in context"))
 	}
 
 	input := &service.CreatePostInput{
-		Title:           req.Title,
-		Summary:         req.Summary,
-		Cover:           req.Cover,
-		Content:         req.Content,
-		UserID:          u.ID,
-		ReadTimeMinutes: readTime,
-		Status:          req.Status,
-		Tags:            req.Tags,
-		CategoryIDs:     req.CategoryIDs,
+		Title:       req.Title,
+		Summary:     req.Summary,
+		Cover:       req.Cover,
+		Content:     req.Content,
+		UserID:      u.ID,
+		Status:      req.Status,
+		Tags:        req.Tags,
+		CategoryIDs: req.CategoryIDs,
 	}
 
 	post, err := h.svc.CreatePost(c.Context(), u, input)
