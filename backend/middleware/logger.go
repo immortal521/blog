@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"blog-server/config"
+	"blog-server/contextx"
 	"blog-server/logger"
 	"blog-server/pkg/errx"
 
@@ -18,6 +19,8 @@ func RequestLogger(log logger.Logger, cfg *config.Config) fiber.Handler {
 		reqID := uuid.New().String()
 
 		c.Set("X-Request-ID", reqID)
+
+		c.SetContext(contextx.SetRequestID(c.Context(), reqID))
 
 		reqLogger := log.With(
 			logger.Any("request_id", reqID),
