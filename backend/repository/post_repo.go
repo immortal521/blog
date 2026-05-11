@@ -21,16 +21,21 @@ import (
 // - published status filter
 // - soft-delete filter (DeletedAt IS NULL)
 type PostRepo interface {
-	GetAllPublished(ctx context.Context) ([]*entity.Post, error)
+	ListPublished(ctx context.Context) ([]*entity.Post, error)
 	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
-	UpdateViewCounts(ctx context.Context, updates map[uint]int64) error
-	GetPublishedSiteMap(ctx context.Context) ([]*entity.Post, error)
-	GetPublishedMeta(ctx context.Context) ([]*entity.Post, error)
+
+	ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error)
+	ListPublishedForMeta(ctx context.Context) ([]*entity.Post, error)
+
 	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
+
 	AddTags(ctx context.Context, postID uint, tagIDs []uint) error
-	ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) error
+	SetTags(ctx context.Context, postID uint, tagIDs []uint) error
 	AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error
-	ReplaceCategories(ctx context.Context, postID uint, categoryIDs []uint) error
+	SetCategories(ctx context.Context, postID uint, categoryIDs []uint) error
+
+	BatchIncrViewCounts(ctx context.Context, updates map[uint]int64) error
+
 	IsOwner(ctx context.Context, userID uint, postID uint) (bool, error)
 }
 
@@ -43,20 +48,132 @@ func NewPostRepo(ds *datastore.DataStore) PostRepo {
 	return &postRepo{ds: ds}
 }
 
-// IsOwner checks whether a user is the author of a given post.
-func (r *postRepo) IsOwner(ctx context.Context, userID uint, postID uint) (bool, error) {
-	count, err := r.ds.Client(ctx).Post.
-		Query().
+func (r *postRepo) query(ctx context.Context) *ent.PostQuery {
+	return r.ds.Client(ctx).Post.Query().
+		Where(post.DeletedAtIsNil())
+}
+
+func (r *postRepo) publishedQuery(ctx context.Context) *ent.PostQuery {
+	return r.query(ctx).
 		Where(
-			post.IDEQ(postID),
-			post.UserIDEQ(userID),
+			post.StatusEQ(entity.PostStatusPublish),
+		)
+}
+
+func (r *postRepo) deletedQuery(ctx context.Context) *ent.PostQuery {
+	return r.query(ctx).
+		Where(
+			post.DeletedAtNotNil(),
+		)
+}
+
+// ListPublished returns all published posts for list views.
+//
+// Optimizations:
+// - Selects only fields required for listing (no content field)
+// - Preloads author, categories, and tags
+// - Ordered by published time descending
+func (r *postRepo) ListPublished(ctx context.Context) ([]*entity.Post, error) {
+	ps, err := r.publishedQuery(ctx).
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldCover,
+			post.FieldReadTimeMinutes,
+			post.FieldViewCount,
+			post.FieldPublishedAt,
+			post.FieldCreatedAt,
+			post.FieldUpdatedAt,
 		).
-		Count(ctx)
+		WithAuthor(func(q *ent.UserQuery) {
+			q.Select(user.FieldUsername)
+		}).
+		WithCategories().
+		WithTags().
+		Order(
+			post.ByPublishedAt(sql.OrderDesc()),
+		).
+		All(ctx)
 	if err != nil {
-		return false, err
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
-	return count > 0, nil
+	return mapper.ToPosts(ps), nil
+}
+
+// GetPublishedByID returns a single published post by ID.
+//
+// Notes:
+// - Includes full content field
+// - Preloads author information
+// - Returns NotFound error if no matching record exists
+func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error) {
+	p, err := r.publishedQuery(ctx).
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldCover,
+			post.FieldContent,
+			post.FieldReadTimeMinutes,
+			post.FieldViewCount,
+			post.FieldPublishedAt,
+			post.FieldCreatedAt,
+			post.FieldUpdatedAt,
+		).
+		WithAuthor(func(q *ent.UserQuery) {
+			q.Select(user.FieldUsername)
+		}).
+		Where(
+			post.IDEQ(id),
+		).
+		First(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeNotFound, err)
+	}
+
+	return mapper.ToPost(p), nil
+}
+
+// ListPublishedForSitemap returns minimal post data for sitemap generation.
+//
+// Only ID and UpdatedAt are selected for lightweight crawling support.
+func (r *postRepo) ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error) {
+	ps, err := r.publishedQuery(ctx).
+		Select(
+			post.FieldID,
+			post.FieldUpdatedAt,
+		).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPosts(ps), nil
+}
+
+// ListPublishedForMeta returns lightweight post metadata for SEO and previews.
+//
+// Ordered by published time descending.
+func (r *postRepo) ListPublishedForMeta(ctx context.Context) ([]*entity.Post, error) {
+	ps, err := r.publishedQuery(ctx).
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldUpdatedAt,
+			post.FieldPublishedAt,
+		).
+		Order(
+			post.ByPublishedAt(sql.OrderDesc()),
+		).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPosts(ps), nil
 }
 
 // Create inserts a new post record.
@@ -98,22 +215,6 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 	return mapper.ToPost(ep), nil
 }
 
-// AddCategories attaches categories to a post without removing existing relations.
-func (r *postRepo) AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
-	if len(categoryIDs) == 0 {
-		return nil
-	}
-
-	err := r.ds.Client(ctx).Post.
-		UpdateOneID(postID).
-		AddCategoryIDs(categoryIDs...).
-		Exec(ctx)
-	if err != nil {
-		return errx.New(errx.CodeInternalError, err)
-	}
-	return nil
-}
-
 // AddTags attaches tags to a post without removing existing relations.
 func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) error {
 	if len(tagIDs) == 0 {
@@ -130,25 +231,8 @@ func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) erro
 	return nil
 }
 
-// ReplaceCategories replaces all categories of a post (clear then add).
-func (r *postRepo) ReplaceCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
-	builder := r.ds.Client(ctx).Post.
-		UpdateOneID(postID).
-		ClearCategories()
-
-	if len(categoryIDs) > 0 {
-		builder.AddCategoryIDs(categoryIDs...)
-	}
-
-	err := builder.Exec(ctx)
-	if err != nil {
-		return errx.New(errx.CodeInternalError, err)
-	}
-	return nil
-}
-
-// ReplaceTags replaces all tags of a post (clear then add).
-func (r *postRepo) ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) error {
+// SetTags replaces all tags of a post (clear then add).
+func (r *postRepo) SetTags(ctx context.Context, postID uint, tagIDs []uint) error {
 	builder := r.ds.Client(ctx).Post.
 		UpdateOneID(postID).
 		ClearTags()
@@ -164,134 +248,40 @@ func (r *postRepo) ReplaceTags(ctx context.Context, postID uint, tagIDs []uint) 
 	return nil
 }
 
-// GetAllPublished returns all published posts for list views.
-//
-// Optimizations:
-// - Selects only fields required for listing (no content field)
-// - Preloads author, categories, and tags
-// - Ordered by published time descending
-func (r *postRepo) GetAllPublished(ctx context.Context) ([]*entity.Post, error) {
-	ps, err := r.ds.Client(ctx).Post.
-		Query().
-		Select(
-			post.FieldID,
-			post.FieldTitle,
-			post.FieldSummary,
-			post.FieldCover,
-			post.FieldReadTimeMinutes,
-			post.FieldViewCount,
-			post.FieldPublishedAt,
-			post.FieldCreatedAt,
-			post.FieldUpdatedAt,
-		).
-		WithAuthor(func(q *ent.UserQuery) {
-			q.Select(user.FieldUsername)
-		}).
-		WithCategories().
-		WithTags().
-		Where(
-			post.StatusEQ(entity.PostStatusPublish),
-			post.DeletedAtIsNil(),
-		).
-		Order(
-			post.ByPublishedAt(sql.OrderDesc()),
-		).
-		All(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
+// AddCategories attaches categories to a post without removing existing relations.
+func (r *postRepo) AddCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
+	if len(categoryIDs) == 0 {
+		return nil
 	}
 
-	return mapper.ToPosts(ps), nil
+	err := r.ds.Client(ctx).Post.
+		UpdateOneID(postID).
+		AddCategoryIDs(categoryIDs...).
+		Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
 }
 
-// GetPublishedByID returns a single published post by ID.
-//
-// Notes:
-// - Includes full content field
-// - Preloads author information
-// - Returns NotFound error if no matching record exists
-func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error) {
-	p, err := r.ds.Client(ctx).Post.
-		Query().
-		Select(
-			post.FieldID,
-			post.FieldTitle,
-			post.FieldSummary,
-			post.FieldCover,
-			post.FieldContent,
-			post.FieldReadTimeMinutes,
-			post.FieldViewCount,
-			post.FieldPublishedAt,
-			post.FieldCreatedAt,
-			post.FieldUpdatedAt,
-		).
-		WithAuthor(func(q *ent.UserQuery) {
-			q.Select(user.FieldUsername)
-		}).
-		Where(
-			post.IDEQ(id),
-			post.StatusEQ(entity.PostStatusPublish),
-			post.DeletedAtIsNil(),
-		).
-		First(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeNotFound, err)
+// SetCategories replaces all categories of a post (clear then add).
+func (r *postRepo) SetCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
+	builder := r.ds.Client(ctx).Post.
+		UpdateOneID(postID).
+		ClearCategories()
+
+	if len(categoryIDs) > 0 {
+		builder.AddCategoryIDs(categoryIDs...)
 	}
 
-	return mapper.ToPost(p), nil
-}
-
-// GetPublishedSiteMap returns minimal post data for sitemap generation.
-//
-// Only ID and UpdatedAt are selected for lightweight crawling support.
-func (r *postRepo) GetPublishedSiteMap(ctx context.Context) ([]*entity.Post, error) {
-	ps, err := r.ds.Client(ctx).Post.
-		Query().
-		Select(
-			post.FieldID,
-			post.FieldUpdatedAt,
-		).
-		Where(
-			post.StatusEQ(entity.PostStatusPublish),
-			post.DeletedAtIsNil(),
-		).
-		All(ctx)
+	err := builder.Exec(ctx)
 	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
+		return errx.New(errx.CodeInternalError, err)
 	}
-
-	return mapper.ToPosts(ps), nil
+	return nil
 }
 
-// GetPublishedMeta returns lightweight post metadata for SEO and previews.
-//
-// Ordered by published time descending.
-func (r *postRepo) GetPublishedMeta(ctx context.Context) ([]*entity.Post, error) {
-	ps, err := r.ds.Client(ctx).Post.
-		Query().
-		Select(
-			post.FieldID,
-			post.FieldTitle,
-			post.FieldSummary,
-			post.FieldUpdatedAt,
-			post.FieldPublishedAt,
-		).
-		Where(
-			post.StatusEQ(entity.PostStatusPublish),
-			post.DeletedAtIsNil(),
-		).
-		Order(
-			post.ByPublishedAt(sql.OrderDesc()),
-		).
-		All(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
-	}
-
-	return mapper.ToPosts(ps), nil
-}
-
-// UpdateViewCounts performs a bulk increment of view counts.
+// BatchIncrViewCounts performs a bulk increment of view counts.
 //
 // Implementation details:
 // - Uses a single SQL UPDATE with CASE expression
@@ -300,7 +290,7 @@ func (r *postRepo) GetPublishedMeta(ctx context.Context) ([]*entity.Post, error)
 // - Missing IDs are silently skipped by the database
 //
 // Note: query complexity grows linearly with batch size.
-func (r *postRepo) UpdateViewCounts(ctx context.Context, updates map[uint]int64) error {
+func (r *postRepo) BatchIncrViewCounts(ctx context.Context, updates map[uint]int64) error {
 	for id, delta := range updates {
 		if delta <= 0 {
 			delete(updates, id)
@@ -345,4 +335,20 @@ func (r *postRepo) UpdateViewCounts(ctx context.Context, updates map[uint]int64)
 		return errx.New(errx.CodeInternalError, err)
 	}
 	return nil
+}
+
+// IsOwner checks whether a user is the author of a given post.
+func (r *postRepo) IsOwner(ctx context.Context, userID uint, postID uint) (bool, error) {
+	count, err := r.ds.Client(ctx).Post.
+		Query().
+		Where(
+			post.IDEQ(postID),
+			post.UserIDEQ(userID),
+		).
+		Count(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }

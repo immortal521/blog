@@ -71,11 +71,11 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 			return err
 		}
 
-		if err = s.postRepo.ReplaceTags(ctx, post.ID, input.Tags); err != nil {
+		if err = s.postRepo.SetTags(ctx, post.ID, input.Tags); err != nil {
 			return err
 		}
 
-		if err = s.postRepo.ReplaceCategories(ctx, post.ID, input.CategoryIDs); err != nil {
+		if err = s.postRepo.SetCategories(ctx, post.ID, input.CategoryIDs); err != nil {
 			return err
 		}
 
@@ -132,7 +132,7 @@ func (s *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 
 		if len(updates) > 0 {
-			if err := s.postRepo.UpdateViewCounts(ctx, updates); err != nil {
+			if err := s.postRepo.BatchIncrViewCounts(ctx, updates); err != nil {
 				allErrors = append(allErrors, fmt.Errorf("db update failed: %w", err))
 			}
 		}
@@ -165,18 +165,18 @@ func NewPostService(
 
 // GetPosts retrieves all published posts
 func (s *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
-	return s.postRepo.GetAllPublished(ctx)
+	return s.postRepo.ListPublished(ctx)
 }
 
 // GetPostsWithContent retrieves all posts with content
 // WARNING:  The current repo does not support it yet, so reuse it for now.
 func (s *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
-	return s.postRepo.GetAllPublished(ctx)
+	return s.postRepo.ListPublished(ctx)
 }
 
 // GetPostsMeta retrieves metadata
 func (s *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
-	posts, err := s.postRepo.GetAllPublished(ctx)
+	posts, err := s.postRepo.ListPublished(ctx)
 	if err != nil {
 		s.log.Error("get posts meta failed", logger.Err(err))
 		return []*entity.Post{}
