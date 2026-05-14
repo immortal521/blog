@@ -83,7 +83,12 @@ func (h *postHandler) CreatePost(c fiber.Ctx) error {
 
 // GetPosts retrieves all published posts
 func (h *postHandler) GetPosts(c fiber.Ctx) error {
-	posts, err := h.svc.GetPosts(c.Context())
+	query := new(request.PostPageReq)
+	if err := c.Bind().Query(query); err != nil {
+		return errx.New(errx.CodeInvalidParam, err)
+	}
+
+	posts, total, err := h.svc.GetPosts(c.Context(), query.Page, query.PageSize)
 	if err != nil {
 		return err
 	}
@@ -101,8 +106,12 @@ func (h *postHandler) GetPosts(c fiber.Ctx) error {
 			ViewCount:       post.ViewCount,
 		}
 	}
+	pagedRes := response.Page[response.PostListRes]{
+		Total: total,
+		Data:  postDTOs,
+	}
 
-	return c.JSON(response.Success(postDTOs))
+	return c.JSON(response.Success(pagedRes))
 }
 
 // GetPostIds retrieves metadata (id and updated_at) for all posts

@@ -14,3 +14,8 @@ type CreatePostReq struct {
 	CategoryIDs []uint `json:"category_ids"`
 	Tags        []uint `json:"tags"`
 }
+
+type PostPageReq struct {
+	Page     int `json:"page" query:"page,default:1"`
+	PageSize int `json:"pageSize" query:"pageSize,default:10"`
+}

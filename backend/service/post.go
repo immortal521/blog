@@ -17,7 +17,7 @@ import (
 )
 
 type PostService interface {
-	GetPosts(ctx context.Context) ([]*entity.Post, error)
+	GetPosts(ctx context.Context, page, pageSize int) ([]*entity.Post, int, error)
 	GetPostsWithContent(ctx context.Context) ([]*entity.Post, error)
 	GetPostsMeta(ctx context.Context) []*entity.Post
 	GetPostByID(ctx context.Context, id uint) (*entity.Post, error)
@@ -164,19 +164,25 @@ func NewPostService(
 }
 
 // GetPosts retrieves all published posts
-func (s *postService) GetPosts(ctx context.Context) ([]*entity.Post, error) {
-	return s.postRepo.ListPublished(ctx)
+func (s *postService) GetPosts(ctx context.Context, page, pageSize int) ([]*entity.Post, int, error) {
+	count, _ := s.postRepo.CountPublished(ctx)
+	ps, err := s.postRepo.ListPublished(ctx, page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	return ps, count, nil
 }
 
 // GetPostsWithContent retrieves all posts with content
 // WARNING:  The current repo does not support it yet, so reuse it for now.
 func (s *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, error) {
-	return s.postRepo.ListPublished(ctx)
+	// return s.postRepo.ListPublished(ctx)
+	return nil, nil
 }
 
 // GetPostsMeta retrieves metadata
 func (s *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
-	posts, err := s.postRepo.ListPublished(ctx)
+	posts, err := s.postRepo.ListPublishedForSitemap(ctx)
 	if err != nil {
 		s.log.Error("get posts meta failed", logger.Err(err))
 		return []*entity.Post{}

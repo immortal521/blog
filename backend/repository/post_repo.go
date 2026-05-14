@@ -21,11 +21,18 @@ import (
 // - published status filter
 // - soft-delete filter (DeletedAt IS NULL)
 type PostRepo interface {
-	ListPublished(ctx context.Context) ([]*entity.Post, error)
-	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
+	ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
 
 	ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error)
-	ListPublishedForMeta(ctx context.Context) ([]*entity.Post, error)
+	ListPublishedForMeta(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
+
+	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
+	GetLatestPublishedAt(ctx context.Context) (*time.Time, error)
+	GetLatestUpdatedAt(ctx context.Context) (*time.Time, error)
+
+	Count(ctx context.Context) (int, error)
+	CountPublished(ctx context.Context) (int, error)
+	CountDeleted(ctx context.Context) (int, error)
 
 	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
 
@@ -73,7 +80,8 @@ func (r *postRepo) deletedQuery(ctx context.Context) *ent.PostQuery {
 // - Selects only fields required for listing (no content field)
 // - Preloads author, categories, and tags
 // - Ordered by published time descending
-func (r *postRepo) ListPublished(ctx context.Context) ([]*entity.Post, error) {
+func (r *postRepo) ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error) {
+	page, pageSize = normalizedPage(page, pageSize)
 	ps, err := r.publishedQuery(ctx).
 		Select(
 			post.FieldID,
@@ -94,6 +102,52 @@ func (r *postRepo) ListPublished(ctx context.Context) ([]*entity.Post, error) {
 		Order(
 			post.ByPublishedAt(sql.OrderDesc()),
 		).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPosts(ps), nil
+}
+
+// ListPublishedForSitemap returns minimal post data for sitemap generation.
+//
+// Only ID and UpdatedAt are selected for lightweight crawling support.
+func (r *postRepo) ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error) {
+	ps, err := r.publishedQuery(ctx).
+		Select(
+			post.FieldID,
+			post.FieldUpdatedAt,
+		).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPosts(ps), nil
+}
+
+// ListPublishedForMeta returns lightweight post metadata for SEO and previews.
+//
+// Ordered by published time descending.
+func (r *postRepo) ListPublishedForMeta(ctx context.Context, page, pageSize int) ([]*entity.Post, error) {
+	page, pageSize = normalizedPage(page, pageSize)
+
+	ps, err := r.publishedQuery(ctx).
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldUpdatedAt,
+			post.FieldPublishedAt,
+		).
+		Order(
+			post.ByPublishedAt(sql.OrderDesc()),
+		).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
 		All(ctx)
 	if err != nil {
 		return nil, errx.New(errx.CodeInternalError, err)
@@ -136,44 +190,48 @@ func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post,
 	return mapper.ToPost(p), nil
 }
 
-// ListPublishedForSitemap returns minimal post data for sitemap generation.
-//
-// Only ID and UpdatedAt are selected for lightweight crawling support.
-func (r *postRepo) ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error) {
-	ps, err := r.publishedQuery(ctx).
-		Select(
-			post.FieldID,
-			post.FieldUpdatedAt,
-		).
-		All(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
-	}
-
-	return mapper.ToPosts(ps), nil
-}
-
-// ListPublishedForMeta returns lightweight post metadata for SEO and previews.
-//
-// Ordered by published time descending.
-func (r *postRepo) ListPublishedForMeta(ctx context.Context) ([]*entity.Post, error) {
-	ps, err := r.publishedQuery(ctx).
-		Select(
-			post.FieldID,
-			post.FieldTitle,
-			post.FieldSummary,
-			post.FieldUpdatedAt,
-			post.FieldPublishedAt,
-		).
+func (r *postRepo) GetLatestPublishedAt(ctx context.Context) (*time.Time, error) {
+	p, err := r.publishedQuery(ctx).
+		Select(post.FieldPublishedAt).
 		Order(
 			post.ByPublishedAt(sql.OrderDesc()),
 		).
-		All(ctx)
+		First(ctx)
+	if ent.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, errx.New(errx.CodeInternalError, err)
 	}
+	return p.PublishedAt, nil
+}
 
-	return mapper.ToPosts(ps), nil
+func (r *postRepo) GetLatestUpdatedAt(ctx context.Context) (*time.Time, error) {
+	p, err := r.publishedQuery(ctx).
+		Select(post.FieldUpdatedAt).
+		Order(
+			post.ByUpdatedAt(sql.OrderDesc()),
+		).
+		First(ctx)
+	if ent.IsNotFound(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+	return &p.UpdatedAt, nil
+}
+
+func (r *postRepo) Count(ctx context.Context) (int, error) {
+	return r.query(ctx).Count(ctx)
+}
+
+func (r *postRepo) CountPublished(ctx context.Context) (int, error) {
+	return r.publishedQuery(ctx).Count(ctx)
+}
+
+func (r *postRepo) CountDeleted(ctx context.Context) (int, error) {
+	return r.deletedQuery(ctx).Count(ctx)
 }
 
 // Create inserts a new post record.
