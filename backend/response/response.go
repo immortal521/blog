@@ -13,10 +13,8 @@ type ErrorResponse struct {
 }
 
 type Page[T any] struct {
-	Total uint `json:"total"`
-	Page  uint `json:"page"`
-	Limit uint `json:"limit"`
-	Data  []T  `json:"data"`
+	Total int `json:"total"`
+	Data  []T `json:"data"`
 }
 
 const CodeSuccess = 0
