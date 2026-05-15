@@ -108,7 +108,7 @@ func (h *postHandler) GetPosts(c fiber.Ctx) error {
 	}
 	pagedRes := response.Page[response.PostListRes]{
 		Total: total,
-		Data:  postDTOs,
+		List:  postDTOs,
 	}
 
 	return c.JSON(response.Success(pagedRes))

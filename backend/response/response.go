@@ -14,7 +14,7 @@ type ErrorResponse struct {
 
 type Page[T any] struct {
 	Total int `json:"total"`
-	Data  []T `json:"data"`
+	List  []T `json:"list"`
 }
 
 const CodeSuccess = 0
