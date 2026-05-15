@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { ApiListResponse } from "~/types/api";
+import type { ApiPageResponse } from "~/types/api";
 import type { Post } from "~/types/post";
 
-const { data } = await useFetch<ApiListResponse<Post>>("/api/v1/posts", {
+const { data } = await useFetch<ApiPageResponse<Post>>("/api/v1/posts", {
   method: "get",
 });
 
-const posts = computed(() => data.value?.data ?? []);
+const posts = computed(() => data.value?.data.list ?? []);
 </script>
 
 <template>
