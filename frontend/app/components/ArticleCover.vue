@@ -5,6 +5,9 @@ interface Props {
 }
 
 const { src = "", title = "" } = defineProps<Props>();
+onMounted(() => {
+  console.log(src);
+});
 </script>
 
 <template>

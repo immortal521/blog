@@ -103,13 +103,13 @@ jobs:
             APP_DIR="$HOME/projects/blog/backend"
             cd "$APP_DIR"
 
-            echo "📦 解压产物"
+            echo "解压产物"
             rm -f blog-server
             tar -xzf backend.tar.gz
             rm -f backend.tar.gz
 
-            echo "🚀 启动 Go 应用"
+            echo "启动 Go 应用"
             pm2 start blog-server --name blog-server || pm2 restart blog-server
             pm2 save
 
-            echo "✅ 部署完成"
+            echo "部署完成"

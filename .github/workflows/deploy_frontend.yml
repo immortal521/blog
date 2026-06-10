@@ -77,16 +77,16 @@ jobs:
             APP_DIR="$HOME/projects/blog/frontend"
             cd "$APP_DIR"
 
-            echo "📦 解压产物"
+            echo "解压产物"
             rm -rf .output
             tar -xzf build.tar.gz
             rm -f build.tar.gz
 
-            echo "📦 安装生产依赖"
+            echo "安装生产依赖"
             pnpm install --prod --frozen-lockfile --ignore-scripts
 
-            echo "🚀 重启服务"
+            echo "重启服务"
             pm2 start .output/server/index.mjs --name blog-frontend --update-env || pm2 restart blog-frontend
             pm2 save
 
-            echo "✅ 部署完成"
+            echo "部署完成"
