@@ -116,7 +116,7 @@ func (h *authHandler) Login(c fiber.Ctx) error {
 func (h *authHandler) Refresh(c fiber.Ctx) error {
 	token := c.Cookies("refreshToken")
 	if token == "" {
-		return errx.New(errx.CodeUnauthorized, fmt.Errorf("Missing refresh token"))
+		return errx.New(errx.CodeUnauthorized, fmt.Errorf("missing refresh token"))
 	}
 	accessToken, refreshToken, err := h.svc.RefreshAccessToken(c.Context(), token)
 	if err != nil {
