@@ -1,6 +1,12 @@
 // Package response
 package response
 
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v5"
+)
+
 type Response[T any] struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
@@ -18,6 +24,10 @@ type Page[T any] struct {
 }
 
 const CodeSuccess = 0
+
+func OK(c *echo.Context, data any) error {
+	return c.JSON(http.StatusOK, data)
+}
 
 func Success[T any](data T) *Response[T] {
 	return &Response[T]{

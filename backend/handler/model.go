@@ -1,21 +1,22 @@
 package handler
 
 import (
-	"bufio"
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 
 	"blog-server/pkg/errx"
+	"blog-server/response"
 	"blog-server/service"
 
-	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v5"
 )
 
 type ModelHandler interface {
-	CreateSummarySession(c fiber.Ctx) error
-	SummaryStream(c fiber.Ctx) error
+	CreateSummarySession(c *echo.Context) error
+	SummaryStream(c *echo.Context) error
 }
 
 type modelHandler struct {
@@ -23,10 +24,10 @@ type modelHandler struct {
 	sessions *sync.Map
 }
 
-func RegisterModelRoutes(r fiber.Router, h ModelHandler) {
+func RegisterModelRoutes(r *echo.Group, h ModelHandler) {
 	group := r.Group("/model")
-	group.Post("/summarize", h.CreateSummarySession)
-	group.Get("/summarize/:sessionId", h.SummaryStream)
+	group.POST("/summarize", h.CreateSummarySession)
+	group.GET("/summarize/:sessionId", h.SummaryStream)
 }
 
 type Session struct {
@@ -36,11 +37,11 @@ type Session struct {
 	ErrCh    <-chan error
 }
 
-func (h *modelHandler) CreateSummarySession(c fiber.Ctx) error {
+func (h *modelHandler) CreateSummarySession(c *echo.Context) error {
 	req := new(struct {
 		Content string `json:"content" validate:"required"`
 	})
-	if err := c.Bind().Body(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
@@ -55,72 +56,75 @@ func (h *modelHandler) CreateSummarySession(c fiber.Ctx) error {
 
 	h.sessions.Store(sessionID, session)
 
-	return c.JSON(fiber.Map{
+	return response.OK(c, map[string]string{
 		"sessionId": sessionID,
 	})
 }
 
-func (h *modelHandler) SummaryStream(c fiber.Ctx) error {
-	sessionID := c.Params("sessionId")
+func (h *modelHandler) SummaryStream(c *echo.Context) error {
+	sessionID := c.Param("sessionId")
 	return h.stream(c, sessionID)
 }
 
-func (h *modelHandler) stream(c fiber.Ctx, sessionID string) error {
+func (h *modelHandler) stream(c *echo.Context, sessionID string) error {
 	v, ok := h.sessions.Load(sessionID)
 	if !ok {
 		fmt.Println("session not found")
 		return nil
 	}
 	session := v.(*Session)
+	defer h.sessions.Delete(sessionID)
 
 	if session.TextCh == nil && session.ErrCh == nil {
 		switch session.TaskType {
 		case "summary":
-			session.TextCh, session.ErrCh = h.svn.GenerateSummary(c.Context(), session.Content)
-		// case "translation":
-		// 	session.TextCh, session.ErrCh = h.svn.GenerateTranslation(c.UserContext(), session.Content)
+			session.TextCh, session.ErrCh = h.svn.GenerateSummary(c.Request().Context(), session.Content)
 		default:
 			return errx.New(errx.CodeInvalidParam, fmt.Errorf("unsupported task type"))
 		}
 		h.sessions.Store(sessionID, session)
 	}
 
-	c.Set("Content-Type", "text/event-stream")
-	c.Set("Cache-Control", "no-cache")
-	c.Set("Connection", "keep-alive")
+	w := c.Response()
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
 
-	c.RequestCtx().SetBodyStreamWriter(func(w *bufio.Writer) {
-		defer func() {
-			_ = w.Flush()
-		}()
+	rc := http.NewResponseController(w)
 
-		for {
-			select {
-			case err := <-session.ErrCh:
-				if err != nil {
-					_, _ = fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error())
-					_ = w.Flush()
-					return
-				}
-			case text := <-session.TextCh:
-				if text == "[DONE]" {
-					_, _ = fmt.Fprintf(w, "event: done\ndata: %s\n\n", text)
-					return
-				}
-				if text == "" {
-					continue
-				}
+	for {
+		select {
+		case <-c.Request().Context().Done():
+			return nil
 
-				lines := strings.Split(text, "\n")
-				for _, line := range lines {
-					_, _ = fmt.Fprintf(w, "data: %s\n\n", line)
+		case err := <-session.ErrCh:
+			if err != nil {
+				if _, werr := fmt.Fprintf(w, "event: error\ndata: %s\n\n", err.Error()); werr != nil {
+					return werr
 				}
-				_ = w.Flush()
+				return rc.Flush()
+			}
+
+		case text := <-session.TextCh:
+			if text == "[DONE]" {
+				if _, werr := fmt.Fprintf(w, "event: done\ndata: %s\n\n", text); werr != nil {
+					return werr
+				}
+				return rc.Flush()
+			}
+			if text == "" {
+				continue
+			}
+			for _, line := range strings.Split(text, "\n") {
+				if _, werr := fmt.Fprintf(w, "data: %s\n\n", line); werr != nil {
+					return werr
+				}
+			}
+			if err := rc.Flush(); err != nil {
+				return err
 			}
 		}
-	})
-
-	return nil
+	}
 }
 
 func NewModelHandler(svn service.ModelService) ModelHandler {

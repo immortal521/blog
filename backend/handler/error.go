@@ -6,21 +6,34 @@ import (
 	"blog-server/pkg/errx"
 	"blog-server/response"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/labstack/echo/v5"
 )
 
-func ErrorHandler(log logger.Logger, cfg *config.Config) fiber.ErrorHandler {
-	return func(c fiber.Ctx, err error) error {
+func ErrorHandler(
+	log logger.Logger,
+	cfg *config.Config,
+) echo.HTTPErrorHandler {
+	return func(c *echo.Context, err error) {
 		appErr := errx.ToAppError(err)
 		httpCode := errx.MapToHTTPStatus(appErr.Code)
 
-		reqID := c.Get("X-Request-ID")
+		fields := []logger.Field{
+			logger.String("method", c.Request().Method),
+			logger.String("path", c.Request().URL.Path),
+			logger.String("url", c.Request().URL.String()),
+			logger.Int("status", httpCode),
+			logger.String("ip", c.RealIP()),
+		}
 
-		logCtx := log.With(
-			logger.String("request_id", reqID),
-			logger.String("method", c.Method()),
-			logger.String("path", c.Path()),
-		)
+		if reqID := c.Request().
+			Context().
+			Value("request_id"); reqID != nil {
+			if s, ok := reqID.(string); ok {
+				fields = append(fields, logger.String("request_id", s))
+			}
+		}
+
+		logCtx := log.With(fields...)
 
 		if cfg.App.Environment == config.EnvDev {
 			logCtx.Error(appErr.Error() + "\n" + appErr.StackString())
@@ -30,9 +43,12 @@ func ErrorHandler(log logger.Logger, cfg *config.Config) fiber.ErrorHandler {
 
 		publicMsg := errx.MessageForCode(appErr.Code)
 
-		return c.Status(httpCode).JSON(response.Error(
+		err = c.JSON(httpCode, response.Error(
 			appErr.Code,
 			publicMsg,
 		))
+		if err != nil {
+			log.Error("failed to send error response", logger.Err(err))
+		}
 	}
 }

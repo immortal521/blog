@@ -1,74 +1,76 @@
 package middleware
 
 import (
+	"context"
 	"time"
 
 	"blog-server/config"
-	"blog-server/contextx"
 	"blog-server/logger"
-	"blog-server/pkg/errx"
 
-	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v5"
 )
 
-// RequestLogger returns a Fiber handler that logs HTTP requests and responses
+type contextKey string
+
+const (
+	requestIDKey contextKey = "request_id"
+	loggerCtxKey string     = "logger"
+)
+
+// RequestLogger returns a echo handler func that logs HTTP requests and responses
 // It generates a unique request ID, logs request details, and logs response with latency
-func RequestLogger(log logger.Logger, cfg *config.Config) fiber.Handler {
-	return func(c fiber.Ctx) error {
-		reqID := uuid.New().String()
+func RequestLogger(
+	log logger.Logger,
+	cfg *config.Config,
+) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			start := time.Now()
 
-		c.Set("X-Request-ID", reqID)
+			reqID := c.Request().Header.Get(echo.HeaderXRequestID)
+			if reqID == "" {
+				reqID = uuid.New().String()
+			}
+			c.Response().Header().Set(echo.HeaderXRequestID, reqID)
 
-		c.SetContext(contextx.SetRequestID(c.Context(), reqID))
+			ctx := context.WithValue(c.Request().Context(), requestIDKey, reqID)
+			c.SetRequest(c.Request().WithContext(ctx))
 
-		reqLogger := log.With(
-			logger.Any("request_id", reqID),
-			logger.String("method", c.Method()),
-			logger.String("remote_ip", c.IP()),
-			logger.String("path", c.Path()),
-			logger.String("user_agent", string(c.Request().Header.UserAgent())),
-		)
+			reqLogger := log.WithContext(ctx)
+			c.Set(loggerCtxKey, reqLogger)
 
-		if cfg.App.Environment == config.EnvDev {
-			reqLogger.Info("HTTP request started")
+			if cfg.App.IsDev() {
+				reqLogger.Info("HTTP request started",
+					logger.String("method", c.Request().Method),
+					logger.String("path", c.Request().URL.RequestURI()),
+				)
+			}
+
+			err := next(c)
+
+			latency := time.Since(start)
+
+			fields := []logger.Field{
+				logger.String("request_id", reqID),
+				logger.String("method", c.Request().Method),
+				logger.String("path", c.Request().URL.RequestURI()),
+				logger.String("url", c.Request().URL.String()),
+				logger.String("ip", c.RealIP()),
+				logger.String("user_agent", c.Request().UserAgent()),
+				logger.String("referer", c.Request().Referer()),
+				logger.Duration("latency", latency),
+			}
+
+			if latency > 5*time.Second {
+				fields = append(fields, logger.Bool("slow_request", true))
+			}
+
+			if err == nil {
+				reqLogger.Info("HTTP request completed", fields...)
+			}
+
+			return err
 		}
-
-		start := time.Now()
-		err := c.Next()
-		latency := time.Since(start)
-
-		statusCode := c.Response().StatusCode()
-		// 用错误映射推导最终 status，保证和 ErrorHandler 一致
-		if err != nil {
-			appErr := errx.ToAppError(err)
-			statusCode = errx.MapToHTTPStatus(appErr.Code)
-		}
-
-		respSize := c.Response().Header.ContentLength()
-
-		fields := []logger.Field{
-			logger.Int("status", statusCode),
-			logger.Int("response_size", respSize),
-			logger.Duration("latency", latency),
-			logger.String("original_url", c.OriginalURL()),
-			logger.String("referer", string(c.Request().Header.Referer())),
-		}
-
-		if latency > 5*time.Second {
-			fields = append(fields, logger.Bool("slow_request", true))
-		}
-
-		// 只记录“结果日志”，不再单独打 err 详情
-		switch {
-		case statusCode >= 500:
-			reqLogger.Error("HTTP request completed", fields...)
-		case statusCode >= 400:
-			reqLogger.Warn("HTTP request completed", fields...)
-		default:
-			reqLogger.Info("HTTP request completed", fields...)
-		}
-
-		return err
 	}
 }

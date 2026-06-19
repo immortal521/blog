@@ -9,13 +9,13 @@ import (
 	"blog-server/response"
 	"blog-server/service"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/labstack/echo/v5"
 )
 
 // LinkHandler defines the interface for link HTTP handlers
 type LinkHandler interface {
-	GetLinks(c fiber.Ctx) error
-	ApplyForALinks(c fiber.Ctx) error
+	GetLinks(c *echo.Context) error
+	ApplyForALinks(c *echo.Context) error
 }
 
 type linkHandler struct {
@@ -23,10 +23,10 @@ type linkHandler struct {
 	validate validatorx.Validator
 }
 
-func RegisterLinkRoutes(r fiber.Router, h LinkHandler) {
+func RegisterLinkRoutes(r *echo.Group, h LinkHandler) {
 	group := r.Group("/links")
-	group.Get("/", h.GetLinks)
-	group.Post("/apply-link", h.ApplyForALinks)
+	group.GET("", h.GetLinks)
+	group.POST("/apply-link", h.ApplyForALinks)
 }
 
 // NewLinkHandler creates a new link handler instance
@@ -35,8 +35,8 @@ func NewLinkHandler(svc service.LinkService, validate validatorx.Validator) Link
 }
 
 // GetLinks retrieves all enabled links
-func (h *linkHandler) GetLinks(c fiber.Ctx) error {
-	links, err := h.svc.GetLinks(c.Context())
+func (h *linkHandler) GetLinks(c *echo.Context) error {
+	links, err := h.svc.GetLinks(c.Request().Context())
 	if err != nil {
 		return err
 	}
@@ -53,13 +53,13 @@ func (h *linkHandler) GetLinks(c fiber.Ctx) error {
 	}
 
 	result := response.Success(linkDTOs)
-	return c.JSON(result)
+	return response.OK(c, result)
 }
 
 // ApplyForALinks creates a new link application
-func (h *linkHandler) ApplyForALinks(c fiber.Ctx) error {
+func (h *linkHandler) ApplyForALinks(c *echo.Context) error {
 	req := new(request.CreateLinkReq)
-	if err := c.Bind().Body(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
@@ -78,12 +78,12 @@ func (h *linkHandler) ApplyForALinks(c fiber.Ctx) error {
 	}
 
 	err := h.svc.CreateLink(
-		c.Context(),
+		c.Request().Context(),
 		input,
 	)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(response.Success(""))
+	return response.OK(c, response.Success(""))
 }

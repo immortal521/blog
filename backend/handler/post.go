@@ -11,15 +11,15 @@ import (
 	"blog-server/response"
 	"blog-server/service"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/labstack/echo/v5"
 )
 
 // PostHandler defines the interface for post HTTP handlers
 type PostHandler interface {
-	GetPosts(c fiber.Ctx) error
-	GetPost(c fiber.Ctx) error
-	GetPostIds(c fiber.Ctx) error
-	CreatePost(c fiber.Ctx) error
+	GetPosts(c *echo.Context) error
+	GetPost(c *echo.Context) error
+	GetPostIds(c *echo.Context) error
+	CreatePost(c *echo.Context) error
 }
 
 type postHandler struct {
@@ -31,21 +31,21 @@ func NewPostHandler(svc service.PostService) PostHandler {
 	return &postHandler{svc: svc}
 }
 
-func RegisterPostRoute(r fiber.Router, handler PostHandler, am *middleware.AuthMiddleware) {
+func RegisterPostRoute(r *echo.Group, handler PostHandler, am *middleware.AuthMiddleware) {
 	group := r.Group("/posts")
-	group.Post("/", am.Handler(), handler.CreatePost)
-	group.Get("/", handler.GetPosts)
-	group.Get("/meta", handler.GetPostIds)
-	group.Get("/:id", handler.GetPost)
+	group.POST("", handler.CreatePost, am.Handler())
+	group.GET("", handler.GetPosts)
+	group.GET("/meta", handler.GetPostIds)
+	group.GET("/:id", handler.GetPost)
 }
 
-func (h *postHandler) CreatePost(c fiber.Ctx) error {
+func (h *postHandler) CreatePost(c *echo.Context) error {
 	req := new(request.CreatePostReq)
-	if err := c.Bind().Body(req); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
-	u, ok := contextx.GetUser(c.Context())
+	u, ok := contextx.GetUser(c.Request().Context())
 	if !ok {
 		return errx.New(errx.CodeUnauthorized, fmt.Errorf("missing user in context"))
 	}
@@ -61,7 +61,7 @@ func (h *postHandler) CreatePost(c fiber.Ctx) error {
 		CategoryIDs: req.CategoryIDs,
 	}
 
-	post, err := h.svc.CreatePost(c.Context(), u, input)
+	post, err := h.svc.CreatePost(c.Request().Context(), u, input)
 	if err != nil {
 		return err
 	}
@@ -78,17 +78,17 @@ func (h *postHandler) CreatePost(c fiber.Ctx) error {
 		UpdatedAt:       post.UpdatedAt,
 	}
 
-	return c.JSON(response.Success(res))
+	return response.OK(c, response.Success(res))
 }
 
 // GetPosts retrieves all published posts
-func (h *postHandler) GetPosts(c fiber.Ctx) error {
+func (h *postHandler) GetPosts(c *echo.Context) error {
 	query := new(request.PostPageReq)
-	if err := c.Bind().Query(query); err != nil {
+	if err := c.Bind(query); err != nil {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
-	posts, total, err := h.svc.GetPosts(c.Context(), query.Page, query.PageSize)
+	posts, total, err := h.svc.GetPosts(c.Request().Context(), query.Page, query.PageSize)
 	if err != nil {
 		return err
 	}
@@ -111,12 +111,12 @@ func (h *postHandler) GetPosts(c fiber.Ctx) error {
 		List:  postDTOs,
 	}
 
-	return c.JSON(response.Success(pagedRes))
+	return response.OK(c, response.Success(pagedRes))
 }
 
 // GetPostIds retrieves metadata (id and updated_at) for all posts
-func (h *postHandler) GetPostIds(c fiber.Ctx) error {
-	metas := h.svc.GetPostsMeta(c.Context())
+func (h *postHandler) GetPostIds(c *echo.Context) error {
+	metas := h.svc.GetPostsMeta(c.Request().Context())
 
 	metasDTO := make([]response.PostMetaRes, len(metas))
 	for i, meta := range metas {
@@ -126,17 +126,17 @@ func (h *postHandler) GetPostIds(c fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(response.Success(metasDTO))
+	return response.OK(c, response.Success(metasDTO))
 }
 
 // GetPost retrieves a single published post by ID
-func (h *postHandler) GetPost(c fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
+func (h *postHandler) GetPost(c *echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid post id"))
+		return errx.New(errx.CodeInvalidParam, err)
 	}
 
-	post, err := h.svc.GetPostByID(c.Context(), uint(id))
+	post, err := h.svc.GetPostByID(c.Request().Context(), uint(id))
 	if err != nil {
 		return err
 	}
@@ -152,5 +152,5 @@ func (h *postHandler) GetPost(c fiber.Ctx) error {
 		PublishedAt:     post.PublishedAt,
 	}
 
-	return c.JSON(response.Success(res))
+	return response.OK(c, response.Success(res))
 }

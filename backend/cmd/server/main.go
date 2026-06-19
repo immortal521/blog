@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"time"
 
 	"blog-server/authz"
@@ -16,7 +18,7 @@ import (
 	"blog-server/scheduler"
 	"blog-server/service"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/labstack/echo/v5"
 	"go.uber.org/fx"
 )
 
@@ -41,7 +43,7 @@ func main() {
 		fx.Provide(
 			validatorx.NewValidator,
 			middleware.NewAuthMiddleware,
-			providerFiberApp,
+			providerEchoApp,
 		),
 		fx.Invoke(
 			runServerLifecycle,
@@ -50,23 +52,17 @@ func main() {
 	app.Run()
 }
 
-// providerFiberApp constructs and configures the Fiber HTTP server instance.
-//
-// It applies base server configuration such as proxy handling and request limits.
-func providerFiberApp(cfg *config.Config, log logger.Logger) *fiber.App {
-	fiberCfg := fiber.Config{
-		ErrorHandler: handler.ErrorHandler(log, cfg),
-		TrustProxy:   true,
-		ProxyHeader:  fiber.HeaderXForwardedFor,
-		BodyLimit:    10 * 1024 * 1024,
+func providerEchoApp(cfg *config.Config, log logger.Logger) *echo.Echo {
+	echoCfg := echo.Config{
+		HTTPErrorHandler: handler.ErrorHandler(log, cfg),
+		IPExtractor:      echo.ExtractIPFromXFFHeader(),
 	}
-
-	app := fiber.New(fiberCfg)
+	app := echo.NewWithConfig(echoCfg)
 	app.Use(middleware.RequestLogger(log, cfg))
 	return app
 }
 
-// runServerLifecycle registers Fiber server startup and graceful shutdown
+// runServerLifecycle registers Echo server startup and graceful shutdown
 // hooks into the Fx application lifecycle.
 //
 // OnStart:
@@ -75,12 +71,17 @@ func providerFiberApp(cfg *config.Config, log logger.Logger) *fiber.App {
 // OnStop:
 //   - Performs graceful shutdown using configured timeout
 //   - Ensures in-flight requests are completed before exit
-func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log logger.Logger) {
+func runServerLifecycle(lc fx.Lifecycle, app *echo.Echo, cfg *config.Config, log logger.Logger) {
+	srv := &http.Server{
+		Addr:    cfg.Server.Addr(),
+		Handler: app,
+	}
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
 				log.Info("Server is starting")
-				if err := app.Listen(cfg.Server.Addr()); err != nil {
+				if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 					log.Error("Server startup failed", logger.Err(err))
 				}
 			}()
@@ -91,14 +92,15 @@ func runServerLifecycle(lc fx.Lifecycle, app *fiber.App, cfg *config.Config, log
 			if timeout <= 0 {
 				timeout = 5 * time.Second
 			}
-			shutdownCtx, cancel := context.WithTimeout(ctx, timeout)
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
 
-			if err := app.ShutdownWithContext(shutdownCtx); err != nil {
+			log.Info("Server is shutting down")
+			if err := srv.Shutdown(shutdownCtx); err != nil {
 				log.Error("Server shutdown failed", logger.Err(err))
-			} else {
-				log.Info("Server has been shut down successfully.")
+				return err
 			}
+			log.Info("Server has been shut down successfully")
 			return nil
 		},
 	})
