@@ -54,11 +54,12 @@ func main() {
 
 func providerEchoApp(cfg *config.Config, log logger.Logger) *echo.Echo {
 	echoCfg := echo.Config{
-		HTTPErrorHandler: handler.ErrorHandler(log, cfg),
+		HTTPErrorHandler: handler.ErrorHandler(cfg, log),
 		IPExtractor:      echo.ExtractIPFromXFFHeader(),
 	}
 	app := echo.NewWithConfig(echoCfg)
-	app.Use(middleware.RequestLogger(log, cfg))
+	app.Use(middleware.RequestLogger(cfg, log))
+	app.Use(middleware.BodyLimit(10 * 10 * 1024))
 	return app
 }
 

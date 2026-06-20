@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"time"
 
 	"blog-server/config"
@@ -11,18 +10,15 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-type contextKey string
-
 const (
-	requestIDKey contextKey = "request_id"
-	loggerCtxKey string     = "logger"
+	ContextKeyRequestID = "request_id"
+	ContextKeyLogger    = "logger"
+	ContextKeyStart     = "request_start"
 )
 
-// RequestLogger returns a echo handler func that logs HTTP requests and responses
-// It generates a unique request ID, logs request details, and logs response with latency
 func RequestLogger(
-	log logger.Logger,
 	cfg *config.Config,
+	log logger.Logger,
 ) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
@@ -34,11 +30,10 @@ func RequestLogger(
 			}
 			c.Response().Header().Set(echo.HeaderXRequestID, reqID)
 
-			ctx := context.WithValue(c.Request().Context(), requestIDKey, reqID)
-			c.SetRequest(c.Request().WithContext(ctx))
-
-			reqLogger := log.WithContext(ctx)
-			c.Set(loggerCtxKey, reqLogger)
+			reqLogger := log.With(logger.String("request_id", reqID))
+			c.Set(ContextKeyRequestID, reqID)
+			c.Set(ContextKeyLogger, reqLogger)
+			c.Set(ContextKeyStart, start)
 
 			if cfg.App.IsDev() {
 				reqLogger.Info("HTTP request started",
@@ -48,29 +43,31 @@ func RequestLogger(
 			}
 
 			err := next(c)
+			if err != nil {
+				// ErrorHandler logs this request's outcome instead.
+				return err
+			}
 
 			latency := time.Since(start)
-
 			fields := []logger.Field{
-				logger.String("request_id", reqID),
 				logger.String("method", c.Request().Method),
 				logger.String("path", c.Request().URL.RequestURI()),
-				logger.String("url", c.Request().URL.String()),
 				logger.String("ip", c.RealIP()),
 				logger.String("user_agent", c.Request().UserAgent()),
 				logger.String("referer", c.Request().Referer()),
 				logger.Duration("latency", latency),
 			}
 
+			if resp, uwErr := echo.UnwrapResponse(c.Response()); uwErr == nil {
+				fields = append(fields, logger.Int("status", resp.Status))
+			}
+
 			if latency > 5*time.Second {
 				fields = append(fields, logger.Bool("slow_request", true))
 			}
 
-			if err == nil {
-				reqLogger.Info("HTTP request completed", fields...)
-			}
-
-			return err
+			reqLogger.Info("HTTP request completed", fields...)
+			return nil
 		}
 	}
 }
