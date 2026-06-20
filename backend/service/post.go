@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"blog-server/authz"
@@ -198,7 +199,9 @@ func (s *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, e
 	}
 
 	go func(postID uint) {
-		if _, err := s.rc.Incr(ctx, fmt.Sprintf("blog:post:view_count:%d", postID)); err != nil {
+		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if _, err := s.rc.Incr(bgCtx, fmt.Sprintf("blog:post:view_count:%d", postID)); err != nil {
 			s.log.Error("incr post view count failed", logger.Err(err))
 		}
 	}(post.ID)
