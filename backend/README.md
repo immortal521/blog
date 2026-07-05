@@ -1,32 +1,37 @@
 # Blog Server
 
-A blog backend service built with Go + Fiber.
+[中文文档](./README_CN.md)
+
+A blog backend service built with Go.
 
 ## Tech Stack
 
-- **Web Framework**: [Fiber v2](https://github.com/gofiber/fiber)
-- **Dependency Injection**: [Uber FX](https://github.com/uber-go/fx)
-- **Database**: PostgreSQL + GORM
+- **Web Framework**: [Echo v5](https://github.com/labstack/echo)
+- **Dependency Injection**: [Uber Fx](https://github.com/uber-go/fx)
+- **ORM**: [Ent](https://entgo.io/ent)
+- **Database**: PostgreSQL
 - **Cache**: Redis
 - **Object Storage**: AWS S3 (Compatible)
 - **Logging**: Zap
 - **Configuration**: Viper
+- **JWT**: [golang-jwt](https://github.com/golang-jwt/jwt)
+- **Validation**: [go-playground/validator](https://github.com/go-playground/validator)
 
 ## Features
 
-- User authentication and authorization (JWT)
-- Post management (CRUD, tags, categories)
+- User authentication and authorization (JWT + RBAC)
+- Post management (CRUD, tags, categories, view count)
 - Link management (status monitoring)
-- Image upload (S3)
+- Image upload (S3 compatible)
 - RSS feed
-- Statistics
 - Scheduled tasks (link status check, view count flush)
+- LLM integration (post summary generation)
 
 ## Quick Start
 
 ### Prerequisites
 
-- Go 1.25+
+- Go 1.26+
 - PostgreSQL
 - Redis
 
@@ -38,7 +43,13 @@ go mod download
 
 ### Configuration
 
-Create a `config.yml` configuration file:
+Copy the example config and modify:
+
+```bash
+cp config.yml.example config.yml
+```
+
+Or create `config.yml` directly:
 
 ```yaml
 app:
@@ -68,7 +79,7 @@ redis:
 
 jwt:
   secret: your_jwt_secret
-  access_expiration: 24h
+  access_expiration: 14m
   refresh_expiration: 168h
 
 email:
@@ -88,55 +99,87 @@ rustfs:
 ### Run
 
 ```bash
-go run cmd/main.go
+go run ./cmd/server
 ```
 
 ### Build
 
 ```bash
-go build -o blog-server cmd/main.go
+go build -o blog-server ./cmd/server
+```
+
+### Database Migration
+
+```bash
+go run ./cmd/migration
 ```
 
 ## Project Structure
 
 ```
 cmd/
-  main.go          # Entry point
+  server/main.go        # Application entry point
+  migration/main.go     # Database migration runner
 
-internal/
-  cache/           # Redis cache
-  config/          # Configuration management
-  database/        # Database connection and migration
-  entity/          # Data models
-  handler/         # HTTP handlers
-  middleware/      # Middleware
-  repository/      # Data access layer
-  request/         # Request DTOs
-  response/        # Response DTOs
-  router/          # Router configuration
-  scheduler/       # Scheduled tasks
-  service/         # Business logic layer
-  storage/         # Object storage
+config/                 # Configuration structs, loader, validation
+handler/                # HTTP handlers and route registration
+service/                # Business logic layer
+repository/             # Data access layer
+mapper/                 # Ent <-> Entity mapping
+entity/                 # Domain entities (plain structs)
+request/                # Request DTOs with validation
+response/               # Response DTOs
+
+middleware/             # HTTP middleware (auth, logger, body limit)
+authz/                  # Authorization (RBAC + ownership check)
+
+datastore/              # Database client and transaction management
+ent/                    # Ent ORM schemas and generated code
+cache/                  # Redis client
+
+storage/                # S3-compatible object storage
+scheduler/              # Background job scheduler
 
 pkg/
-  errs/            # Error handling
-  logger/          # Logger wrapper
-  utils/           # Utility functions
-  validatorx/      # Validator
+  errx/                 # Custom error types with error codes
+  jwt/                  # JWT token generation and parsing
+  validatorx/           # Validation wrapper
+  txmgr/                # Transaction manager interface
 
-templates/        # Email and other templates
+contextx/               # Context helpers (user info propagation)
+logger/                 # Zap structured logger
+utils/                  # Utility functions
+templates/              # Email templates
 ```
 
 ## API Endpoints
 
+### Auth
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/register` - User registration
-- `GET /api/posts` - Get posts list
-- `GET /api/posts/:id` - Get post details
-- `POST /api/posts` - Create post (requires auth)
-- `GET /api/links` - Get links list
+- `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/captcha` - Send captcha email
+
+### Posts
+
+- `GET /api/posts` - Get posts list (public)
+- `GET /api/posts/:id` - Get post details (public)
+- `POST /api/posts` - Create post (admin)
+- `PUT /api/posts/:id` - Update post (admin/owner)
+- `DELETE /api/posts/:id` - Delete post (admin/owner)
+
+### Links
+
+- `GET /api/links` - Get links list (public)
+- `POST /api/links` - Create link (admin)
+- `PUT /api/links/:id` - Update link (admin/owner)
+- `DELETE /api/links/:id` - Delete link (admin/owner)
+
+### Other
+
 - `GET /api/rss` - RSS feed
-- `GET /api/stats` - Statistics
+- `POST /api/upload` - Upload image (authenticated)
 
 ## License
 
