@@ -49,8 +49,10 @@ func BodyLimitWithConfig(config BodyLimitConfig) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusInternalServerError, "invalid pool object")
 			}
 			r.Reset(req.Body)
-			defer pool.Put(r)
 			req.Body = r
+			defer func() {
+				_ = r.Close()
+			}()
 
 			return next(c)
 		}
