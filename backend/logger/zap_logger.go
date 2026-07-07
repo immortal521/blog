@@ -88,11 +88,19 @@ func (z *zapLogger) WithContext(ctx context.Context) Logger {
 func NewLogger(cfg *config.Config) Logger {
 	enc, level := buildEncoder(cfg)
 
-	core := zapcore.NewCore(
+	infoCore := zapcore.NewCore(
 		enc,
 		zapcore.AddSync(os.Stdout),
 		level,
 	)
+
+	errorCore := zapcore.NewCore(
+		enc,
+		zapcore.AddSync(os.Stderr),
+		zap.ErrorLevel,
+	)
+
+	core := zapcore.NewTee(infoCore, errorCore)
 
 	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
