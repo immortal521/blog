@@ -2,13 +2,13 @@ package jobs
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"blog-server/logger"
 	"blog-server/service"
 )
 
-func StartCheckLinkStatusJob(ctx context.Context, svc service.LinkService) {
+func StartCheckLinkStatusJob(ctx context.Context, svc service.LinkService, log logger.Logger) {
 	for {
 		now := time.Now()
 		next := now.Truncate(time.Hour).Add(time.Hour)
@@ -17,7 +17,11 @@ func StartCheckLinkStatusJob(ctx context.Context, svc service.LinkService) {
 		select {
 		case <-time.After(wait):
 			if err := svc.CheckLinkStatus(ctx); err != nil {
-				log.Printf("[check_links_status] check error: %v", err)
+				log.Error("check link status failed",
+					logger.String("module", "scheduler"),
+					logger.String("job", "check_link_status"),
+					logger.Err(err),
+				)
 			}
 		case <-ctx.Done():
 			return

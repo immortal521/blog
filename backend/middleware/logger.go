@@ -64,9 +64,11 @@ func RequestLogger(
 
 			if latency > 5*time.Second {
 				fields = append(fields, logger.Bool("slow_request", true))
+				reqLogger.Warn("HTTP request completed", fields...)
+			} else {
+				reqLogger.Info("HTTP request completed", fields...)
 			}
 
-			reqLogger.Info("HTTP request completed", fields...)
 			return nil
 		}
 	}

@@ -63,7 +63,11 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			err = errx.New(errx.CodeExternalError, fmt.Errorf("status code: %d", resp.StatusCode))
 			errCh <- err
-			s.log.Error(fmt.Sprintf("[GenerateSummary] llm request error: %v", err))
+			s.log.Error("llm request failed",
+				logger.String("module", "GenerateSummary"),
+				logger.Err(err),
+				logger.Int("status_code", resp.StatusCode),
+			)
 			return
 		}
 		defer func() {
@@ -101,7 +105,11 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 
 			var respChunk map[string]any
 			if err := json.Unmarshal([]byte(jsonStr), &respChunk); err != nil {
-				s.log.Info(fmt.Sprintf("[GenerateSummary] json parse error: %v, data: %s", err, jsonStr))
+				s.log.Error("json parse error",
+					logger.String("module", "GenerateSummary"),
+					logger.Err(err),
+					logger.String("raw_data", jsonStr),
+				)
 				continue
 			}
 
@@ -131,7 +139,10 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 		}
 
 		if err := scanner.Err(); err != nil {
-			s.log.Error(fmt.Sprint("[GenerateSummary] scanner error: %v", err))
+			s.log.Error("scanner error",
+				logger.String("module", "GenerateSummary"),
+				logger.Err(err),
+			)
 			errCh <- err
 		}
 	}()

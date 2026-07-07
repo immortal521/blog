@@ -17,7 +17,7 @@ func main() {
 	log := logger.NewLogger(cfg)
 	ds, err := datastore.NewDataStore(cfg, log)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to connect to database: %v", err))
+		log.Fatal("failed to connect to database", logger.Err(err))
 	}
 	defer func() {
 		if err := ds.Close(); err != nil {

@@ -3,13 +3,13 @@ package jobs
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"blog-server/logger"
 	"blog-server/service"
 )
 
-func StartViewFlushJob(ctx context.Context, svc service.PostService) {
+func StartViewFlushJob(ctx context.Context, svc service.PostService, log logger.Logger) {
 	for {
 		now := time.Now()
 		next := now.Truncate(time.Hour).Add(time.Hour)
@@ -18,7 +18,11 @@ func StartViewFlushJob(ctx context.Context, svc service.PostService) {
 		select {
 		case <-time.After(wait):
 			if err := svc.FlushViewCountToDB(ctx); err != nil {
-				log.Printf("[view_flush] flush error: %v", err)
+				log.Error("check link status failed",
+					logger.String("module", "scheduler"),
+					logger.String("job", "view_count_flush"),
+					logger.Err(err),
+				)
 			}
 		case <-ctx.Done():
 			return

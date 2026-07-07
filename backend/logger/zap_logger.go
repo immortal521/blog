@@ -111,10 +111,14 @@ func NewLogger(cfg *config.Config) Logger {
 //   - Human-readable timestamps
 //   - Debug level and above
 func buildEncoder(cfg *config.Config) (zapcore.Encoder, zapcore.Level) {
-	if cfg.App.IsProd() {
+	var level zapcore.Level
+	if err := level.UnmarshalText([]byte(cfg.Log.Level)); err != nil {
+		level = zap.InfoLevel
+	}
+	if cfg.Log.Format == "json" || cfg.App.IsProd() {
 		ec := zap.NewProductionEncoderConfig()
 		ec.EncodeTime = zapcore.ISO8601TimeEncoder
-		return zapcore.NewJSONEncoder(ec), zap.InfoLevel
+		return zapcore.NewJSONEncoder(ec), level
 	}
 
 	ec := zapcore.EncoderConfig{
