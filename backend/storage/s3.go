@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -88,11 +89,11 @@ func (s *S3Storage) Upload(ctx context.Context, bucket, key string, body io.Read
 	return err
 }
 
-func NewS3Storage(cfg *config.Config, log logger.Logger) Storage {
+func NewS3Storage(cfg *config.Config, log logger.Logger) (Storage, error) {
 	ctx := context.Background()
 	s3Cfg, err := awsConfig.LoadDefaultConfig(ctx)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
 	client := s3.NewFromConfig(s3Cfg, func(o *s3.Options) {
 		o.Region = cfg.Rustfs.Region
@@ -100,5 +101,5 @@ func NewS3Storage(cfg *config.Config, log logger.Logger) Storage {
 		o.Credentials = aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(cfg.Rustfs.AccessKeyID, cfg.Rustfs.SecretAccessKey, ""))
 		o.UsePathStyle = true
 	})
-	return &S3Storage{client: client, log: log}
+	return &S3Storage{client: client, log: log}, nil
 }
