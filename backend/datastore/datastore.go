@@ -7,11 +7,14 @@ import (
 	"blog-server/config"
 	"blog-server/ent"
 	"blog-server/logger"
+	"blog-server/pkg/txmgr"
 
 	_ "github.com/lib/pq"
 )
 
 type contextTxKey struct{}
+
+var _ txmgr.TxManager = (*DataStore)(nil)
 
 // DataStore provides a unified access point to the database layer,
 // optionally routing operations through an active transaction.
@@ -50,7 +53,7 @@ func NewDataStore(cfg *config.Config, log logger.Logger) (*DataStore, error) {
 
 	client, err := ent.Open("postgres", dsn)
 	if err != nil {
-		log.Error(fmt.Sprintf("failed to open ent client: %v", err))
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
 	if cfg.App.IsDev() {

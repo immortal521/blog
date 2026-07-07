@@ -11,9 +11,9 @@ import (
 	"blog-server/authz"
 	"blog-server/cache"
 	"blog-server/contextx"
-	"blog-server/datastore"
 	"blog-server/entity"
 	"blog-server/logger"
+	"blog-server/pkg/txmgr"
 	"blog-server/repository"
 )
 
@@ -27,11 +27,11 @@ type PostService interface {
 }
 
 type postService struct {
-	log       logger.Logger
-	rc        cache.CacheClient
-	postRepo  repository.PostRepo
-	datastore *datastore.DataStore
-	authz     *authz.Authorizer
+	tx    txmgr.TxManager
+	log   logger.Logger
+	rc    cache.CacheClient
+	pr    repository.PostRepo
+	authz *authz.Authorizer
 }
 
 type CreatePostInput struct {
@@ -58,8 +58,8 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 	var post *entity.Post
 	var err error
 
-	err = s.datastore.WithTx(ctx, func(ctx context.Context) error {
-		post, err = s.postRepo.Create(ctx, &entity.Post{
+	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
+		post, err = s.pr.Create(ctx, &entity.Post{
 			Title:           input.Title,
 			Summary:         input.Summary,
 			Cover:           input.Cover,
@@ -72,11 +72,11 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 			return err
 		}
 
-		if err = s.postRepo.SetTags(ctx, post.ID, input.Tags); err != nil {
+		if err = s.pr.SetTags(ctx, post.ID, input.Tags); err != nil {
 			return err
 		}
 
-		if err = s.postRepo.SetCategories(ctx, post.ID, input.CategoryIDs); err != nil {
+		if err = s.pr.SetCategories(ctx, post.ID, input.CategoryIDs); err != nil {
 			return err
 		}
 
@@ -133,7 +133,7 @@ func (s *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 
 		if len(updates) > 0 {
-			if err := s.postRepo.BatchIncrViewCounts(ctx, updates); err != nil {
+			if err := s.pr.BatchIncrViewCounts(ctx, updates); err != nil {
 				allErrors = append(allErrors, fmt.Errorf("db update failed: %w", err))
 			}
 		}
@@ -143,31 +143,34 @@ func (s *postService) FlushViewCountToDB(ctx context.Context) error {
 		}
 	}
 	if len(allErrors) > 0 {
-		return fmt.Errorf(fmt.Sprintf("Flush completed with %d errors", len(allErrors)), fmt.Errorf("%v", allErrors))
+		return fmt.Errorf("flush completed with %d errors: %v", len(allErrors), allErrors)
 	}
 	return nil
 }
 
 func NewPostService(
+	tx txmgr.TxManager,
 	log logger.Logger,
+	pr repository.PostRepo,
 	rc cache.CacheClient,
-	postRepo repository.PostRepo,
-	datastore *datastore.DataStore,
 	authz *authz.Authorizer,
 ) PostService {
 	return &postService{
-		log:       log,
-		rc:        rc,
-		datastore: datastore,
-		postRepo:  postRepo,
-		authz:     authz,
+		log:   log,
+		rc:    rc,
+		tx:    tx,
+		pr:    pr,
+		authz: authz,
 	}
 }
 
 // GetPosts retrieves all published posts
 func (s *postService) GetPosts(ctx context.Context, page, pageSize int) ([]*entity.Post, int, error) {
-	count, _ := s.postRepo.CountPublished(ctx)
-	ps, err := s.postRepo.ListPublished(ctx, page, pageSize)
+	count, err := s.pr.CountPublished(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+	ps, err := s.pr.ListPublished(ctx, page, pageSize)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -183,7 +186,7 @@ func (s *postService) GetPostsWithContent(ctx context.Context) ([]*entity.Post, 
 
 // GetPostsMeta retrieves metadata
 func (s *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
-	posts, err := s.postRepo.ListPublishedForSitemap(ctx)
+	posts, err := s.pr.ListPublishedForSitemap(ctx)
 	if err != nil {
 		s.log.Error("get posts meta failed", logger.Err(err))
 		return []*entity.Post{}
@@ -193,7 +196,7 @@ func (s *postService) GetPostsMeta(ctx context.Context) []*entity.Post {
 
 // GetPostByID retrieves a single post and async
 func (s *postService) GetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
-	post, err := s.postRepo.GetPublishedByID(ctx, id)
+	post, err := s.pr.GetPublishedByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}

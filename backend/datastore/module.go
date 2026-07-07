@@ -4,6 +4,8 @@ package datastore
 import (
 	"context"
 
+	"blog-server/pkg/txmgr"
+
 	"go.uber.org/fx"
 )
 
@@ -13,7 +15,10 @@ func Module() fx.Option {
 	return fx.Module("datastore",
 		fx.Provide(
 			NewDataStore,
-		), fx.Invoke(registerLifecycle))
+			func(ds *DataStore) txmgr.TxManager { return ds },
+		),
+		fx.Invoke(registerLifecycle),
+	)
 }
 
 // registerLifecycle attaches lifecycle hooks for the datastore module.
