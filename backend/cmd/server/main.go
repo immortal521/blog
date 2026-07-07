@@ -59,7 +59,7 @@ func providerEchoApp(cfg *config.Config, log logger.Logger) *echo.Echo {
 	}
 	app := echo.NewWithConfig(echoCfg)
 	app.Use(middleware.RequestLogger(cfg, log))
-	app.Use(middleware.BodyLimit(10 * 10 * 1024))
+	app.Use(middleware.BodyLimit(10 * 1024 * 1024))
 	return app
 }
 
