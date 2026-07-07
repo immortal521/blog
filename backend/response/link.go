@@ -1,6 +1,8 @@
 package response
 
-type LinkResponse struct {
+// LinkRes is the response body for link list endpoints.
+// Includes all fields the frontend needs to display and manage links.
+type LinkRes struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
 	URL         string `json:"url"`

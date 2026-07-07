@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"blog-server/contextx"
+	"blog-server/entity"
 	"blog-server/middleware"
 	"blog-server/pkg/errx"
 	"blog-server/request"
@@ -39,6 +40,37 @@ func RegisterPostRoute(r *echo.Group, handler PostHandler, am *middleware.AuthMi
 	group.GET("/:id", handler.GetPost)
 }
 
+// toPostRes maps a domain Post to the detail response DTO.
+func toPostRes(p *entity.Post) response.PostRes {
+	return response.PostRes{
+		ID:              p.ID,
+		Title:           p.Title,
+		Summary:         p.Summary,
+		Content:         p.Content,
+		Cover:           p.Cover,
+		ReadTimeMinutes: p.ReadTimeMinutes,
+		ViewCount:       p.ViewCount,
+		PublishedAt:     p.PublishedAt,
+		UpdatedAt:       p.UpdatedAt,
+		Author:          p.User,
+	}
+}
+
+// toPostListRes maps a domain Post to the list response DTO (no content).
+func toPostListRes(p *entity.Post) response.PostListRes {
+	return response.PostListRes{
+		ID:              p.ID,
+		Title:           p.Title,
+		Summary:         p.Summary,
+		Cover:           p.Cover,
+		ReadTimeMinutes: p.ReadTimeMinutes,
+		ViewCount:       p.ViewCount,
+		PublishedAt:     p.PublishedAt,
+		UpdatedAt:       p.UpdatedAt,
+		Author:          p.User,
+	}
+}
+
 func (h *postHandler) CreatePost(c *echo.Context) error {
 	req := new(request.CreatePostReq)
 	if err := c.Bind(req); err != nil {
@@ -66,19 +98,7 @@ func (h *postHandler) CreatePost(c *echo.Context) error {
 		return err
 	}
 
-	res := &response.PostRes{
-		ID:              post.ID,
-		Title:           post.Title,
-		Summary:         post.Summary,
-		Content:         post.Content,
-		Cover:           post.Cover,
-		ReadTimeMinutes: post.ReadTimeMinutes,
-		ViewCount:       post.ViewCount,
-		PublishedAt:     post.PublishedAt,
-		UpdatedAt:       post.UpdatedAt,
-	}
-
-	return response.OK(c, response.Success(res))
+	return response.OK(c, response.Success(toPostRes(post)))
 }
 
 // GetPosts retrieves all published posts
@@ -95,23 +115,13 @@ func (h *postHandler) GetPosts(c *echo.Context) error {
 
 	postDTOs := make([]response.PostListRes, len(posts))
 	for i, post := range posts {
-		postDTOs[i] = response.PostListRes{
-			ID:              post.ID,
-			Title:           post.Title,
-			Cover:           post.Cover,
-			Summary:         post.Summary,
-			PublishedAt:     post.PublishedAt,
-			UpdatedAt:       post.UpdatedAt,
-			ReadTimeMinutes: post.ReadTimeMinutes,
-			ViewCount:       post.ViewCount,
-		}
-	}
-	pagedRes := response.Page[response.PostListRes]{
-		Total: total,
-		List:  postDTOs,
+		postDTOs[i] = toPostListRes(post)
 	}
 
-	return response.OK(c, response.Success(pagedRes))
+	return response.OK(c, response.Success(response.Page[response.PostListRes]{
+		Total: total,
+		List:  postDTOs,
+	}))
 }
 
 // GetPostIds retrieves metadata (id and updated_at) for all posts
@@ -141,16 +151,5 @@ func (h *postHandler) GetPost(c *echo.Context) error {
 		return err
 	}
 
-	res := response.PostRes{
-		ID:              post.ID,
-		Title:           post.Title,
-		Summary:         post.Summary,
-		Content:         post.Content,
-		Cover:           post.Cover,
-		ReadTimeMinutes: post.ReadTimeMinutes,
-		ViewCount:       post.ViewCount,
-		PublishedAt:     post.PublishedAt,
-	}
-
-	return response.OK(c, response.Success(res))
+	return response.OK(c, response.Success(toPostRes(post)))
 }

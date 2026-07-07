@@ -40,7 +40,6 @@ func (r *linkRepo) IsOwner(ctx context.Context, userID uint, linkID uint) (bool,
 		Query().
 		Where(
 			link.IDEQ(linkID),
-			link.IDEQ(userID),
 		).
 		Count(ctx)
 	if err != nil {

@@ -12,6 +12,7 @@ func extractAuthor(p *ent.Post) string {
 	return p.Edges.Author.Username
 }
 
+// ToPost converts an ent.Post to entity.Post.
 func ToPost(p *ent.Post) *entity.Post {
 	if p == nil {
 		return &entity.Post{}
@@ -24,10 +25,13 @@ func ToPost(p *ent.Post) *entity.Post {
 		Cover:   p.Cover,
 
 		User:   extractAuthor(p),
+		UserID: p.UserID,
 
 		Content:         p.Content,
 		ReadTimeMinutes: p.ReadTimeMinutes,
 		ViewCount:       p.ViewCount,
+
+		Status: p.Status,
 
 		PublishedAt: p.PublishedAt,
 		CreatedAt:   p.CreatedAt,

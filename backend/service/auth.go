@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"crypto/subtle"
 	"fmt"
 	"slices"
 	"strings"
@@ -41,11 +42,36 @@ const (
 	ChangeEmail CaptchaType = "ChangeEmail"
 )
 
+// RegisterInput groups all parameters for user registration.
+type RegisterInput struct {
+	Email    string
+	Password string
+	Captcha  string
+}
+
+// LoginInput groups all parameters for user login.
+type LoginInput struct {
+	Email    string
+	Password string
+}
+
+// AuthResult is the unified return type for Register / Login.
+// It carries both tokens and the user profile so the handler can
+// populate the full LoginRes without a second query.
+type AuthResult struct {
+	AccessToken  string
+	RefreshToken string
+	UUID         string
+	Avatar       *string
+	Username     string
+	Role         string
+}
+
 // IAuthService defines the interface for authentication services
 type AuthService interface {
 	SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error
-	Register(ctx context.Context, email, password, captcha string) (string, string, error)
-	Login(ctx context.Context, email, password string) (string, string, error)
+	Register(ctx context.Context, input *RegisterInput) (*AuthResult, error)
+	Login(ctx context.Context, input *LoginInput) (*AuthResult, error)
 	HasRole(ctx context.Context, id uint, roles ...entity.UserRole) (bool, error)
 	RefreshAccessToken(context.Context, string) (string, string, error)
 }
@@ -71,71 +97,97 @@ func NewAuthService(ds *datastore.DataStore, rc cache.CacheClient, userRepo repo
 }
 
 // Register registers a new user and generates access/refresh tokens
-func (s *authService) Register(ctx context.Context, email, password, captcha string) (string, string, error) {
+func (s *authService) Register(ctx context.Context, input *RegisterInput) (*AuthResult, error) {
 	// Verify captcha
-	cachedCaptcha, err := s.rc.Get(ctx, fmt.Sprintf("Register:%s", email))
-	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(captcha)) {
-		return "", "", errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid captcha: %s", email))
-	}
-
-	hashPassword, err := utils.HashPassword(password)
+	cachedCaptcha, err := s.rc.Get(ctx, fmt.Sprintf("Register:%s", input.Email))
 	if err != nil {
-		return "", "", errx.New(errx.CodeInternalError, err)
+		return nil, errx.New(errx.CodeInternalError, fmt.Errorf("failed to get cached captcha: %w", err))
+	}
+	if !strings.EqualFold(strings.TrimSpace(cachedCaptcha), strings.TrimSpace(input.Captcha)) {
+		return nil, errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid captcha"))
+	}
+	_ = s.rc.Delete(ctx, fmt.Sprintf("Register:%s", input.Email))
+
+	hashPassword, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	user := &entity.User{
 		UUID:     uuid.New(),
-		Email:    email,
+		Email:    input.Email,
 		Username: entity.GenerateUsername(),
 	}
 
+	var created *entity.User
 	err = s.ds.WithTx(ctx, func(ctx context.Context) error {
-		_, err = s.userRepo.Create(ctx, user, hashPassword)
+		var err error
+		created, err = s.userRepo.Create(ctx, user, hashPassword)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		return "", "", errx.New(errx.CodeInternalError, err)
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
 	j := jwt.New(s.cfg.JWT)
 
-	accessToken, refreshToken, err := j.GenerateAllTokens(user.ID, user.Role)
+	accessToken, refreshToken, err := j.GenerateAllTokens(created.ID, created.Role)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	if err := s.cacheRefreshToken(ctx, user.ID, refreshToken); err != nil {
-		return "", "", errx.New(errx.CodeInternalError, err)
+	if err := s.cacheRefreshToken(ctx, created.ID, refreshToken); err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
-	return accessToken, refreshToken, nil
+	return &AuthResult{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UUID:         created.UUID.String(),
+		Avatar:       created.Avatar,
+		Username:     created.Username,
+		Role:         string(created.Role),
+	}, nil
 }
 
 // Login logs in a user and generates access/refresh tokens
-func (s *authService) Login(ctx context.Context, email, password string) (string, string, error) {
-	user, err := s.userRepo.GetAuthByEmail(ctx, email)
+func (s *authService) Login(ctx context.Context, input *LoginInput) (*AuthResult, error) {
+	user, err := s.userRepo.GetAuthByEmail(ctx, input.Email)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	if !utils.VerifyPassword(password, user.Password) {
-		return "", "", errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid password: %s", email))
+	if !utils.VerifyPassword(input.Password, user.Password) {
+		return nil, errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid password: %s", input.Email))
+	}
+
+	// Fetch full profile for the response.
+	profile, err := s.userRepo.GetByEmail(ctx, input.Email)
+	if err != nil {
+		return nil, err
 	}
 
 	j := jwt.New(s.cfg.JWT)
 
 	accessToken, refreshToken, err := j.GenerateAllTokens(user.ID, user.Role)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	if err := s.cacheRefreshToken(ctx, user.ID, refreshToken); err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return accessToken, refreshToken, nil
+	return &AuthResult{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UUID:         profile.UUID.String(),
+		Avatar:       profile.Avatar,
+		Username:     profile.Username,
+		Role:         string(profile.Role),
+	}, nil
 }
 
 // SendCaptchaMail generates a captcha, stores it in Redis, and sends an email
@@ -196,7 +248,7 @@ func (s *authService) RefreshAccessToken(ctx context.Context, token string) (str
 		return "", "", errx.New(errx.CodeInternalError, err)
 	}
 
-	if !strings.EqualFold(token, cacheRefreshToken) {
+	if subtle.ConstantTimeCompare([]byte(token), []byte(cacheRefreshToken)) == 0 {
 		return "", "", errx.New(errx.CodeUnauthorized, fmt.Errorf("invalid refresh token"))
 	}
 

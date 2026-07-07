@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 
+	"blog-server/entity"
 	"blog-server/pkg/errx"
 	"blog-server/pkg/validatorx"
 	"blog-server/request"
@@ -34,6 +35,25 @@ func NewLinkHandler(svc service.LinkService, validate validatorx.Validator) Link
 	return &linkHandler{svc: svc, validate: validate}
 }
 
+// toLinkResponse maps a domain Link to the response DTO.
+func toLinkResponse(link *entity.Link) response.LinkRes {
+	res := response.LinkRes{
+		ID:        link.ID,
+		Name:      link.Name,
+		URL:       link.URL,
+		SortOrder: link.SortOrder,
+	}
+
+	if link.Description != nil {
+		res.Description = *link.Description
+	}
+	if link.Avatar != nil {
+		res.Avatar = *link.Avatar
+	}
+
+	return res
+}
+
 // GetLinks retrieves all enabled links
 func (h *linkHandler) GetLinks(c *echo.Context) error {
 	links, err := h.svc.GetLinks(c.Request().Context())
@@ -41,19 +61,12 @@ func (h *linkHandler) GetLinks(c *echo.Context) error {
 		return err
 	}
 
-	linkDTOs := make([]response.LinkResponse, len(links))
+	linkDTOs := make([]response.LinkRes, len(links))
 	for i, link := range links {
-		linkDTOs[i] = response.LinkResponse{
-			ID:          link.ID,
-			Name:        link.Name,
-			URL:         link.URL,
-			Description: *link.Description,
-			Avatar:      *link.Avatar,
-		}
+		linkDTOs[i] = toLinkResponse(link)
 	}
 
-	result := response.Success(linkDTOs)
-	return response.OK(c, result)
+	return response.OK(c, response.Success(linkDTOs))
 }
 
 // ApplyForALinks creates a new link application

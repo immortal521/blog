@@ -24,8 +24,9 @@ type Link struct {
 	Description *string
 	Avatar      *string
 
-	Enabled bool
-	Status  LinkStatus
+	Enabled   bool
+	Status    LinkStatus
+	SortOrder int
 
 	CategoryID *uint
 

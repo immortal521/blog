@@ -5,11 +5,12 @@ import (
 	"blog-server/entity"
 )
 
+// ToLink converts an ent.Link to entity.Link.
 func ToLink(l *ent.Link) *entity.Link {
 	if l == nil {
 		return &entity.Link{}
 	}
-	return &entity.Link{
+	link := &entity.Link{
 		ID:          l.ID,
 		Name:        l.Name,
 		URL:         l.URL,
@@ -17,9 +18,19 @@ func ToLink(l *ent.Link) *entity.Link {
 		Description: &l.Description,
 		Avatar:      &l.Avatar,
 		Status:      l.Status,
+		SortOrder:   l.SortOrder,
 		CreatedAt:   l.CreatedAt,
 		UpdatedAt:   l.UpdatedAt,
 	}
+
+	// CategoryID is 0 when not set in the database (ent uses plain uint).
+	// Convert to *uint only when non-zero to preserve nil semantics.
+	if l.CategoryID != 0 {
+		id := l.CategoryID
+		link.CategoryID = &id
+	}
+
+	return link
 }
 
 func ToLinks(ls []*ent.Link) []*entity.Link {

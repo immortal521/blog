@@ -43,6 +43,18 @@ func NewAuthHandler(authService service.AuthService, validate validatorx.Validat
 	return &authHandler{svc: authService, validate: validate}
 }
 
+// toLoginRes converts an AuthResult into a LoginRes.
+func toLoginRes(result *service.AuthResult) *response.LoginRes {
+	return &response.LoginRes{
+		AccessToken:  result.AccessToken,
+		RefreshToken: result.RefreshToken,
+		UUID:         result.UUID,
+		Avatar:       result.Avatar,
+		Username:     result.Username,
+		Role:         result.Role,
+	}
+}
+
 // Register handles user registration
 func (h *authHandler) Register(c *echo.Context) error {
 	req := new(request.RegisterReq)
@@ -55,23 +67,21 @@ func (h *authHandler) Register(c *echo.Context) error {
 		return errx.New(errx.CodeValidationFailed, err)
 	}
 
-	accessToken, refreshToken, err := h.svc.Register(
+	result, err := h.svc.Register(
 		c.Request().Context(),
-		req.Email,
-		req.Password,
-		req.Captcha,
+		&service.RegisterInput{
+			Email:    req.Email,
+			Password: req.Password,
+			Captcha:  req.Captcha,
+		},
 	)
 	if err != nil {
 		return err
 	}
 
-	setRefreshTokenCookie(c, refreshToken)
+	setRefreshTokenCookie(c, result.RefreshToken)
 
-	res := response.Success(&response.LoginRes{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	})
-	return response.OK(c, res)
+	return response.OK(c, response.Success(toLoginRes(result)))
 }
 
 // Logout handles user logout by clearing the refresh token cookie
@@ -99,18 +109,14 @@ func (h *authHandler) Login(c *echo.Context) error {
 		return errx.New(errx.CodeValidationFailed, err)
 	}
 
-	accessToken, refreshToken, err := h.svc.Login(c.Request().Context(), req.Email, req.Password)
+	result, err := h.svc.Login(c.Request().Context(), &service.LoginInput{Email: req.Email, Password: req.Password})
 	if err != nil {
 		return err
 	}
 
-	setRefreshTokenCookie(c, refreshToken)
+	setRefreshTokenCookie(c, result.RefreshToken)
 
-	res := response.Success(&response.LoginRes{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	})
-	return response.OK(c, res)
+	return response.OK(c, response.Success(toLoginRes(result)))
 }
 
 // Refresh handles access token refresh using refresh token from cookie
@@ -168,6 +174,7 @@ func setRefreshTokenCookie(c *echo.Context, value string) {
 		Expires:  time.Now().Add(maxAge),
 		HttpOnly: true,
 		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	}
 	c.SetCookie(cookie)
 }
