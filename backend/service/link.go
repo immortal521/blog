@@ -9,36 +9,9 @@ import (
 
 	"blog-server/entity"
 	"blog-server/repository"
-	// "blog-server/request"
 )
 
-// ILinkService defines the interface for link business logic operations
-type LinkService interface {
-	GetLinks(ctx context.Context) ([]*entity.Link, error)
-	CheckLinkStatus(ctx context.Context) error
-	CreateLink(ctx context.Context, input *CreateLinkInput) error
-	// GetOverview(ctx context.Context) (*response.LinkOverview, error)
-}
-
-type linkService struct {
-	linkRepo repository.LinkRepo
-}
-
-// NewLinkService creates a new link service instance
-func NewLinkService(linkRepo repository.LinkRepo) LinkService {
-	return &linkService{linkRepo: linkRepo}
-}
-
-// GetLinks retrieves all enabled links
-func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
-	return s.linkRepo.GetAllEnabled(ctx)
-}
-
-// // GetOverview retrieves link statistics
-// func (s *linkService) GetOverview(ctx context.Context) (*response.LinkOverview, error) {
-// 	return s.linkRepo.GetOverview(ctx, s.db)
-// }
-
+// CreateLinkInput groups all parameters for creating a link.
 type CreateLinkInput struct {
 	Name        string
 	Description *string
@@ -46,7 +19,30 @@ type CreateLinkInput struct {
 	URL         string
 }
 
-// CreateLink creates a new link
+// LinkService defines the interface for link business logic operations.
+type LinkService interface {
+	GetLinks(ctx context.Context) ([]*entity.Link, error)
+	CreateLink(ctx context.Context, input *CreateLinkInput) error
+	CheckLinkStatus(ctx context.Context) error
+	// GetOverview(ctx context.Context) (*response.LinkOverview, error)
+}
+
+// linkService implements the LinkService interface.
+type linkService struct {
+	linkRepo repository.LinkRepo
+}
+
+// NewLinkService creates a new link service instance.
+func NewLinkService(linkRepo repository.LinkRepo) LinkService {
+	return &linkService{linkRepo: linkRepo}
+}
+
+// GetLinks retrieves all enabled links.
+func (s *linkService) GetLinks(ctx context.Context) ([]*entity.Link, error) {
+	return s.linkRepo.GetAllEnabled(ctx)
+}
+
+// CreateLink creates a new link.
 func (s *linkService) CreateLink(ctx context.Context, input *CreateLinkInput) error {
 	link := &entity.Link{
 		Name:        input.Name,
@@ -58,8 +54,8 @@ func (s *linkService) CreateLink(ctx context.Context, input *CreateLinkInput) er
 	return err
 }
 
-// CheckLinkStatus checks the status of all links by making HTTP requests
-// Updates the link status in the database if it has changed
+// CheckLinkStatus checks the status of all links by making HTTP requests.
+// Updates the link status in the database if it has changed.
 func (s linkService) CheckLinkStatus(ctx context.Context) error {
 	links, err := s.linkRepo.GetAll(ctx)
 	if err != nil {
@@ -112,3 +108,8 @@ func (s linkService) CheckLinkStatus(ctx context.Context) error {
 
 	return nil
 }
+
+// // GetOverview retrieves link statistics
+// func (s *linkService) GetOverview(ctx context.Context) (*response.LinkOverview, error) {
+// 	return s.linkRepo.GetOverview(ctx, s.db)
+// }

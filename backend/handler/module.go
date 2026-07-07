@@ -10,10 +10,10 @@ import (
 type Handlers struct {
 	fx.In
 
-	Post PostHandler
-	Rss  RssHandler
-	Auth AuthHandler
-	Link LinkHandler
+	Post  PostHandler
+	Rss   RssHandler
+	Auth  AuthHandler
+	Link  LinkHandler
 	Model ModelHandler
 }
 

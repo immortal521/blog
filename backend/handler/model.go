@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"blog-server/logger"
 	"blog-server/pkg/errx"
 	"blog-server/response"
 	"blog-server/service"
@@ -14,22 +15,13 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+// ModelHandler defines the interface for model HTTP handlers.
 type ModelHandler interface {
 	CreateSummarySession(c *echo.Context) error
 	SummaryStream(c *echo.Context) error
 }
 
-type modelHandler struct {
-	svn      service.ModelService
-	sessions *sync.Map
-}
-
-func RegisterModelRoutes(r *echo.Group, h ModelHandler) {
-	group := r.Group("/model")
-	group.POST("/summarize", h.CreateSummarySession)
-	group.GET("/summarize/:sessionId", h.SummaryStream)
-}
-
+// Session represents an SSE streaming session.
 type Session struct {
 	Content  string
 	TaskType string
@@ -37,6 +29,23 @@ type Session struct {
 	ErrCh    <-chan error
 }
 
+// modelHandler implements the ModelHandler interface.
+type modelHandler struct {
+	log      logger.Logger
+	svc      service.ModelService
+	sessions *sync.Map
+}
+
+// NewModelHandler creates a new model handler instance.
+func NewModelHandler(log logger.Logger, svc service.ModelService) ModelHandler {
+	return &modelHandler{
+		log:      log,
+		svc:      svc,
+		sessions: &sync.Map{},
+	}
+}
+
+// CreateSummarySession creates a new summarization session.
 func (h *modelHandler) CreateSummarySession(c *echo.Context) error {
 	req := new(struct {
 		Content string `json:"content" validate:"required"`
@@ -61,15 +70,17 @@ func (h *modelHandler) CreateSummarySession(c *echo.Context) error {
 	})
 }
 
+// SummaryStream handles SSE streaming for summarization.
 func (h *modelHandler) SummaryStream(c *echo.Context) error {
 	sessionID := c.Param("sessionId")
 	return h.stream(c, sessionID)
 }
 
+// stream handles the SSE streaming logic for a given session.
 func (h *modelHandler) stream(c *echo.Context, sessionID string) error {
 	v, ok := h.sessions.Load(sessionID)
 	if !ok {
-		fmt.Println("session not found")
+		h.log.Warn("session not found")
 		return nil
 	}
 	session := v.(*Session)
@@ -78,7 +89,7 @@ func (h *modelHandler) stream(c *echo.Context, sessionID string) error {
 	if session.TextCh == nil && session.ErrCh == nil {
 		switch session.TaskType {
 		case "summary":
-			session.TextCh, session.ErrCh = h.svn.GenerateSummary(c.Request().Context(), session.Content)
+			session.TextCh, session.ErrCh = h.svc.GenerateSummary(c.Request().Context(), session.Content)
 		default:
 			return errx.New(errx.CodeInvalidParam, fmt.Errorf("unsupported task type"))
 		}
@@ -127,9 +138,9 @@ func (h *modelHandler) stream(c *echo.Context, sessionID string) error {
 	}
 }
 
-func NewModelHandler(svn service.ModelService) ModelHandler {
-	return &modelHandler{
-		svn:      svn,
-		sessions: &sync.Map{},
-	}
+// RegisterModelRoutes registers all model-related routes.
+func RegisterModelRoutes(r *echo.Group, h ModelHandler) {
+	group := r.Group("/model")
+	group.POST("/summarize", h.CreateSummarySession)
+	group.GET("/summarize/:sessionId", h.SummaryStream)
 }

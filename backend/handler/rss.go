@@ -11,34 +11,38 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+// RssHandler defines the interface for RSS HTTP handlers.
 type RssHandler interface {
 	Subscript(c *echo.Context) error
 	Complete(c *echo.Context) error
 }
 
+// rssHandler implements the RssHandler interface.
 type rssHandler struct {
 	svc service.RssService
 }
 
+// NewRssHandler creates a new RSS handler instance.
 func NewRssHandler(svc service.RssService) RssHandler {
 	return &rssHandler{svc: svc}
 }
 
-func (r *rssHandler) Subscript(c *echo.Context) error {
-	p := new(request.RssSubscriptReq)
+// Subscript handles RSS feed subscription requests.
+func (h *rssHandler) Subscript(c *echo.Context) error {
+	req := new(request.RssSubscriptReq)
 
-	if err := c.Bind(p); err != nil {
+	if err := c.Bind(req); err != nil {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
 	var data *entity.RSS
 	var err error
 
-	if p.Page <= 0 {
-		data, err = r.svc.GenerateRSSFeed(c.Request().Context())
+	if req.Page <= 0 {
+		data, err = h.svc.GenerateRSSFeed(c.Request().Context())
 	} else {
 		defaultPageSize := 10
-		data, err = r.svc.GeneratePagedFeed(c.Request().Context(), p.Page, defaultPageSize)
+		data, err = h.svc.GeneratePagedFeed(c.Request().Context(), req.Page, defaultPageSize)
 	}
 
 	if err != nil {
@@ -48,8 +52,9 @@ func (r *rssHandler) Subscript(c *echo.Context) error {
 	return c.XML(http.StatusOK, data)
 }
 
-func (r *rssHandler) Complete(c *echo.Context) error {
-	data, err := r.svc.GenerateCompleteFeed(c.Request().Context())
+// Complete handles complete RSS feed requests.
+func (h *rssHandler) Complete(c *echo.Context) error {
+	data, err := h.svc.GenerateCompleteFeed(c.Request().Context())
 	if err != nil {
 		return err
 	}
@@ -57,11 +62,9 @@ func (r *rssHandler) Complete(c *echo.Context) error {
 	return c.XML(http.StatusOK, data)
 }
 
-// RegisterRssRoute 路由注册
-func RegisterRssRoute(r *echo.Group, handler RssHandler) {
+// RegisterRssRoutes registers all RSS-related routes.
+func RegisterRssRoute(r *echo.Group, h RssHandler) {
 	group := r.Group("/rss")
-
-	group.GET("", handler.Subscript)
-
-	group.GET("/complete", handler.Complete)
+	group.GET("", h.Subscript)
+	group.GET("/complete", h.Complete)
 }

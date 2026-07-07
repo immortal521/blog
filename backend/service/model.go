@@ -15,15 +15,23 @@ import (
 	"blog-server/pkg/errx"
 )
 
+// ModelService defines the interface for LLM-related operations.
 type ModelService interface {
 	GenerateSummary(ctx context.Context, content string) (<-chan string, <-chan error)
 }
 
+// modelService implements the ModelService interface.
 type modelService struct {
 	cfg *config.Config
 	log logger.Logger
 }
 
+// NewModelService creates and returns a new ModelService instance.
+func NewModelService(cfg *config.Config, log logger.Logger) ModelService {
+	return &modelService{cfg: cfg, log: log}
+}
+
+// GenerateSummary generates a summary for the given content using LLM streaming.
 func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-chan string, <-chan error) {
 	textCh := make(chan string, 10)
 	errCh := make(chan error, 1)
@@ -103,8 +111,8 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 				continue
 			}
 
-			var respChunk map[string]any
-			if err := json.Unmarshal([]byte(jsonStr), &respChunk); err != nil {
+			var chunk map[string]any
+			if err := json.Unmarshal([]byte(jsonStr), &chunk); err != nil {
 				s.log.Error("json parse error",
 					logger.String("module", "GenerateSummary"),
 					logger.Err(err),
@@ -113,7 +121,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 				continue
 			}
 
-			choices, ok := respChunk["choices"].([]any)
+			choices, ok := chunk["choices"].([]any)
 			if !ok || len(choices) == 0 {
 				continue
 			}
@@ -125,8 +133,8 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			if !ok {
 				continue
 			}
-			content, ok := delta["content"].(string)
-			if !ok || content == "" {
+			text, ok := delta["content"].(string)
+			if !ok || text == "" {
 				continue
 			}
 
@@ -134,7 +142,7 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			case <-ctx.Done():
 				s.log.Info("[GenerateSummary] context canceled during sending")
 				return
-			case textCh <- content:
+			case textCh <- text:
 			}
 		}
 
@@ -148,8 +156,4 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 	}()
 
 	return textCh, errCh
-}
-
-func NewModelService(cfg *config.Config, log logger.Logger) ModelService {
-	return &modelService{cfg: cfg, log: log}
 }

@@ -79,7 +79,6 @@ func load(opt Options) (*Config, error) {
 		v.SetConfigType(opt.ConfigType)
 		v.AddConfigPath(".")
 		v.AddConfigPath("./config")
-		// v.AddConfigPath("/etc/myapp")
 	}
 
 	// Configure environment variable support with prefix and key mapping.
@@ -148,25 +147,26 @@ func mergeOptions(opts ...Options) Options {
 		ConfigType: "yaml",
 		EnvPrefix:  "APP",
 	}
-	if opts == nil {
+	if len(opts) == 0 {
 		return opt
 	}
-	if len(opts) > 0 {
-		o := opts[0]
-		if o.ConfigFile != "" {
-			opt.ConfigFile = o.ConfigFile
-		}
-		if o.ConfigType != "" {
-			opt.ConfigType = o.ConfigType
-		}
-		if o.EnvPrefix != "" {
-			opt.EnvPrefix = o.EnvPrefix
-		}
-		opt.WatchFile = o.WatchFile
-		opt.OnChange = o.OnChange
-		if envFile := os.Getenv("CONFIG_FILE"); envFile != "" && opt.ConfigFile == "" {
-			opt.ConfigFile = envFile
-		}
+
+	o := opts[0]
+	if o.ConfigFile != "" {
+		opt.ConfigFile = o.ConfigFile
 	}
+	if o.ConfigType != "" {
+		opt.ConfigType = o.ConfigType
+	}
+	if o.EnvPrefix != "" {
+		opt.EnvPrefix = o.EnvPrefix
+	}
+	opt.WatchFile = o.WatchFile
+	opt.OnChange = o.OnChange
+
+	if envFile := os.Getenv("CONFIG_FILE"); envFile != "" && opt.ConfigFile == "" {
+		opt.ConfigFile = envFile
+	}
+
 	return opt
 }

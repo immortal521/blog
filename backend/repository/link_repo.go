@@ -18,9 +18,9 @@ import (
 // All read operations implicitly apply:
 // - soft-delete filter (DeletedAt IS NULL)
 type LinkRepo interface {
+	Create(ctx context.Context, link *entity.Link) (*entity.Link, error)
 	GetAll(ctx context.Context) ([]*entity.Link, error)
 	GetAllEnabled(ctx context.Context) ([]*entity.Link, error)
-	Create(ctx context.Context, link *entity.Link) (*entity.Link, error)
 	UpdateStatusBatch(ctx context.Context, updates map[uint]entity.LinkStatus) error
 	IsOwner(ctx context.Context, userID uint, linkID uint) (bool, error)
 }
@@ -34,19 +34,28 @@ func NewLinkRepo(ds *datastore.DataStore) LinkRepo {
 	return &linkRepo{ds: ds}
 }
 
-// IsOwner checks whether a user owns the specified link.
-func (r *linkRepo) IsOwner(ctx context.Context, userID uint, linkID uint) (bool, error) {
-	count, err := r.ds.Client(ctx).Link.
-		Query().
-		Where(
-			link.IDEQ(linkID),
-		).
-		Count(ctx)
-	if err != nil {
-		return false, errx.New(errx.CodeInternalError, err)
+// Create inserts a new link record.
+//
+// Optional fields (description, avatar) are only persisted if non-empty after trimming.
+func (r *linkRepo) Create(ctx context.Context, l *entity.Link) (*entity.Link, error) {
+	c := r.ds.Client(ctx).Link.
+		Create().
+		SetName(l.Name).
+		SetURL(l.URL)
+
+	if l.Description != nil && strings.TrimSpace(*l.Description) != "" {
+		c.SetDescription(*l.Description)
+	}
+	if l.Avatar != nil && strings.TrimSpace(*l.Avatar) != "" {
+		c.SetAvatar(*l.Avatar)
 	}
 
-	return count > 0, nil
+	created, err := c.Save(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToLink(created), nil
 }
 
 // GetAll returns all non-deleted links ordered by ID descending.
@@ -84,30 +93,6 @@ func (r *linkRepo) GetAllEnabled(ctx context.Context) ([]*entity.Link, error) {
 		return nil, errx.New(errx.CodeInternalError, err)
 	}
 	return mapper.ToLinks(links), nil
-}
-
-// Create inserts a new link record.
-//
-// Optional fields (description, avatar) are only persisted if non-empty after trimming.
-func (r *linkRepo) Create(ctx context.Context, l *entity.Link) (*entity.Link, error) {
-	c := r.ds.Client(ctx).Link.
-		Create().
-		SetName(l.Name).
-		SetURL(l.URL)
-
-	if l.Description != nil && strings.TrimSpace(*l.Description) != "" {
-		c.SetDescription(*l.Description)
-	}
-	if l.Avatar != nil && strings.TrimSpace(*l.Avatar) != "" {
-		c.SetAvatar(*l.Avatar)
-	}
-
-	created, err := c.Save(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
-	}
-
-	return mapper.ToLink(created), nil
 }
 
 // UpdateStatusBatch performs a bulk update of link status values.
@@ -155,4 +140,19 @@ func (r *linkRepo) UpdateStatusBatch(ctx context.Context, updates map[uint]entit
 	}
 
 	return nil
+}
+
+// IsOwner checks whether a user owns the specified link.
+func (r *linkRepo) IsOwner(ctx context.Context, userID uint, linkID uint) (bool, error) {
+	count, err := r.ds.Client(ctx).Link.
+		Query().
+		Where(
+			link.IDEQ(linkID),
+		).
+		Count(ctx)
+	if err != nil {
+		return false, errx.New(errx.CodeInternalError, err)
+	}
+
+	return count > 0, nil
 }

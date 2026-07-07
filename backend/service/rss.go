@@ -11,65 +11,39 @@ import (
 	"blog-server/repository"
 )
 
+// RssService defines the interface for RSS feed generation operations.
 type RssService interface {
 	GenerateRSSFeed(ctx context.Context) (*entity.RSS, error)
 	GeneratePagedFeed(ctx context.Context, page, pageSize int) (*entity.RSS, error)
 	GenerateCompleteFeed(ctx context.Context) (*entity.RSS, error)
 }
 
+// rssService implements the RssService interface.
 type rssService struct {
 	cfg      config.AppConfig
 	postRepo repository.PostRepo
 }
 
+// NewRssService creates and returns a new RssService instance.
 func NewRssService(cfg *config.Config, postRepo repository.PostRepo) RssService {
 	return &rssService{cfg: cfg.App, postRepo: postRepo}
 }
 
-func (r *rssService) GenerateRSSFeed(
-	ctx context.Context,
-) (*entity.RSS, error) {
+// GenerateRSSFeed generates the default RSS feed with the first page of posts.
+func (s *rssService) GenerateRSSFeed(ctx context.Context) (*entity.RSS, error) {
 	defaultPageSize := 100
-	return r.GeneratePagedFeed(ctx, 1, defaultPageSize)
+	return s.GeneratePagedFeed(ctx, 1, defaultPageSize)
 }
 
-func (r *rssService) GenerateCompleteFeed(ctx context.Context) (*entity.RSS, error) {
-	total, err := r.postRepo.CountPublished(ctx)
-	if err != nil || total == 0 {
-		total = 500
-	}
-
-	ps, err := r.postRepo.ListPublishedForMeta(ctx, 1, total)
-	if err != nil {
-		return nil, err
-	}
-
-	feed := r.newBaseRSS(ctx)
-
-	feed.Channel.Title = r.cfg.Name + " (Complete Archive)"
-	feed.Channel.Description = "Full history archive of posts"
-	feed.Channel.Items = r.convertPostsToItems(ps)
-
-	feed.Channel.Complete = &entity.FhComplete{}
-	feed.Channel.AtomLinks = []entity.AtomLink{
-		{
-			Href: r.cfg.Domain + "/api/v1/rss/complete",
-			Rel:  "self",
-			Type: "application/rss+xml",
-		},
-	}
-
-	return feed, nil
-}
-
-func (r *rssService) GeneratePagedFeed(ctx context.Context, page, pageSize int) (*entity.RSS, error) {
-	total, _ := r.postRepo.CountPublished(ctx)
+// GeneratePagedFeed generates a paginated RSS feed.
+func (s *rssService) GeneratePagedFeed(ctx context.Context, page, pageSize int) (*entity.RSS, error) {
+	total, _ := s.postRepo.CountPublished(ctx)
 
 	if page < 1 {
 		page = 1
 	}
 
-	ps, err := r.postRepo.ListPublishedForMeta(ctx, page, pageSize)
+	posts, err := s.postRepo.ListPublishedForMeta(ctx, page, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -84,43 +58,43 @@ func (r *rssService) GeneratePagedFeed(ctx context.Context, page, pageSize int) 
 
 	atomLinks := []entity.AtomLink{
 		{
-			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", r.cfg.Domain, page, pageSize),
+			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", s.cfg.Domain, page, pageSize),
 			Rel:  "self",
 			Type: "application/rss+xml",
 		},
 	}
 	if hasNext {
 		atomLinks = append(atomLinks, entity.AtomLink{
-			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", r.cfg.Domain, page+1, pageSize),
+			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", s.cfg.Domain, page+1, pageSize),
 			Rel:  "next",
 			Type: "application/rss+xml",
 		})
 	}
 	if hasPrev {
 		atomLinks = append(atomLinks, entity.AtomLink{
-			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", r.cfg.Domain, page-1, pageSize),
+			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", s.cfg.Domain, page-1, pageSize),
 			Rel:  "previous",
 			Type: "application/rss+xml",
 		})
 	}
 	atomLinks = append(atomLinks,
 		entity.AtomLink{
-			Href: fmt.Sprintf("%s/api/v1/rss?page=1&pageSize=%d", r.cfg.Domain, pageSize),
+			Href: fmt.Sprintf("%s/api/v1/rss?page=1&pageSize=%d", s.cfg.Domain, pageSize),
 			Rel:  "first",
 			Type: "application/rss+xml",
 		},
 		entity.AtomLink{
-			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", r.cfg.Domain, totalPages, pageSize),
+			Href: fmt.Sprintf("%s/api/v1/rss?page=%d&pageSize=%d", s.cfg.Domain, totalPages, pageSize),
 			Rel:  "last",
 			Type: "application/rss+xml",
 		},
 	)
 
-	feed := r.newBaseRSS(ctx)
+	feed := s.newBaseRSS(ctx)
 
 	feed.Channel.AtomLinks = atomLinks
 	feed.Channel.Description = fmt.Sprintf("Latest posts - Page %d of %d", page, totalPages)
-	feed.Channel.Items = r.convertPostsToItems(ps)
+	feed.Channel.Items = s.convertPostsToItems(posts)
 
 	if page > 1 {
 		feed.Channel.Complete = &entity.FhComplete{}
@@ -129,7 +103,38 @@ func (r *rssService) GeneratePagedFeed(ctx context.Context, page, pageSize int) 
 	return feed, nil
 }
 
-func (r *rssService) newBaseRSS(ctx context.Context) *entity.RSS {
+// GenerateCompleteFeed generates an RSS feed containing all published posts.
+func (s *rssService) GenerateCompleteFeed(ctx context.Context) (*entity.RSS, error) {
+	total, err := s.postRepo.CountPublished(ctx)
+	if err != nil || total == 0 {
+		total = 500
+	}
+
+	posts, err := s.postRepo.ListPublishedForMeta(ctx, 1, total)
+	if err != nil {
+		return nil, err
+	}
+
+	feed := s.newBaseRSS(ctx)
+
+	feed.Channel.Title = s.cfg.Name + " (Complete Archive)"
+	feed.Channel.Description = "Full history archive of posts"
+	feed.Channel.Items = s.convertPostsToItems(posts)
+
+	feed.Channel.Complete = &entity.FhComplete{}
+	feed.Channel.AtomLinks = []entity.AtomLink{
+		{
+			Href: s.cfg.Domain + "/api/v1/rss/complete",
+			Rel:  "self",
+			Type: "application/rss+xml",
+		},
+	}
+
+	return feed, nil
+}
+
+// newBaseRSS creates a base RSS struct with common fields.
+func (s *rssService) newBaseRSS(ctx context.Context) *entity.RSS {
 	return &entity.RSS{
 		Version: "2.0",
 		XMLNs:   "http://www.w3.org/2005/Atom",
@@ -137,25 +142,27 @@ func (r *rssService) newBaseRSS(ctx context.Context) *entity.RSS {
 		DC:      "http://purl.org/dc/elements/1.1/",
 		FH:      "http://purl.org/syndication/history/1.0",
 		Channel: entity.RssChannel{
-			Title:     r.cfg.Name,
-			Link:      r.cfg.Domain,
-			LastBuild: r.getBuildTime(ctx),
+			Title:     s.cfg.Name,
+			Link:      s.cfg.Domain,
+			LastBuild: s.getBuildTime(ctx),
 		},
 	}
 }
 
-func (r *rssService) getBuildTime(ctx context.Context) string {
-	latestPublishedAtPtr, err := r.postRepo.GetLatestPublishedAt(ctx)
-	if err != nil || latestPublishedAtPtr == nil {
+// getBuildTime returns the latest published time as the build time.
+func (s *rssService) getBuildTime(ctx context.Context) string {
+	latestPublishedAt, err := s.postRepo.GetLatestPublishedAt(ctx)
+	if err != nil || latestPublishedAt == nil {
 		return time.Now().Format(time.RFC1123Z)
 	}
-	return latestPublishedAtPtr.Format(time.RFC1123Z)
+	return latestPublishedAt.Format(time.RFC1123Z)
 }
 
-func (r *rssService) convertPostsToItems(ps []*entity.Post) []entity.RssItem {
-	items := make([]entity.RssItem, len(ps))
-	for i, post := range ps {
-		link := r.cfg.Domain + "/blog/" + strconv.Itoa(int(post.ID))
+// convertPostsToItems converts posts to RSS items.
+func (s *rssService) convertPostsToItems(posts []*entity.Post) []entity.RssItem {
+	items := make([]entity.RssItem, len(posts))
+	for i, post := range posts {
+		link := s.cfg.Domain + "/blog/" + strconv.Itoa(int(post.ID))
 		items[i] = entity.RssItem{
 			Title:       post.Title,
 			Link:        link,

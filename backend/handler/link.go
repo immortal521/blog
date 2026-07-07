@@ -13,48 +13,24 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-// LinkHandler defines the interface for link HTTP handlers
+// LinkHandler defines the interface for link HTTP handlers.
 type LinkHandler interface {
 	GetLinks(c *echo.Context) error
 	ApplyForALinks(c *echo.Context) error
 }
 
+// linkHandler implements the LinkHandler interface.
 type linkHandler struct {
 	svc      service.LinkService
 	validate validatorx.Validator
 }
 
-func RegisterLinkRoutes(r *echo.Group, h LinkHandler) {
-	group := r.Group("/links")
-	group.GET("", h.GetLinks)
-	group.POST("/apply-link", h.ApplyForALinks)
-}
-
-// NewLinkHandler creates a new link handler instance
+// NewLinkHandler creates a new link handler instance.
 func NewLinkHandler(svc service.LinkService, validate validatorx.Validator) LinkHandler {
 	return &linkHandler{svc: svc, validate: validate}
 }
 
-// toLinkResponse maps a domain Link to the response DTO.
-func toLinkResponse(link *entity.Link) response.LinkRes {
-	res := response.LinkRes{
-		ID:        link.ID,
-		Name:      link.Name,
-		URL:       link.URL,
-		SortOrder: link.SortOrder,
-	}
-
-	if link.Description != nil {
-		res.Description = *link.Description
-	}
-	if link.Avatar != nil {
-		res.Avatar = *link.Avatar
-	}
-
-	return res
-}
-
-// GetLinks retrieves all enabled links
+// GetLinks retrieves all enabled links.
 func (h *linkHandler) GetLinks(c *echo.Context) error {
 	links, err := h.svc.GetLinks(c.Request().Context())
 	if err != nil {
@@ -69,7 +45,7 @@ func (h *linkHandler) GetLinks(c *echo.Context) error {
 	return response.OK(c, response.Success(linkDTOs))
 }
 
-// ApplyForALinks creates a new link application
+// ApplyForALinks creates a new link application.
 func (h *linkHandler) ApplyForALinks(c *echo.Context) error {
 	req := new(request.CreateLinkReq)
 	if err := c.Bind(req); err != nil {
@@ -99,4 +75,30 @@ func (h *linkHandler) ApplyForALinks(c *echo.Context) error {
 	}
 
 	return response.OK(c, response.Success(""))
+}
+
+// RegisterLinkRoutes registers all link-related routes.
+func RegisterLinkRoutes(r *echo.Group, h LinkHandler) {
+	group := r.Group("/links")
+	group.GET("", h.GetLinks)
+	group.POST("/apply-link", h.ApplyForALinks)
+}
+
+// toLinkResponse maps a domain Link to the response DTO.
+func toLinkResponse(link *entity.Link) response.LinkRes {
+	res := response.LinkRes{
+		ID:        link.ID,
+		Name:      link.Name,
+		URL:       link.URL,
+		SortOrder: link.SortOrder,
+	}
+
+	if link.Description != nil {
+		res.Description = *link.Description
+	}
+	if link.Avatar != nil {
+		res.Avatar = *link.Avatar
+	}
+
+	return res
 }

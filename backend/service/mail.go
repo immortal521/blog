@@ -12,17 +12,20 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-type IMailService interface {
+// MailService defines the interface for email sending operations.
+type MailService interface {
 	Send(to, subject, templateName string, data any) error
 }
 
+// mailService implements the MailService interface.
 type mailService struct {
 	dialer   *gomail.Dialer
 	template *template.Template
 	from     string
 }
 
-func NewEmailService() (IMailService, error) {
+// NewEmailService creates and returns a new MailService instance.
+func NewEmailService() (MailService, error) {
 	mailCfg := config.Get().Email
 	dialer := gomail.NewDialer(mailCfg.Host, mailCfg.Port, mailCfg.Username, mailCfg.Password)
 
@@ -38,10 +41,11 @@ func NewEmailService() (IMailService, error) {
 	}, nil
 }
 
+// Send sends an email with the given template and data.
 func (s *mailService) Send(to, subject, templateName string, data any) error {
 	var body bytes.Buffer
 	if err := s.template.ExecuteTemplate(&body, templateName, data); err != nil {
-		return errx.New(errx.CodeInternalError, fmt.Errorf("Failed to execute email template %s: %w", templateName, err))
+		return errx.New(errx.CodeInternalError, fmt.Errorf("failed to execute email template %s: %w", templateName, err))
 	}
 
 	m := gomail.NewMessage()
@@ -51,7 +55,7 @@ func (s *mailService) Send(to, subject, templateName string, data any) error {
 	m.SetBody("text/html", body.String())
 
 	if err := s.dialer.DialAndSend(m); err != nil {
-		return errx.New(errx.CodeExternalError, fmt.Errorf("Failed to send email to %s: %w", to, err))
+		return errx.New(errx.CodeExternalError, fmt.Errorf("failed to send email to %s: %w", to, err))
 	}
 
 	return nil

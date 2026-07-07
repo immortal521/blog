@@ -21,8 +21,9 @@ import (
 // - published status filter
 // - soft-delete filter (DeletedAt IS NULL)
 type PostRepo interface {
-	ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
+	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
 
+	ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
 	ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error)
 	ListPublishedForMeta(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
 
@@ -33,8 +34,6 @@ type PostRepo interface {
 	Count(ctx context.Context) (int, error)
 	CountPublished(ctx context.Context) (int, error)
 	CountDeleted(ctx context.Context) (int, error)
-
-	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
 
 	AddTags(ctx context.Context, postID uint, tagIDs []uint) error
 	SetTags(ctx context.Context, postID uint, tagIDs []uint) error
@@ -55,11 +54,13 @@ func NewPostRepo(ds *datastore.DataStore) PostRepo {
 	return &postRepo{ds: ds}
 }
 
+// query returns a base post query with soft-delete filter applied.
 func (r *postRepo) query(ctx context.Context) *ent.PostQuery {
 	return r.ds.Client(ctx).Post.Query().
 		Where(post.DeletedAtIsNil())
 }
 
+// publishedQuery returns a query filtered to published posts only.
 func (r *postRepo) publishedQuery(ctx context.Context) *ent.PostQuery {
 	return r.query(ctx).
 		Where(
@@ -67,11 +68,51 @@ func (r *postRepo) publishedQuery(ctx context.Context) *ent.PostQuery {
 		)
 }
 
+// deletedQuery returns a query filtered to soft-deleted posts only.
 func (r *postRepo) deletedQuery(ctx context.Context) *ent.PostQuery {
 	return r.query(ctx).
 		Where(
 			post.DeletedAtNotNil(),
 		)
+}
+
+// Create inserts a new post record.
+//
+// Behavior:
+// - Automatically sets created_at and updated_at timestamps
+// - If status is Published, published_at is set automatically
+// - Optional fields (summary, cover) are only set when provided
+func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, error) {
+	now := time.Now()
+
+	builder := r.ds.Client(ctx).Post.
+		Create().
+		SetTitle(p.Title).
+		SetContent(p.Content).
+		SetReadTimeMinutes(p.ReadTimeMinutes).
+		SetStatus(p.Status).
+		SetUserID(p.UserID).
+		SetCreatedAt(now).
+		SetUpdatedAt(now)
+
+	if p.Summary != nil {
+		builder.SetSummary(*p.Summary)
+	}
+
+	if p.Cover != nil {
+		builder.SetCover(*p.Cover)
+	}
+
+	if p.Status == entity.PostStatusPublish {
+		builder.SetPublishedAt(now)
+	}
+
+	ep, err := builder.Save(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPost(ep), nil
 }
 
 // ListPublished returns all published posts for list views.
@@ -190,6 +231,7 @@ func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post,
 	return mapper.ToPost(p), nil
 }
 
+// GetLatestPublishedAt returns the most recent published timestamp.
 func (r *postRepo) GetLatestPublishedAt(ctx context.Context) (*time.Time, error) {
 	p, err := r.publishedQuery(ctx).
 		Select(post.FieldPublishedAt).
@@ -206,6 +248,7 @@ func (r *postRepo) GetLatestPublishedAt(ctx context.Context) (*time.Time, error)
 	return p.PublishedAt, nil
 }
 
+// GetLatestUpdatedAt returns the most recent update timestamp.
 func (r *postRepo) GetLatestUpdatedAt(ctx context.Context) (*time.Time, error) {
 	p, err := r.publishedQuery(ctx).
 		Select(post.FieldUpdatedAt).
@@ -222,55 +265,19 @@ func (r *postRepo) GetLatestUpdatedAt(ctx context.Context) (*time.Time, error) {
 	return &p.UpdatedAt, nil
 }
 
+// Count returns the total number of posts (including deleted).
 func (r *postRepo) Count(ctx context.Context) (int, error) {
 	return r.query(ctx).Count(ctx)
 }
 
+// CountPublished returns the number of published posts.
 func (r *postRepo) CountPublished(ctx context.Context) (int, error) {
 	return r.publishedQuery(ctx).Count(ctx)
 }
 
+// CountDeleted returns the number of soft-deleted posts.
 func (r *postRepo) CountDeleted(ctx context.Context) (int, error) {
 	return r.deletedQuery(ctx).Count(ctx)
-}
-
-// Create inserts a new post record.
-//
-// Behavior:
-// - Automatically sets created_at and updated_at timestamps
-// - If status is Published, published_at is set automatically
-// - Optional fields (summary, cover) are only set when provided
-func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, error) {
-	now := time.Now()
-
-	builder := r.ds.Client(ctx).Post.
-		Create().
-		SetTitle(p.Title).
-		SetContent(p.Content).
-		SetReadTimeMinutes(p.ReadTimeMinutes).
-		SetStatus(p.Status).
-		SetUserID(p.UserID).
-		SetCreatedAt(now).
-		SetUpdatedAt(now)
-
-	if p.Summary != nil {
-		builder.SetSummary(*p.Summary)
-	}
-
-	if p.Cover != nil {
-		builder.SetCover(*p.Cover)
-	}
-
-	if p.Status == entity.PostStatusPublish {
-		builder.SetPublishedAt(now)
-	}
-
-	ep, err := builder.Save(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
-	}
-
-	return mapper.ToPost(ep), nil
 }
 
 // AddTags attaches tags to a post without removing existing relations.
