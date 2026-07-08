@@ -52,7 +52,11 @@ func (s *modelService) GenerateSummary(ctx context.Context, content string) (<-c
 			"stream":     true,
 		}
 
-		body, _ := json.Marshal(payload)
+		body, err := json.Marshal(payload)
+		if err != nil {
+			errCh <- errx.New(errx.CodeInternalError, fmt.Errorf("marshal llm request payload: %w", err))
+			return
+		}
 		req, err := http.NewRequestWithContext(ctx, "POST",
 			"https://models.inference.ai.azure.com/chat/completions", bytes.NewBuffer(body))
 		if err != nil {

@@ -163,7 +163,7 @@ func (s *authService) Login(ctx context.Context, input *LoginInput) (*AuthResult
 		return nil, err
 	}
 	if !utils.VerifyPassword(input.Password, user.Password) {
-		return nil, errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid password: %s", input.Email))
+		return nil, errx.New(errx.CodeInvalidParam, fmt.Errorf("invalid credentials"))
 	}
 
 	// Fetch full profile for the response.

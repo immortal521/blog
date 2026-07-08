@@ -81,7 +81,7 @@ func (h *modelHandler) stream(c *echo.Context, sessionID string) error {
 	v, ok := h.sessions.Load(sessionID)
 	if !ok {
 		h.log.Warn("session not found")
-		return nil
+		return errx.New(errx.CodeNotFound, fmt.Errorf("session %s not found", sessionID))
 	}
 	session := v.(*Session)
 	defer h.sessions.Delete(sessionID)
