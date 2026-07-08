@@ -3,6 +3,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -71,7 +72,7 @@ func (c *client) Get(ctx context.Context, key string) (string, error) {
 	if err == nil {
 		return result, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return "", errx.New(errx.CodeNotFound, err)
 	}
 	return "", err
