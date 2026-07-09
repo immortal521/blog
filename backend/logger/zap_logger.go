@@ -88,16 +88,24 @@ func (z *zapLogger) WithContext(ctx context.Context) Logger {
 func NewLogger(cfg *config.Config) Logger {
 	enc, level := buildEncoder(cfg)
 
+	infoPriority := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
+		return l >= level && l < zapcore.ErrorLevel
+	})
+
+	errorPriority := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
+		return l >= zapcore.ErrorLevel
+	})
+
 	infoCore := zapcore.NewCore(
 		enc,
 		zapcore.AddSync(os.Stdout),
-		level,
+		infoPriority,
 	)
 
 	errorCore := zapcore.NewCore(
 		enc,
 		zapcore.AddSync(os.Stderr),
-		zap.ErrorLevel,
+		errorPriority,
 	)
 
 	core := zapcore.NewTee(infoCore, errorCore)
@@ -136,11 +144,14 @@ func buildEncoder(cfg *config.Config) (zapcore.Encoder, zapcore.Level) {
 		MessageKey:    "msg",
 		StacktraceKey: "stack",
 
-		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(t.Format("2006-01-02 15:04:05"))
+		EncodeTime: func(t time.Time, pae zapcore.PrimitiveArrayEncoder) {
+			pae.AppendString(t.Format("2006-01-02 15:04:05"))
 		},
 
-		EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+		// EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+		EncodeLevel: func(l zapcore.Level, pae zapcore.PrimitiveArrayEncoder) {
+			pae.AppendString("[" + l.CapitalString() + "]")
+		},
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 		EncodeDuration: zapcore.StringDurationEncoder,
 	}
