@@ -51,13 +51,19 @@ func NewDSN(cfg *config.Config) string {
 func NewDataStore(cfg *config.Config, log logger.Logger) (*DataStore, error) {
 	dsn := NewDSN(cfg)
 
-	client, err := ent.Open("postgres", dsn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+	opts := []ent.Option{}
+	if cfg.App.IsDev() {
+		opts = append(opts,
+			ent.Debug(),
+			ent.Log(func(v ...any) {
+				log.Debug(fmt.Sprint(v...))
+			}),
+		)
 	}
 
-	if cfg.App.IsDev() {
-		client = client.Debug()
+	client, err := ent.Open("postgres", dsn, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
 	return &DataStore{

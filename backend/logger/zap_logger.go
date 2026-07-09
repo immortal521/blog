@@ -110,7 +110,7 @@ func NewLogger(cfg *config.Config) Logger {
 
 	core := zapcore.NewTee(infoCore, errorCore)
 
-	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	l := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(2))
 
 	return &zapLogger{l: l}
 }
