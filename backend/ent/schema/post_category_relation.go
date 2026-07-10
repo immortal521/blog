@@ -8,7 +8,7 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// PostCategoryRelation 是 post_category_relations 中间表
+// PostCategoryRelation represents the post_category_relations junction table.
 type PostCategoryRelation struct {
 	ent.Schema
 }
@@ -29,7 +29,7 @@ func (PostCategoryRelation) Edges() []ent.Edge {
 
 func (PostCategoryRelation) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		field.ID("post_id", "post_category_id"), // 复合主键
+		field.ID("post_id", "post_category_id"), // composite primary key
 		entsql.Annotation{Table: "post_category_relations"},
 	}
 }

@@ -25,6 +25,11 @@ type PostService interface {
 	GetPostByID(ctx context.Context, id uint) (*entity.Post, error)
 	CreatePost(ctx context.Context, user contextx.User, input *CreatePostInput) (*entity.Post, error)
 	FlushViewCountToDB(ctx context.Context) error
+
+	AdminGetPosts(ctx context.Context, status *entity.PostStatus, keyword *string, page, pageSize int) ([]*entity.Post, int, error)
+	AdminGetPostByID(ctx context.Context, id uint) (*entity.Post, error)
+	UpdatePost(ctx context.Context, user contextx.User, input *UpdatePostInput) error
+	DeletePost(ctx context.Context, user contextx.User, id uint) error
 }
 
 // CreatePostInput groups all parameters for creating a post.
@@ -39,6 +44,19 @@ type CreatePostInput struct {
 
 	CategoryIDs []uint
 	Tags        []uint
+}
+
+// UpdatePostInput groups all parameters for updating a post.
+type UpdatePostInput struct {
+	ID uint
+
+	Title       *string
+	Summary     *string
+	Cover       *string
+	Content     *string
+	Status      *entity.PostStatus
+	CategoryIDs *[]uint
+	Tags        *[]uint
 }
 
 // postService implements the PostService interface.
@@ -154,7 +172,93 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 		return nil, err
 	}
 
+	// Re-fetch with edges (tags, categories) loaded
+	post, err = s.pr.GetByID(ctx, post.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return post, nil
+}
+
+// AdminGetPosts retrieves all posts inclueing drafts for admin.
+func (s *postService) AdminGetPosts(ctx context.Context, status *entity.PostStatus, keyword *string, page, pageSize int) ([]*entity.Post, int, error) {
+	count, err := s.pr.CountAll(ctx, status, keyword)
+	if err != nil {
+		return nil, 0, err
+	}
+	ps, err := s.pr.ListAll(ctx, status, keyword, page, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return ps, count, nil
+}
+
+// AdminGetPostByID retrieves a single post by ID for admin.
+func (s *postService) AdminGetPostByID(ctx context.Context, id uint) (*entity.Post, error) {
+	return s.pr.GetByID(ctx, id)
+}
+
+// UpdatePost updates a post with tags and categories.
+func (s *postService) UpdatePost(ctx context.Context, user contextx.User, input *UpdatePostInput) error {
+	if err := s.authz.Authorize(ctx, user.ID, user.Role, authz.ResourcePost, authz.ActionUpdate, &input.ID); err != nil {
+		return err
+	}
+
+	post := &entity.Post{
+		ID: input.ID,
+	}
+
+	if input.Title != nil {
+		post.Title = *input.Title
+	}
+	if input.Summary != nil {
+		post.Summary = input.Summary
+	}
+	if input.Cover != nil {
+		post.Cover = input.Cover
+	}
+	if input.Content != nil {
+		post.Content = *input.Content
+		contentLength := utf8.RuneCountInString(post.Content)
+		post.ReadTimeMinutes = uint(max(1, (contentLength+199)/200))
+	}
+	if input.Status != nil {
+		post.Status = *input.Status
+	}
+
+	err := s.tx.WithTx(ctx, func(ctx context.Context) error {
+		var err error
+		post, err = s.pr.Update(ctx, post)
+		if err != nil {
+			return err
+		}
+
+		if input.Tags != nil {
+			if err = s.pr.SetTags(ctx, post.ID, *input.Tags); err != nil {
+				return err
+			}
+		}
+
+		if input.CategoryIDs != nil {
+			if err = s.pr.SetCategories(ctx, post.ID, *input.CategoryIDs); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return err
+}
+
+// DeletePost soft-deletes a post.
+func (s *postService) DeletePost(ctx context.Context, user contextx.User, id uint) error {
+	if err := s.authz.Authorize(ctx, user.ID, user.Role, authz.ResourcePost, authz.ActionDelete, &id); err != nil {
+		return err
+	}
+	return s.pr.Delete(ctx, id)
 }
 
 // FlushViewCountToDB flushes accumulated view counts from Redis to the database.

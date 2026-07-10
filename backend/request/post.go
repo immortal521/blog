@@ -12,11 +12,32 @@ type CreatePostReq struct {
 	Content string            `json:"content" validate:"required"`
 	Status  entity.PostStatus `json:"status"`
 
-	CategoryIDs []uint `json:"category_ids"`
+	CategoryIDs []uint `json:"categoryIDs"`
 	Tags        []uint `json:"tags"`
 }
 
+// UpdatePostReq is the request body for updating a post.
+type UpdatePostReq struct {
+	Title   *string            `json:"title" validate:"omitempty,min=3,max=100"`
+	Summary *string            `json:"summary" validate:"omitempty"`
+	Cover   *string            `json:"cover" validate:"omitempty"`
+	Content *string            `json:"content" validate:"omitempty"`
+	Status  *entity.PostStatus `json:"status" validate:"omitempty,oneof=draft published archived"`
+
+	CategoryIDs *[]uint `json:"categoryIDs"`
+	Tags        *[]uint `json:"tags"`
+}
+
+// PostPageReq is the request query for paginating posts.
 type PostPageReq struct {
-	Page     int `json:"page" query:"page,default:1"`
-	PageSize int `json:"pageSize" query:"pageSize,default:10"`
+	Page     int `json:"page" query:"page,default:1" validate:"omitempty,min=1"`
+	PageSize int `json:"pageSize" query:"pageSize,default:10" validate:"omitempty,min=1,max=100"`
+}
+
+// AdminPostListReq is the request query for admin post list.
+type AdminPostListReq struct {
+	Page     int                `json:"page" query:"page,default:1" validate:"omitempty,min=1"`
+	PageSize int                `json:"pageSize" query:"pageSize,default:10" validate:"omitempty,min=1,max=100"`
+	Status   *entity.PostStatus `json:"status" query:"status" validate:"omitempty,oneof=draft published archived"`
+	Keyword  *string            `json:"keyword" query:"keyword" validate:"omitempty,max=100"`
 }

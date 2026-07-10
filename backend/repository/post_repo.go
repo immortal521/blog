@@ -18,20 +18,24 @@ import (
 // PostRepo defines persistence operations for the Post aggregate.
 //
 // All read operations implicitly apply:
-// - published status filter
 // - soft-delete filter (DeletedAt IS NULL)
 type PostRepo interface {
 	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
+	Update(ctx context.Context, post *entity.Post) (*entity.Post, error)
+	Delete(ctx context.Context, id uint) error
 
 	ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
 	ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error)
 	ListPublishedForMeta(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
 
+	ListAll(ctx context.Context, status *entity.PostStatus, keyword *string, page, pageSize int) ([]*entity.Post, error)
+	GetByID(ctx context.Context, id uint) (*entity.Post, error)
 	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
 	GetLatestPublishedAt(ctx context.Context) (*time.Time, error)
 	GetLatestUpdatedAt(ctx context.Context) (*time.Time, error)
 
 	Count(ctx context.Context) (int, error)
+	CountAll(ctx context.Context, status *entity.PostStatus, keyword *string) (int, error)
 	CountPublished(ctx context.Context) (int, error)
 	CountDeleted(ctx context.Context) (int, error)
 
@@ -77,11 +81,6 @@ func (r *postRepo) deletedQuery(ctx context.Context) *ent.PostQuery {
 }
 
 // Create inserts a new post record.
-//
-// Behavior:
-// - Automatically sets created_at and updated_at timestamps
-// - If status is Published, published_at is set automatically
-// - Optional fields (summary, cover) are only set when provided
 func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, error) {
 	now := time.Now()
 
@@ -115,12 +114,61 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 	return mapper.ToPost(ep), nil
 }
 
+// Update updates an existing post record.
+func (r *postRepo) Update(ctx context.Context, p *entity.Post) (*entity.Post, error) {
+	builder := r.ds.Client(ctx).Post.
+		UpdateOneID(p.ID).
+		SetUpdatedAt(time.Now())
+
+	if p.Title != "" {
+		builder.SetTitle(p.Title)
+	}
+
+	if p.Summary != nil {
+		builder.SetSummary(*p.Summary)
+	}
+
+	if p.Cover != nil {
+		builder.SetCover(*p.Cover)
+	}
+
+	if p.Content != "" {
+		builder.SetContent(p.Content)
+	}
+
+	if p.Status != "" {
+		builder.SetStatus(p.Status)
+		if p.Status == entity.PostStatusPublish {
+			builder.SetPublishedAt(time.Now())
+		}
+	}
+
+	if p.ReadTimeMinutes != 0 {
+		builder.SetReadTimeMinutes(p.ReadTimeMinutes)
+	}
+
+	ep, err := builder.Save(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPost(ep), nil
+}
+
+// Delete soft-deletes a post by setting deleted_at.
+func (r *postRepo) Delete(ctx context.Context, id uint) error {
+	now := time.Now()
+	err := r.ds.Client(ctx).Post.
+		UpdateOneID(id).
+		SetDeletedAt(now).
+		Exec(ctx)
+	if err != nil {
+		return errx.New(errx.CodeInternalError, err)
+	}
+	return nil
+}
+
 // ListPublished returns all published posts for list views.
-//
-// Optimizations:
-// - Selects only fields required for listing (no content field)
-// - Preloads author, categories, and tags
-// - Ordered by published time descending
 func (r *postRepo) ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error) {
 	page, pageSize = normalizedPage(page, pageSize)
 	ps, err := r.publishedQuery(ctx).
@@ -154,8 +202,6 @@ func (r *postRepo) ListPublished(ctx context.Context, page, pageSize int) ([]*en
 }
 
 // ListPublishedForSitemap returns minimal post data for sitemap generation.
-//
-// Only ID and UpdatedAt are selected for lightweight crawling support.
 func (r *postRepo) ListPublishedForSitemap(ctx context.Context) ([]*entity.Post, error) {
 	ps, err := r.publishedQuery(ctx).
 		Select(
@@ -171,8 +217,6 @@ func (r *postRepo) ListPublishedForSitemap(ctx context.Context) ([]*entity.Post,
 }
 
 // ListPublishedForMeta returns lightweight post metadata for SEO and previews.
-//
-// Ordered by published time descending.
 func (r *postRepo) ListPublishedForMeta(ctx context.Context, page, pageSize int) ([]*entity.Post, error) {
 	page, pageSize = normalizedPage(page, pageSize)
 
@@ -197,12 +241,67 @@ func (r *postRepo) ListPublishedForMeta(ctx context.Context, page, pageSize int)
 	return mapper.ToPosts(ps), nil
 }
 
+// ListAll returns all posts including drafts for admin list views.
+func (r *postRepo) ListAll(ctx context.Context, status *entity.PostStatus, keyword *string, page, pageSize int) ([]*entity.Post, error) {
+	page, pageSize = normalizedPage(page, pageSize)
+
+	query := r.query(ctx)
+
+	if status != nil {
+		query = query.Where(post.StatusEQ(*status))
+	}
+
+	if keyword != nil {
+		query = query.Where(post.TitleContainsFold(*keyword))
+	}
+
+	ps, err := query.
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldCover,
+			post.FieldStatus,
+			post.FieldReadTimeMinutes,
+			post.FieldViewCount,
+			post.FieldPublishedAt,
+			post.FieldCreatedAt,
+			post.FieldUpdatedAt,
+		).
+		WithAuthor(func(q *ent.UserQuery) {
+			q.Select(user.FieldUsername)
+		}).
+		WithCategories().
+		WithTags().
+		Order(
+			post.ByCreatedAt(sql.OrderDesc()),
+		).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+
+	return mapper.ToPosts(ps), nil
+}
+
+// CountAll returns the count of posts matching optional filters.
+func (r *postRepo) CountAll(ctx context.Context, status *entity.PostStatus, keyword *string) (int, error) {
+	query := r.query(ctx)
+
+	if status != nil {
+		query = query.Where(post.StatusEQ(entity.PostStatus(*status)))
+	}
+
+	if keyword != nil && *keyword != "" {
+		query = query.Where(post.TitleContains(*keyword))
+	}
+
+	return query.Count(ctx)
+}
+
 // GetPublishedByID returns a single published post by ID.
-//
-// Notes:
-// - Includes full content field
-// - Preloads author information
-// - Returns NotFound error if no matching record exists
 func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error) {
 	p, err := r.publishedQuery(ctx).
 		Select(
@@ -220,6 +319,40 @@ func (r *postRepo) GetPublishedByID(ctx context.Context, id uint) (*entity.Post,
 		WithAuthor(func(q *ent.UserQuery) {
 			q.Select(user.FieldUsername)
 		}).
+		WithCategories().
+		WithTags().
+		Where(
+			post.IDEQ(id),
+		).
+		First(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeNotFound, err)
+	}
+
+	return mapper.ToPost(p), nil
+}
+
+// GetByID returns a single post by ID.
+func (r *postRepo) GetByID(ctx context.Context, id uint) (*entity.Post, error) {
+	p, err := r.query(ctx).
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldCover,
+			post.FieldContent,
+			post.FieldStatus,
+			post.FieldReadTimeMinutes,
+			post.FieldViewCount,
+			post.FieldPublishedAt,
+			post.FieldCreatedAt,
+			post.FieldUpdatedAt,
+		).
+		WithAuthor(func(q *ent.UserQuery) {
+			q.Select(user.FieldUsername)
+		}).
+		WithCategories().
+		WithTags().
 		Where(
 			post.IDEQ(id),
 		).
@@ -347,12 +480,6 @@ func (r *postRepo) SetCategories(ctx context.Context, postID uint, categoryIDs [
 }
 
 // BatchIncrViewCounts performs a bulk increment of view counts.
-//
-// Implementation details:
-// - Uses a single SQL UPDATE with CASE expression
-// - Each post ID is updated atomically
-// - Invalid (non-positive) deltas are ignored
-// - Missing IDs are silently skipped by the database
 //
 // Note: query complexity grows linearly with batch size.
 func (r *postRepo) BatchIncrViewCounts(ctx context.Context, updates map[uint]int64) error {
