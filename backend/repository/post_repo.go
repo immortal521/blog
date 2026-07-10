@@ -7,6 +7,8 @@ import (
 	"blog-server/datastore"
 	"blog-server/ent"
 	"blog-server/ent/post"
+	"blog-server/ent/postcategory"
+	"blog-server/ent/posttag"
 	"blog-server/ent/user"
 	"blog-server/entity"
 	"blog-server/mapper"
@@ -21,6 +23,8 @@ import (
 // - soft-delete filter (DeletedAt IS NULL)
 type PostRepo interface {
 	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
+	GetTagsByIDs(ctx context.Context, ids []uint) ([]entity.PostTag, error)
+	GetCategoriesByIDs(ctx context.Context, ids []uint) ([]entity.PostCategory, error)
 	Update(ctx context.Context, post *entity.Post) (*entity.Post, error)
 	Delete(ctx context.Context, id uint) error
 
@@ -97,11 +101,9 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 	if p.Summary != nil {
 		builder.SetSummary(*p.Summary)
 	}
-
 	if p.Cover != nil {
 		builder.SetCover(*p.Cover)
 	}
-
 	if p.Status == entity.PostStatusPublish {
 		builder.SetPublishedAt(now)
 	}
@@ -111,7 +113,51 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
-	return mapper.ToPost(ep), nil
+	result := mapper.ToPost(ep)
+
+	author, err := r.ds.Client(ctx).User.
+		Query().
+		Where(user.IDEQ(p.UserID)).
+		Select(user.FieldUsername).
+		First(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+	result.User = author.Username
+
+	return result, nil
+}
+
+// GetTagsByIDs returns tags for the given IDs.
+func (r *postRepo) GetTagsByIDs(ctx context.Context, ids []uint) ([]entity.PostTag, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	tags, err := r.ds.Client(ctx).PostTag.
+		Query().
+		Where(posttag.IDIn(ids...)).
+		Select(posttag.FieldID, posttag.FieldName, posttag.FieldSlug).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+	return mapper.ToPostTags(tags), nil
+}
+
+// GetCategoriesByIDs returns categories for the given IDs.
+func (r *postRepo) GetCategoriesByIDs(ctx context.Context, ids []uint) ([]entity.PostCategory, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	categories, err := r.ds.Client(ctx).PostCategory.
+		Query().
+		Where(postcategory.IDIn(ids...)).
+		Select(postcategory.FieldID, postcategory.FieldName, postcategory.FieldSlug).
+		All(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeInternalError, err)
+	}
+	return mapper.ToPostCategories(categories), nil
 }
 
 // Update updates an existing post record.

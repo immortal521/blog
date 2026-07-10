@@ -158,22 +158,26 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 			return err
 		}
 
-		if err = s.pr.SetTags(ctx, post.ID, input.Tags); err != nil {
+		if err = s.pr.AddTags(ctx, post.ID, input.Tags); err != nil {
+			return err
+		}
+		if err = s.pr.AddCategories(ctx, post.ID, input.CategoryIDs); err != nil {
 			return err
 		}
 
-		if err = s.pr.SetCategories(ctx, post.ID, input.CategoryIDs); err != nil {
+		tags, err := s.pr.GetTagsByIDs(ctx, input.Tags)
+		if err != nil {
 			return err
 		}
+		categories, err := s.pr.GetCategoriesByIDs(ctx, input.CategoryIDs)
+		if err != nil {
+			return err
+		}
+		post.Tags = tags
+		post.Categories = categories
 
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Re-fetch with edges (tags, categories) loaded
-	post, err = s.pr.GetByID(ctx, post.ID)
 	if err != nil {
 		return nil, err
 	}
