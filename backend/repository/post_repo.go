@@ -10,6 +10,7 @@ import (
 	"blog-server/ent/postcategory"
 	"blog-server/ent/postcategoryrelation"
 	"blog-server/ent/posttag"
+	"blog-server/ent/posttagrelation"
 	"blog-server/ent/user"
 	"blog-server/entity"
 	"blog-server/mapper"
@@ -26,7 +27,7 @@ type PostRepo interface {
 	Create(ctx context.Context, post *entity.Post) (*entity.Post, error)
 	GetTagsByIDs(ctx context.Context, ids []uint) ([]entity.PostTag, error)
 	GetCategoriesByIDs(ctx context.Context, ids []uint) ([]entity.PostCategory, error)
-	Update(ctx context.Context, post *entity.Post) (*entity.Post, error)
+	Update(ctx context.Context, post *entity.Post) error
 	Delete(ctx context.Context, id uint) error
 
 	ListPublished(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
@@ -34,6 +35,7 @@ type PostRepo interface {
 	ListPublishedForMeta(ctx context.Context, page, pageSize int) ([]*entity.Post, error)
 
 	ListAll(ctx context.Context, status *entity.PostStatus, keyword *string, page, pageSize int) ([]*entity.Post, error)
+	GetAdminListItemByID(ctx context.Context, id uint) (*entity.Post, error)
 	GetByID(ctx context.Context, id uint) (*entity.Post, error)
 	GetPublishedByID(ctx context.Context, id uint) (*entity.Post, error)
 	GetLatestPublishedAt(ctx context.Context) (*time.Time, error)
@@ -150,7 +152,7 @@ func (r *postRepo) GetCategoriesByIDs(ctx context.Context, ids []uint) ([]entity
 }
 
 // Update updates an existing post record.
-func (r *postRepo) Update(ctx context.Context, p *entity.Post) (*entity.Post, error) {
+func (r *postRepo) Update(ctx context.Context, p *entity.Post) error {
 	builder := r.ds.Client(ctx).Post.
 		UpdateOneID(p.ID).
 		SetUpdatedAt(time.Now())
@@ -182,12 +184,12 @@ func (r *postRepo) Update(ctx context.Context, p *entity.Post) (*entity.Post, er
 		builder.SetReadTimeMinutes(p.ReadTimeMinutes)
 	}
 
-	ep, err := builder.Save(ctx)
+	err := builder.Exec(ctx)
 	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
+		return errx.New(errx.CodeInternalError, err)
 	}
 
-	return mapper.ToPost(ep), nil
+	return nil
 }
 
 // Delete soft-deletes a post by setting deleted_at.
@@ -319,6 +321,37 @@ func (r *postRepo) ListAll(ctx context.Context, status *entity.PostStatus, keywo
 	}
 
 	return mapper.ToPosts(ps), nil
+}
+
+// GetAdminListItemByID returns the same lightweight shape used by the admin list.
+func (r *postRepo) GetAdminListItemByID(ctx context.Context, id uint) (*entity.Post, error) {
+	p, err := r.query(ctx).
+		Select(
+			post.FieldID,
+			post.FieldTitle,
+			post.FieldSummary,
+			post.FieldCover,
+			post.FieldStatus,
+			post.FieldReadTimeMinutes,
+			post.FieldViewCount,
+			post.FieldPublishedAt,
+			post.FieldCreatedAt,
+			post.FieldUpdatedAt,
+		).
+		WithAuthor(func(q *ent.UserQuery) {
+			q.Select(user.FieldUsername)
+		}).
+		WithCategories().
+		WithTags().
+		Where(
+			post.IDEQ(id),
+		).
+		First(ctx)
+	if err != nil {
+		return nil, errx.New(errx.CodeNotFound, err)
+	}
+
+	return mapper.ToPost(p), nil
 }
 
 // CountAll returns the count of posts matching optional filters.
@@ -464,6 +497,13 @@ func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) erro
 					SetPostTagID(tagIDs[i])
 			},
 		).
+		OnConflict(
+			sql.ConflictColumns(
+				posttagrelation.FieldPostID,
+				posttagrelation.FieldPostTagID,
+			),
+		).
+		DoNothing().
 		Exec(ctx)
 	if err != nil {
 		return errx.New(errx.CodeInternalError, err)
@@ -473,19 +513,16 @@ func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) erro
 
 // SetTags replaces all tags of a post (clear then add).
 func (r *postRepo) SetTags(ctx context.Context, postID uint, tagIDs []uint) error {
-	builder := r.ds.Client(ctx).Post.
-		UpdateOneID(postID).
-		ClearTags()
-
-	if len(tagIDs) > 0 {
-		builder.AddTagIDs(tagIDs...)
-	}
-
-	err := builder.Exec(ctx)
+	_, err := r.ds.Client(ctx).
+		PostTagRelation.
+		Delete().
+		Where(posttagrelation.PostIDEQ(postID)).
+		Exec(ctx)
 	if err != nil {
 		return errx.New(errx.CodeInternalError, err)
 	}
-	return nil
+
+	return r.AddTags(ctx, postID, tagIDs)
 }
 
 // AddCategories attaches categories to a post without removing existing relations.
@@ -520,19 +557,16 @@ func (r *postRepo) AddCategories(ctx context.Context, postID uint, categoryIDs [
 
 // SetCategories replaces all categories of a post (clear then add).
 func (r *postRepo) SetCategories(ctx context.Context, postID uint, categoryIDs []uint) error {
-	builder := r.ds.Client(ctx).Post.
-		UpdateOneID(postID).
-		ClearCategories()
-
-	if len(categoryIDs) > 0 {
-		builder.AddCategoryIDs(categoryIDs...)
-	}
-
-	err := builder.Exec(ctx)
+	_, err := r.ds.Client(ctx).
+		PostCategoryRelation.
+		Delete().
+		Where(postcategoryrelation.PostIDEQ(postID)).
+		Exec(ctx)
 	if err != nil {
 		return errx.New(errx.CodeInternalError, err)
 	}
-	return nil
+
+	return r.AddCategories(ctx, postID, categoryIDs)
 }
 
 // BatchIncrViewCounts performs a bulk increment of view counts.
@@ -587,16 +621,15 @@ func (r *postRepo) BatchIncrViewCounts(ctx context.Context, updates map[uint]int
 
 // IsOwner checks whether a user is the author of a given post.
 func (r *postRepo) IsOwner(ctx context.Context, userID uint, postID uint) (bool, error) {
-	count, err := r.ds.Client(ctx).Post.
-		Query().
+	exists, err := r.query(ctx).
 		Where(
 			post.IDEQ(postID),
 			post.UserIDEQ(userID),
 		).
-		Count(ctx)
+		Exist(ctx)
 	if err != nil {
 		return false, err
 	}
 
-	return count > 0, nil
+	return exists, nil
 }

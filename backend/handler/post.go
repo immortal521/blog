@@ -129,7 +129,7 @@ func (h *postHandler) CreatePost(c *echo.Context) error {
 		return err
 	}
 
-	return response.OK(c, response.Success(toPostRes(post)))
+	return response.OK(c, response.Success(toAdminPostListRes(post)))
 }
 
 // AdminGetPosts retrieves all posts (including drafts) for admin.
@@ -206,11 +206,12 @@ func (h *postHandler) UpdatePost(c *echo.Context) error {
 		CategoryIDs: req.CategoryIDs,
 	}
 
-	if err := h.svc.UpdatePost(c.Request().Context(), u, input); err != nil {
+	post, err := h.svc.UpdatePost(c.Request().Context(), u, input)
+	if err != nil {
 		return err
 	}
 
-	return response.OK(c, response.Success[any](nil))
+	return response.OK(c, response.Success(toAdminPostListRes(post)))
 }
 
 // DeletePost deletes a post.

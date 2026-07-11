@@ -28,7 +28,7 @@ type PostService interface {
 
 	AdminGetPosts(ctx context.Context, status *entity.PostStatus, keyword *string, page, pageSize int) ([]*entity.Post, int, error)
 	AdminGetPostByID(ctx context.Context, id uint) (*entity.Post, error)
-	UpdatePost(ctx context.Context, user contextx.User, input *UpdatePostInput) error
+	UpdatePost(ctx context.Context, user contextx.User, input *UpdatePostInput) (*entity.Post, error)
 	DeletePost(ctx context.Context, user contextx.User, id uint) error
 }
 
@@ -164,13 +164,13 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 		if err = s.pr.AddCategories(ctx, post.ID, input.CategoryIDs); err != nil {
 			return err
 		}
+
+		post, err = s.pr.GetAdminListItemByID(ctx, post.ID)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	post, err = s.pr.GetByID(ctx, post.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -198,9 +198,9 @@ func (s *postService) AdminGetPostByID(ctx context.Context, id uint) (*entity.Po
 }
 
 // UpdatePost updates a post with tags and categories.
-func (s *postService) UpdatePost(ctx context.Context, user contextx.User, input *UpdatePostInput) error {
+func (s *postService) UpdatePost(ctx context.Context, user contextx.User, input *UpdatePostInput) (*entity.Post, error) {
 	if err := s.authz.Authorize(ctx, user.ID, user.Role, authz.ResourcePost, authz.ActionUpdate, &input.ID); err != nil {
-		return err
+		return nil, err
 	}
 
 	post := &entity.Post{
@@ -227,27 +227,33 @@ func (s *postService) UpdatePost(ctx context.Context, user contextx.User, input 
 
 	err := s.tx.WithTx(ctx, func(ctx context.Context) error {
 		var err error
-		post, err = s.pr.Update(ctx, post)
-		if err != nil {
+		if err = s.pr.Update(ctx, post); err != nil {
 			return err
 		}
 
 		if input.Tags != nil {
-			if err = s.pr.SetTags(ctx, post.ID, *input.Tags); err != nil {
+			if err = s.pr.SetTags(ctx, input.ID, *input.Tags); err != nil {
 				return err
 			}
 		}
 
 		if input.CategoryIDs != nil {
-			if err = s.pr.SetCategories(ctx, post.ID, *input.CategoryIDs); err != nil {
+			if err = s.pr.SetCategories(ctx, input.ID, *input.CategoryIDs); err != nil {
 				return err
 			}
 		}
 
+		post, err = s.pr.GetAdminListItemByID(ctx, input.ID)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	return post, nil
 }
 
 // DeletePost soft-deletes a post.
