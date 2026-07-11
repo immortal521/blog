@@ -141,19 +141,19 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 
 	readTime := uint(max(1, (contentLength+199)/200))
 
-	var post *entity.Post
+	post := &entity.Post{
+		Title:           input.Title,
+		Summary:         input.Summary,
+		Cover:           input.Cover,
+		Content:         input.Content,
+		ReadTimeMinutes: readTime,
+		UserID:          input.UserID,
+		Status:          input.Status,
+	}
 	var err error
 
 	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
-		post, err = s.pr.Create(ctx, &entity.Post{
-			Title:           input.Title,
-			Summary:         input.Summary,
-			Cover:           input.Cover,
-			Content:         input.Content,
-			ReadTimeMinutes: readTime,
-			UserID:          input.UserID,
-			Status:          input.Status,
-		})
+		post, err = s.pr.Create(ctx, post)
 		if err != nil {
 			return err
 		}
@@ -164,20 +164,13 @@ func (s *postService) CreatePost(ctx context.Context, user contextx.User, input 
 		if err = s.pr.AddCategories(ctx, post.ID, input.CategoryIDs); err != nil {
 			return err
 		}
-
-		tags, err := s.pr.GetTagsByIDs(ctx, input.Tags)
-		if err != nil {
-			return err
-		}
-		categories, err := s.pr.GetCategoriesByIDs(ctx, input.CategoryIDs)
-		if err != nil {
-			return err
-		}
-		post.Tags = tags
-		post.Categories = categories
-
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	post, err = s.pr.GetByID(ctx, post.ID)
 	if err != nil {
 		return nil, err
 	}

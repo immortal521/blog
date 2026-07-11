@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,6 +20,7 @@ type LinkCategoryCreate struct {
 	config
 	mutation *LinkCategoryMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -200,6 +202,7 @@ func (_c *LinkCategoryCreate) createSpec() (*LinkCategory, *sqlgraph.CreateSpec)
 		_node = &LinkCategory{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(linkcategory.Table, sqlgraph.NewFieldSpec(linkcategory.FieldID, field.TypeUint))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -243,11 +246,298 @@ func (_c *LinkCategoryCreate) createSpec() (*LinkCategory, *sqlgraph.CreateSpec)
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.LinkCategory.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LinkCategoryUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *LinkCategoryCreate) OnConflict(opts ...sql.ConflictOption) *LinkCategoryUpsertOne {
+	_c.conflict = opts
+	return &LinkCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.LinkCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *LinkCategoryCreate) OnConflictColumns(columns ...string) *LinkCategoryUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &LinkCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// LinkCategoryUpsertOne is the builder for "upsert"-ing
+	//  one LinkCategory node.
+	LinkCategoryUpsertOne struct {
+		create *LinkCategoryCreate
+	}
+
+	// LinkCategoryUpsert is the "OnConflict" setter.
+	LinkCategoryUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreatedAt sets the "created_at" field.
+func (u *LinkCategoryUpsert) SetCreatedAt(v time.Time) *LinkCategoryUpsert {
+	u.Set(linkcategory.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsert) UpdateCreatedAt() *LinkCategoryUpsert {
+	u.SetExcluded(linkcategory.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *LinkCategoryUpsert) SetUpdatedAt(v time.Time) *LinkCategoryUpsert {
+	u.Set(linkcategory.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsert) UpdateUpdatedAt() *LinkCategoryUpsert {
+	u.SetExcluded(linkcategory.FieldUpdatedAt)
+	return u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *LinkCategoryUpsert) SetDeletedAt(v time.Time) *LinkCategoryUpsert {
+	u.Set(linkcategory.FieldDeletedAt, v)
+	return u
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsert) UpdateDeletedAt() *LinkCategoryUpsert {
+	u.SetExcluded(linkcategory.FieldDeletedAt)
+	return u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *LinkCategoryUpsert) ClearDeletedAt() *LinkCategoryUpsert {
+	u.SetNull(linkcategory.FieldDeletedAt)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *LinkCategoryUpsert) SetName(v string) *LinkCategoryUpsert {
+	u.Set(linkcategory.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *LinkCategoryUpsert) UpdateName() *LinkCategoryUpsert {
+	u.SetExcluded(linkcategory.FieldName)
+	return u
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (u *LinkCategoryUpsert) SetSortOrder(v int) *LinkCategoryUpsert {
+	u.Set(linkcategory.FieldSortOrder, v)
+	return u
+}
+
+// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
+func (u *LinkCategoryUpsert) UpdateSortOrder() *LinkCategoryUpsert {
+	u.SetExcluded(linkcategory.FieldSortOrder)
+	return u
+}
+
+// AddSortOrder adds v to the "sort_order" field.
+func (u *LinkCategoryUpsert) AddSortOrder(v int) *LinkCategoryUpsert {
+	u.Add(linkcategory.FieldSortOrder, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.LinkCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(linkcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *LinkCategoryUpsertOne) UpdateNewValues() *LinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(linkcategory.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.LinkCategory.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *LinkCategoryUpsertOne) Ignore() *LinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LinkCategoryUpsertOne) DoNothing() *LinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LinkCategoryCreate.OnConflict
+// documentation for more info.
+func (u *LinkCategoryUpsertOne) Update(set func(*LinkCategoryUpsert)) *LinkCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LinkCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *LinkCategoryUpsertOne) SetCreatedAt(v time.Time) *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsertOne) UpdateCreatedAt() *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *LinkCategoryUpsertOne) SetUpdatedAt(v time.Time) *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsertOne) UpdateUpdatedAt() *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *LinkCategoryUpsertOne) SetDeletedAt(v time.Time) *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsertOne) UpdateDeletedAt() *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *LinkCategoryUpsertOne) ClearDeletedAt() *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *LinkCategoryUpsertOne) SetName(v string) *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *LinkCategoryUpsertOne) UpdateName() *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (u *LinkCategoryUpsertOne) SetSortOrder(v int) *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetSortOrder(v)
+	})
+}
+
+// AddSortOrder adds v to the "sort_order" field.
+func (u *LinkCategoryUpsertOne) AddSortOrder(v int) *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.AddSortOrder(v)
+	})
+}
+
+// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
+func (u *LinkCategoryUpsertOne) UpdateSortOrder() *LinkCategoryUpsertOne {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateSortOrder()
+	})
+}
+
+// Exec executes the query.
+func (u *LinkCategoryUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LinkCategoryCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LinkCategoryUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *LinkCategoryUpsertOne) ID(ctx context.Context) (id uint, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *LinkCategoryUpsertOne) IDX(ctx context.Context) uint {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // LinkCategoryCreateBulk is the builder for creating many LinkCategory entities in bulk.
 type LinkCategoryCreateBulk struct {
 	config
 	err      error
 	builders []*LinkCategoryCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the LinkCategory entities in the database.
@@ -277,6 +567,7 @@ func (_c *LinkCategoryCreateBulk) Save(ctx context.Context) ([]*LinkCategory, er
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -327,6 +618,204 @@ func (_c *LinkCategoryCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *LinkCategoryCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.LinkCategory.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LinkCategoryUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *LinkCategoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *LinkCategoryUpsertBulk {
+	_c.conflict = opts
+	return &LinkCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.LinkCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *LinkCategoryCreateBulk) OnConflictColumns(columns ...string) *LinkCategoryUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &LinkCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// LinkCategoryUpsertBulk is the builder for "upsert"-ing
+// a bulk of LinkCategory nodes.
+type LinkCategoryUpsertBulk struct {
+	create *LinkCategoryCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.LinkCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(linkcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *LinkCategoryUpsertBulk) UpdateNewValues() *LinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(linkcategory.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.LinkCategory.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *LinkCategoryUpsertBulk) Ignore() *LinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LinkCategoryUpsertBulk) DoNothing() *LinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LinkCategoryCreateBulk.OnConflict
+// documentation for more info.
+func (u *LinkCategoryUpsertBulk) Update(set func(*LinkCategoryUpsert)) *LinkCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LinkCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *LinkCategoryUpsertBulk) SetCreatedAt(v time.Time) *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsertBulk) UpdateCreatedAt() *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *LinkCategoryUpsertBulk) SetUpdatedAt(v time.Time) *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsertBulk) UpdateUpdatedAt() *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *LinkCategoryUpsertBulk) SetDeletedAt(v time.Time) *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *LinkCategoryUpsertBulk) UpdateDeletedAt() *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *LinkCategoryUpsertBulk) ClearDeletedAt() *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *LinkCategoryUpsertBulk) SetName(v string) *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *LinkCategoryUpsertBulk) UpdateName() *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (u *LinkCategoryUpsertBulk) SetSortOrder(v int) *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.SetSortOrder(v)
+	})
+}
+
+// AddSortOrder adds v to the "sort_order" field.
+func (u *LinkCategoryUpsertBulk) AddSortOrder(v int) *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.AddSortOrder(v)
+	})
+}
+
+// UpdateSortOrder sets the "sort_order" field to the value that was provided on create.
+func (u *LinkCategoryUpsertBulk) UpdateSortOrder() *LinkCategoryUpsertBulk {
+	return u.Update(func(s *LinkCategoryUpsert) {
+		s.UpdateSortOrder()
+	})
+}
+
+// Exec executes the query.
+func (u *LinkCategoryUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the LinkCategoryCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LinkCategoryCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LinkCategoryUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

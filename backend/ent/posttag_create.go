@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,6 +20,7 @@ type PostTagCreate struct {
 	config
 	mutation *PostTagMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -193,6 +195,7 @@ func (_c *PostTagCreate) createSpec() (*PostTag, *sqlgraph.CreateSpec) {
 		_node = &PostTag{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(posttag.Table, sqlgraph.NewFieldSpec(posttag.FieldID, field.TypeUint))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -236,11 +239,285 @@ func (_c *PostTagCreate) createSpec() (*PostTag, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PostTag.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PostTagUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PostTagCreate) OnConflict(opts ...sql.ConflictOption) *PostTagUpsertOne {
+	_c.conflict = opts
+	return &PostTagUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PostTag.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PostTagCreate) OnConflictColumns(columns ...string) *PostTagUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PostTagUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// PostTagUpsertOne is the builder for "upsert"-ing
+	//  one PostTag node.
+	PostTagUpsertOne struct {
+		create *PostTagCreate
+	}
+
+	// PostTagUpsert is the "OnConflict" setter.
+	PostTagUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreatedAt sets the "created_at" field.
+func (u *PostTagUpsert) SetCreatedAt(v time.Time) *PostTagUpsert {
+	u.Set(posttag.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *PostTagUpsert) UpdateCreatedAt() *PostTagUpsert {
+	u.SetExcluded(posttag.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PostTagUpsert) SetUpdatedAt(v time.Time) *PostTagUpsert {
+	u.Set(posttag.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PostTagUpsert) UpdateUpdatedAt() *PostTagUpsert {
+	u.SetExcluded(posttag.FieldUpdatedAt)
+	return u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *PostTagUpsert) SetDeletedAt(v time.Time) *PostTagUpsert {
+	u.Set(posttag.FieldDeletedAt, v)
+	return u
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *PostTagUpsert) UpdateDeletedAt() *PostTagUpsert {
+	u.SetExcluded(posttag.FieldDeletedAt)
+	return u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *PostTagUpsert) ClearDeletedAt() *PostTagUpsert {
+	u.SetNull(posttag.FieldDeletedAt)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *PostTagUpsert) SetName(v string) *PostTagUpsert {
+	u.Set(posttag.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PostTagUpsert) UpdateName() *PostTagUpsert {
+	u.SetExcluded(posttag.FieldName)
+	return u
+}
+
+// SetSlug sets the "slug" field.
+func (u *PostTagUpsert) SetSlug(v string) *PostTagUpsert {
+	u.Set(posttag.FieldSlug, v)
+	return u
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *PostTagUpsert) UpdateSlug() *PostTagUpsert {
+	u.SetExcluded(posttag.FieldSlug)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.PostTag.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(posttag.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PostTagUpsertOne) UpdateNewValues() *PostTagUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(posttag.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PostTag.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PostTagUpsertOne) Ignore() *PostTagUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PostTagUpsertOne) DoNothing() *PostTagUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PostTagCreate.OnConflict
+// documentation for more info.
+func (u *PostTagUpsertOne) Update(set func(*PostTagUpsert)) *PostTagUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PostTagUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *PostTagUpsertOne) SetCreatedAt(v time.Time) *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *PostTagUpsertOne) UpdateCreatedAt() *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PostTagUpsertOne) SetUpdatedAt(v time.Time) *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PostTagUpsertOne) UpdateUpdatedAt() *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *PostTagUpsertOne) SetDeletedAt(v time.Time) *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *PostTagUpsertOne) UpdateDeletedAt() *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *PostTagUpsertOne) ClearDeletedAt() *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *PostTagUpsertOne) SetName(v string) *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PostTagUpsertOne) UpdateName() *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSlug sets the "slug" field.
+func (u *PostTagUpsertOne) SetSlug(v string) *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetSlug(v)
+	})
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *PostTagUpsertOne) UpdateSlug() *PostTagUpsertOne {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateSlug()
+	})
+}
+
+// Exec executes the query.
+func (u *PostTagUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PostTagCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PostTagUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *PostTagUpsertOne) ID(ctx context.Context) (id uint, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *PostTagUpsertOne) IDX(ctx context.Context) uint {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // PostTagCreateBulk is the builder for creating many PostTag entities in bulk.
 type PostTagCreateBulk struct {
 	config
 	err      error
 	builders []*PostTagCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the PostTag entities in the database.
@@ -270,6 +547,7 @@ func (_c *PostTagCreateBulk) Save(ctx context.Context) ([]*PostTag, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -320,6 +598,197 @@ func (_c *PostTagCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *PostTagCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PostTag.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PostTagUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PostTagCreateBulk) OnConflict(opts ...sql.ConflictOption) *PostTagUpsertBulk {
+	_c.conflict = opts
+	return &PostTagUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PostTag.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PostTagCreateBulk) OnConflictColumns(columns ...string) *PostTagUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PostTagUpsertBulk{
+		create: _c,
+	}
+}
+
+// PostTagUpsertBulk is the builder for "upsert"-ing
+// a bulk of PostTag nodes.
+type PostTagUpsertBulk struct {
+	create *PostTagCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.PostTag.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(posttag.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PostTagUpsertBulk) UpdateNewValues() *PostTagUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(posttag.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PostTag.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PostTagUpsertBulk) Ignore() *PostTagUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PostTagUpsertBulk) DoNothing() *PostTagUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PostTagCreateBulk.OnConflict
+// documentation for more info.
+func (u *PostTagUpsertBulk) Update(set func(*PostTagUpsert)) *PostTagUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PostTagUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *PostTagUpsertBulk) SetCreatedAt(v time.Time) *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *PostTagUpsertBulk) UpdateCreatedAt() *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PostTagUpsertBulk) SetUpdatedAt(v time.Time) *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PostTagUpsertBulk) UpdateUpdatedAt() *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *PostTagUpsertBulk) SetDeletedAt(v time.Time) *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *PostTagUpsertBulk) UpdateDeletedAt() *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *PostTagUpsertBulk) ClearDeletedAt() *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *PostTagUpsertBulk) SetName(v string) *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PostTagUpsertBulk) UpdateName() *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSlug sets the "slug" field.
+func (u *PostTagUpsertBulk) SetSlug(v string) *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.SetSlug(v)
+	})
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *PostTagUpsertBulk) UpdateSlug() *PostTagUpsertBulk {
+	return u.Update(func(s *PostTagUpsert) {
+		s.UpdateSlug()
+	})
+}
+
+// Exec executes the query.
+func (u *PostTagUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the PostTagCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PostTagCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PostTagUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

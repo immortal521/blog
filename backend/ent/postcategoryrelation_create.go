@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,6 +20,7 @@ type PostCategoryRelationCreate struct {
 	config
 	mutation *PostCategoryRelationMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetPostID sets the "post_id" field.
@@ -117,6 +119,7 @@ func (_c *PostCategoryRelationCreate) createSpec() (*PostCategoryRelation, *sqlg
 		_node = &PostCategoryRelation{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(postcategoryrelation.Table, nil)
 	)
+	_spec.OnConflict = _c.conflict
 	if nodes := _c.mutation.PostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -154,11 +157,168 @@ func (_c *PostCategoryRelationCreate) createSpec() (*PostCategoryRelation, *sqlg
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PostCategoryRelation.Create().
+//		SetPostID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PostCategoryRelationUpsert) {
+//			SetPostID(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PostCategoryRelationCreate) OnConflict(opts ...sql.ConflictOption) *PostCategoryRelationUpsertOne {
+	_c.conflict = opts
+	return &PostCategoryRelationUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PostCategoryRelation.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PostCategoryRelationCreate) OnConflictColumns(columns ...string) *PostCategoryRelationUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PostCategoryRelationUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// PostCategoryRelationUpsertOne is the builder for "upsert"-ing
+	//  one PostCategoryRelation node.
+	PostCategoryRelationUpsertOne struct {
+		create *PostCategoryRelationCreate
+	}
+
+	// PostCategoryRelationUpsert is the "OnConflict" setter.
+	PostCategoryRelationUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetPostID sets the "post_id" field.
+func (u *PostCategoryRelationUpsert) SetPostID(v uint) *PostCategoryRelationUpsert {
+	u.Set(postcategoryrelation.FieldPostID, v)
+	return u
+}
+
+// UpdatePostID sets the "post_id" field to the value that was provided on create.
+func (u *PostCategoryRelationUpsert) UpdatePostID() *PostCategoryRelationUpsert {
+	u.SetExcluded(postcategoryrelation.FieldPostID)
+	return u
+}
+
+// SetPostCategoryID sets the "post_category_id" field.
+func (u *PostCategoryRelationUpsert) SetPostCategoryID(v uint) *PostCategoryRelationUpsert {
+	u.Set(postcategoryrelation.FieldPostCategoryID, v)
+	return u
+}
+
+// UpdatePostCategoryID sets the "post_category_id" field to the value that was provided on create.
+func (u *PostCategoryRelationUpsert) UpdatePostCategoryID() *PostCategoryRelationUpsert {
+	u.SetExcluded(postcategoryrelation.FieldPostCategoryID)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.PostCategoryRelation.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *PostCategoryRelationUpsertOne) UpdateNewValues() *PostCategoryRelationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PostCategoryRelation.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PostCategoryRelationUpsertOne) Ignore() *PostCategoryRelationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PostCategoryRelationUpsertOne) DoNothing() *PostCategoryRelationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PostCategoryRelationCreate.OnConflict
+// documentation for more info.
+func (u *PostCategoryRelationUpsertOne) Update(set func(*PostCategoryRelationUpsert)) *PostCategoryRelationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PostCategoryRelationUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetPostID sets the "post_id" field.
+func (u *PostCategoryRelationUpsertOne) SetPostID(v uint) *PostCategoryRelationUpsertOne {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.SetPostID(v)
+	})
+}
+
+// UpdatePostID sets the "post_id" field to the value that was provided on create.
+func (u *PostCategoryRelationUpsertOne) UpdatePostID() *PostCategoryRelationUpsertOne {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.UpdatePostID()
+	})
+}
+
+// SetPostCategoryID sets the "post_category_id" field.
+func (u *PostCategoryRelationUpsertOne) SetPostCategoryID(v uint) *PostCategoryRelationUpsertOne {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.SetPostCategoryID(v)
+	})
+}
+
+// UpdatePostCategoryID sets the "post_category_id" field to the value that was provided on create.
+func (u *PostCategoryRelationUpsertOne) UpdatePostCategoryID() *PostCategoryRelationUpsertOne {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.UpdatePostCategoryID()
+	})
+}
+
+// Exec executes the query.
+func (u *PostCategoryRelationUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PostCategoryRelationCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PostCategoryRelationUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // PostCategoryRelationCreateBulk is the builder for creating many PostCategoryRelation entities in bulk.
 type PostCategoryRelationCreateBulk struct {
 	config
 	err      error
 	builders []*PostCategoryRelationCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the PostCategoryRelation entities in the database.
@@ -187,6 +347,7 @@ func (_c *PostCategoryRelationCreateBulk) Save(ctx context.Context) ([]*PostCate
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -232,6 +393,138 @@ func (_c *PostCategoryRelationCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *PostCategoryRelationCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PostCategoryRelation.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PostCategoryRelationUpsert) {
+//			SetPostID(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PostCategoryRelationCreateBulk) OnConflict(opts ...sql.ConflictOption) *PostCategoryRelationUpsertBulk {
+	_c.conflict = opts
+	return &PostCategoryRelationUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PostCategoryRelation.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PostCategoryRelationCreateBulk) OnConflictColumns(columns ...string) *PostCategoryRelationUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PostCategoryRelationUpsertBulk{
+		create: _c,
+	}
+}
+
+// PostCategoryRelationUpsertBulk is the builder for "upsert"-ing
+// a bulk of PostCategoryRelation nodes.
+type PostCategoryRelationUpsertBulk struct {
+	create *PostCategoryRelationCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.PostCategoryRelation.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *PostCategoryRelationUpsertBulk) UpdateNewValues() *PostCategoryRelationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PostCategoryRelation.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PostCategoryRelationUpsertBulk) Ignore() *PostCategoryRelationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PostCategoryRelationUpsertBulk) DoNothing() *PostCategoryRelationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PostCategoryRelationCreateBulk.OnConflict
+// documentation for more info.
+func (u *PostCategoryRelationUpsertBulk) Update(set func(*PostCategoryRelationUpsert)) *PostCategoryRelationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PostCategoryRelationUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetPostID sets the "post_id" field.
+func (u *PostCategoryRelationUpsertBulk) SetPostID(v uint) *PostCategoryRelationUpsertBulk {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.SetPostID(v)
+	})
+}
+
+// UpdatePostID sets the "post_id" field to the value that was provided on create.
+func (u *PostCategoryRelationUpsertBulk) UpdatePostID() *PostCategoryRelationUpsertBulk {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.UpdatePostID()
+	})
+}
+
+// SetPostCategoryID sets the "post_category_id" field.
+func (u *PostCategoryRelationUpsertBulk) SetPostCategoryID(v uint) *PostCategoryRelationUpsertBulk {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.SetPostCategoryID(v)
+	})
+}
+
+// UpdatePostCategoryID sets the "post_category_id" field to the value that was provided on create.
+func (u *PostCategoryRelationUpsertBulk) UpdatePostCategoryID() *PostCategoryRelationUpsertBulk {
+	return u.Update(func(s *PostCategoryRelationUpsert) {
+		s.UpdatePostCategoryID()
+	})
+}
+
+// Exec executes the query.
+func (u *PostCategoryRelationUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the PostCategoryRelationCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PostCategoryRelationCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PostCategoryRelationUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

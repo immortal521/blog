@@ -8,6 +8,7 @@ import (
 	"blog-server/ent"
 	"blog-server/ent/post"
 	"blog-server/ent/postcategory"
+	"blog-server/ent/postcategoryrelation"
 	"blog-server/ent/posttag"
 	"blog-server/ent/user"
 	"blog-server/entity"
@@ -113,19 +114,7 @@ func (r *postRepo) Create(ctx context.Context, p *entity.Post) (*entity.Post, er
 		return nil, errx.New(errx.CodeInternalError, err)
 	}
 
-	result := mapper.ToPost(ep)
-
-	author, err := r.ds.Client(ctx).User.
-		Query().
-		Where(user.IDEQ(p.UserID)).
-		Select(user.FieldUsername).
-		First(ctx)
-	if err != nil {
-		return nil, errx.New(errx.CodeInternalError, err)
-	}
-	result.User = author.Username
-
-	return result, nil
+	return mapper.ToPost(ep), nil
 }
 
 // GetTagsByIDs returns tags for the given IDs.
@@ -465,9 +454,16 @@ func (r *postRepo) AddTags(ctx context.Context, postID uint, tagIDs []uint) erro
 		return nil
 	}
 
-	err := r.ds.Client(ctx).Post.
-		UpdateOneID(postID).
-		AddTagIDs(tagIDs...).
+	err := r.ds.Client(ctx).
+		PostTagRelation.
+		MapCreateBulk(
+			tagIDs,
+			func(c *ent.PostTagRelationCreate, i int) {
+				c.
+					SetPostID(postID).
+					SetPostTagID(tagIDs[i])
+			},
+		).
 		Exec(ctx)
 	if err != nil {
 		return errx.New(errx.CodeInternalError, err)
@@ -498,9 +494,23 @@ func (r *postRepo) AddCategories(ctx context.Context, postID uint, categoryIDs [
 		return nil
 	}
 
-	err := r.ds.Client(ctx).Post.
-		UpdateOneID(postID).
-		AddCategoryIDs(categoryIDs...).
+	err := r.ds.Client(ctx).
+		PostCategoryRelation.
+		MapCreateBulk(
+			categoryIDs,
+			func(c *ent.PostCategoryRelationCreate, i int) {
+				c.
+					SetPostID(postID).
+					SetPostCategoryID(categoryIDs[i])
+			},
+		).
+		OnConflict(
+			sql.ConflictColumns(
+				postcategoryrelation.FieldPostID,
+				postcategoryrelation.FieldPostCategoryID,
+			),
+		).
+		DoNothing().
 		Exec(ctx)
 	if err != nil {
 		return errx.New(errx.CodeInternalError, err)

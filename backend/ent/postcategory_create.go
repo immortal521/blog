@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 )
@@ -19,6 +20,7 @@ type PostCategoryCreate struct {
 	config
 	mutation *PostCategoryMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -193,6 +195,7 @@ func (_c *PostCategoryCreate) createSpec() (*PostCategory, *sqlgraph.CreateSpec)
 		_node = &PostCategory{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(postcategory.Table, sqlgraph.NewFieldSpec(postcategory.FieldID, field.TypeUint))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
@@ -236,11 +239,285 @@ func (_c *PostCategoryCreate) createSpec() (*PostCategory, *sqlgraph.CreateSpec)
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PostCategory.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PostCategoryUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PostCategoryCreate) OnConflict(opts ...sql.ConflictOption) *PostCategoryUpsertOne {
+	_c.conflict = opts
+	return &PostCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PostCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PostCategoryCreate) OnConflictColumns(columns ...string) *PostCategoryUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PostCategoryUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// PostCategoryUpsertOne is the builder for "upsert"-ing
+	//  one PostCategory node.
+	PostCategoryUpsertOne struct {
+		create *PostCategoryCreate
+	}
+
+	// PostCategoryUpsert is the "OnConflict" setter.
+	PostCategoryUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreatedAt sets the "created_at" field.
+func (u *PostCategoryUpsert) SetCreatedAt(v time.Time) *PostCategoryUpsert {
+	u.Set(postcategory.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *PostCategoryUpsert) UpdateCreatedAt() *PostCategoryUpsert {
+	u.SetExcluded(postcategory.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PostCategoryUpsert) SetUpdatedAt(v time.Time) *PostCategoryUpsert {
+	u.Set(postcategory.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PostCategoryUpsert) UpdateUpdatedAt() *PostCategoryUpsert {
+	u.SetExcluded(postcategory.FieldUpdatedAt)
+	return u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *PostCategoryUpsert) SetDeletedAt(v time.Time) *PostCategoryUpsert {
+	u.Set(postcategory.FieldDeletedAt, v)
+	return u
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *PostCategoryUpsert) UpdateDeletedAt() *PostCategoryUpsert {
+	u.SetExcluded(postcategory.FieldDeletedAt)
+	return u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *PostCategoryUpsert) ClearDeletedAt() *PostCategoryUpsert {
+	u.SetNull(postcategory.FieldDeletedAt)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *PostCategoryUpsert) SetName(v string) *PostCategoryUpsert {
+	u.Set(postcategory.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PostCategoryUpsert) UpdateName() *PostCategoryUpsert {
+	u.SetExcluded(postcategory.FieldName)
+	return u
+}
+
+// SetSlug sets the "slug" field.
+func (u *PostCategoryUpsert) SetSlug(v string) *PostCategoryUpsert {
+	u.Set(postcategory.FieldSlug, v)
+	return u
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *PostCategoryUpsert) UpdateSlug() *PostCategoryUpsert {
+	u.SetExcluded(postcategory.FieldSlug)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.PostCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(postcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PostCategoryUpsertOne) UpdateNewValues() *PostCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(postcategory.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PostCategory.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PostCategoryUpsertOne) Ignore() *PostCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PostCategoryUpsertOne) DoNothing() *PostCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PostCategoryCreate.OnConflict
+// documentation for more info.
+func (u *PostCategoryUpsertOne) Update(set func(*PostCategoryUpsert)) *PostCategoryUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PostCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *PostCategoryUpsertOne) SetCreatedAt(v time.Time) *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *PostCategoryUpsertOne) UpdateCreatedAt() *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PostCategoryUpsertOne) SetUpdatedAt(v time.Time) *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PostCategoryUpsertOne) UpdateUpdatedAt() *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *PostCategoryUpsertOne) SetDeletedAt(v time.Time) *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *PostCategoryUpsertOne) UpdateDeletedAt() *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *PostCategoryUpsertOne) ClearDeletedAt() *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *PostCategoryUpsertOne) SetName(v string) *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PostCategoryUpsertOne) UpdateName() *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSlug sets the "slug" field.
+func (u *PostCategoryUpsertOne) SetSlug(v string) *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetSlug(v)
+	})
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *PostCategoryUpsertOne) UpdateSlug() *PostCategoryUpsertOne {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateSlug()
+	})
+}
+
+// Exec executes the query.
+func (u *PostCategoryUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PostCategoryCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PostCategoryUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *PostCategoryUpsertOne) ID(ctx context.Context) (id uint, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *PostCategoryUpsertOne) IDX(ctx context.Context) uint {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // PostCategoryCreateBulk is the builder for creating many PostCategory entities in bulk.
 type PostCategoryCreateBulk struct {
 	config
 	err      error
 	builders []*PostCategoryCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the PostCategory entities in the database.
@@ -270,6 +547,7 @@ func (_c *PostCategoryCreateBulk) Save(ctx context.Context) ([]*PostCategory, er
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -320,6 +598,197 @@ func (_c *PostCategoryCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *PostCategoryCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.PostCategory.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PostCategoryUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *PostCategoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *PostCategoryUpsertBulk {
+	_c.conflict = opts
+	return &PostCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.PostCategory.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *PostCategoryCreateBulk) OnConflictColumns(columns ...string) *PostCategoryUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &PostCategoryUpsertBulk{
+		create: _c,
+	}
+}
+
+// PostCategoryUpsertBulk is the builder for "upsert"-ing
+// a bulk of PostCategory nodes.
+type PostCategoryUpsertBulk struct {
+	create *PostCategoryCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.PostCategory.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(postcategory.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *PostCategoryUpsertBulk) UpdateNewValues() *PostCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(postcategory.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.PostCategory.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PostCategoryUpsertBulk) Ignore() *PostCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PostCategoryUpsertBulk) DoNothing() *PostCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PostCategoryCreateBulk.OnConflict
+// documentation for more info.
+func (u *PostCategoryUpsertBulk) Update(set func(*PostCategoryUpsert)) *PostCategoryUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PostCategoryUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *PostCategoryUpsertBulk) SetCreatedAt(v time.Time) *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *PostCategoryUpsertBulk) UpdateCreatedAt() *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PostCategoryUpsertBulk) SetUpdatedAt(v time.Time) *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PostCategoryUpsertBulk) UpdateUpdatedAt() *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *PostCategoryUpsertBulk) SetDeletedAt(v time.Time) *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *PostCategoryUpsertBulk) UpdateDeletedAt() *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *PostCategoryUpsertBulk) ClearDeletedAt() *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *PostCategoryUpsertBulk) SetName(v string) *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PostCategoryUpsertBulk) UpdateName() *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetSlug sets the "slug" field.
+func (u *PostCategoryUpsertBulk) SetSlug(v string) *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.SetSlug(v)
+	})
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *PostCategoryUpsertBulk) UpdateSlug() *PostCategoryUpsertBulk {
+	return u.Update(func(s *PostCategoryUpsert) {
+		s.UpdateSlug()
+	})
+}
+
+// Exec executes the query.
+func (u *PostCategoryUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the PostCategoryCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PostCategoryCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PostCategoryUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
