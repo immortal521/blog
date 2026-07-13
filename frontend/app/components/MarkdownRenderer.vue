@@ -108,20 +108,16 @@ watch(
 
 :deep(:not(pre.shiki) > code) {
   display: inline;
-  padding: 0.16em 0.48em;
-  margin: 0 0.1em;
+  padding: 0.2em 0.45em;
   font-family: "Maple Mono", "Noto Sans SC", monospace;
   font-size: 0.86em;
   font-weight: 500;
   color: var(--inline-code-color);
   background-color: var(--inline-code-bg);
-  border: 1px solid var(--inline-code-border);
-  border-radius: 6px;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%);
+  border-radius: 4px;
   line-height: 1.45;
   white-space: break-spaces;
   overflow-wrap: break-word;
-  vertical-align: 0.02em;
 }
 
 :deep(table) {
