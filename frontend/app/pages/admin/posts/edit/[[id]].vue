@@ -19,32 +19,6 @@ const lineCount = computed(() => {
   const mergedEmptyline = trimmed.replace(/\n{3,}/g, "\n\n");
   return mergedEmptyline.split("\n").length;
 });
-
-// const summary = ref<string>("");
-
-// const summarize = async () => {
-//   summary.value = "";
-//   const data = await $fetch<{ sessionId: string }>("/api/v1/model/summarize", {
-//     method: "post",
-//     body: {
-//       content: content.value,
-//     },
-//   });
-//
-//   const es = new EventSource("/api/v1/model/summarize/" + data.sessionId);
-//
-//   es.onmessage = (event) => {
-//     summary.value += event.data;
-//   };
-//
-//   es.addEventListener("done", () => {
-//     es.close();
-//   });
-//
-//   es.addEventListener("error", () => {
-//     es.close();
-//   });
-// };
 </script>
 
 <template>
