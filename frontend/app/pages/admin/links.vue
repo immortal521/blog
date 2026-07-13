@@ -46,7 +46,7 @@ const { $ts } = useI18n();
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
   height: 140px;
   padding: 20px;
   border-radius: var(--radius-card);

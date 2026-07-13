@@ -8,8 +8,8 @@
 
 <style lang="less" scoped>
 .card {
-  background: var(--glass-gradient), var(--bg-card-base);
-  border: 2px solid var(--border-color-card);
+  background: var(--bg-card-base);
+  border: 1px solid var(--border-color-card);
   box-shadow: var(--shadow-card-base);
   border-radius: var(--radius-card);
   transition:
@@ -19,8 +19,8 @@
 
   &:hover {
     box-shadow: var(--shadow-card-hover);
-    background: var(--glass-gradient-strong), var(--bg-card-hover);
-    border: 2px solid var(--border-color-card-hover);
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color-card-hover);
   }
 }
 </style>

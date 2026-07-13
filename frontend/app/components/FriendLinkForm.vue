@@ -160,8 +160,7 @@ async function handleSubmit() {
 .content {
   max-width: 480px;
   width: 95%;
-  background: var(--glass-gradient), var(--bg-card-base);
-  backdrop-filter: blur(10px);
+  background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
   border-radius: 10px;
   padding: 20px;
@@ -180,7 +179,7 @@ async function handleSubmit() {
 .input {
   width: 100%;
   padding: 8px 10px;
-  background: var(--glass-gradient), var(--bg-content);
+  background: var(--bg-content);
   color: var(--text-color-primary);
   border: 1px solid var(--border-color-default);
   border-radius: 6px;
@@ -195,7 +194,7 @@ async function handleSubmit() {
   display: block;
   padding: 8px 12px;
   background: var(--color-primary-base);
-  color: #e0e0e0;
+  color: var(--text-on-brand);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
@@ -212,7 +211,7 @@ async function handleSubmit() {
 }
 
 .submit-btn:disabled {
-  background: #94a3b8;
+  background: var(--color-primary-disabled);
   cursor: not-allowed;
 }
 </style>

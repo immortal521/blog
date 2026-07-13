@@ -88,28 +88,28 @@ button {
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
   background-color: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--color-primary-base);
-  width: 4px;
-  height: 4px;
-  border-radius: 4px;
+  background-color: var(--scrollbar-thumb-bg);
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+  border-radius: calc(var(--scrollbar-width) / 2);
   cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-primary-hover);
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background-color: var(--color-primary-active);
+  background-color: var(--scrollbar-thumb-active);
 }
 
 ::selection {
-  background-color: var(--color-primary-base);
-  color: var(--color-on-primary);
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
 }

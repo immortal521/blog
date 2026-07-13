@@ -20,7 +20,7 @@ const { height = 30, icon } = defineProps<{
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--glass-gradient), var(--bg-nav-base);
+  background: var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
   width: 100%;
   border-radius: var(--radius-nav);

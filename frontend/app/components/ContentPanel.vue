@@ -15,7 +15,7 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
 <style lang="less" scoped>
 .container {
   position: relative;
-  background: var(--glass-gradient), var(--bg-content);
+  background: var(--bg-content);
   animation: opacity 0.5s ease;
   padding-bottom: 140px;
 }

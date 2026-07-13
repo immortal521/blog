@@ -114,7 +114,7 @@ onBeforeUnmount(() => {
   word-break: break-word;
   text-align: left;
   padding: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-default);
   min-height: 120px;
 }
 </style>

@@ -4,7 +4,14 @@ import type { ThemeMode } from "~/types/theme";
 const mode = storeToRefs(useThemeStore()).mode;
 const isShow = ref(true);
 
-const primaryColorList = ["#7c85ff", "#3B82F6", "#7C3AED", "#10B981", "#F59E0B", "	#D9777F"];
+const primaryColorList = [
+  "#99a2ff", // periwinkle
+  "#7a8b74", // sage
+  "#8b7e6b", // warm taupe
+  "#7a7a8b", // muted lavender
+  "#8b7474", // dusty rose
+  "#6b8b8b", // teal
+];
 
 const isDark = computed(() => {
   return mode.value === "dark";
@@ -86,7 +93,7 @@ onMounted(() => {
   gap: 10px;
   padding: 12px;
   border-radius: var(--radius-nav);
-  background: var(--glass-gradient), var(--bg-nav-base);
+  background: var(--bg-nav-base);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color-nav);
   box-shadow: var(--shadow-nav);
@@ -103,7 +110,7 @@ onMounted(() => {
 .buttons-track {
   width: calc(100% - 10px);
   height: 35px;
-  background: var(--glass-gradient), var(--bg-button-toggle-track);
+  background: var(--bg-button-toggle-track);
   margin: 0 auto;
   border-radius: 5px;
   position: relative;
@@ -116,7 +123,7 @@ onMounted(() => {
     top: 2px;
     width: 50%;
     height: calc(100% - 4px);
-    background: var(--glass-gradient-strong), var(--bg-button-toggle-thumb);
+    background: var(--bg-button-toggle-thumb);
     z-index: -1;
     border-radius: 5px;
     transition: transform 0.3s ease-in-out;

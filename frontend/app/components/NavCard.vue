@@ -29,7 +29,7 @@ const route = useRoute();
   position: absolute;
   top: 20px;
   left: 10px;
-  background: var(--glass-gradient), var(--bg-content);
+  background: var(--bg-nav-base);
   color: var(--text-color-primary);
   overflow: hidden;
 

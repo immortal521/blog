@@ -2,25 +2,29 @@ import tinycolor from "tinycolor2";
 import { nextTick } from "vue";
 import type { ThemeColors, ThemeMode } from "~/types/theme";
 
-/**
- * 计算一组主题颜色，包括 hover/active/disabled
- */
+function soften(color: tinycolor.Instance): tinycolor.Instance {
+  const { h, s, l } = color.toHsl();
+  if (l < 0.25 || l > 0.7) return color;
+  if (s < 0.55) return color;
+  return tinycolor({ h, s: 0.4, l });
+}
+
 export function generateThemeColors(baseColor: string, mode: ThemeMode): ThemeColors {
-  const base = tinycolor(baseColor);
+  const base = soften(tinycolor(baseColor));
+  const hex = base.toHexString();
 
-  const hover = mode === "light" ? tinycolor(baseColor).darken(5) : tinycolor(baseColor).lighten(5);
+  const hover = mode === "light" ? tinycolor(hex).darken(5) : tinycolor(hex).lighten(5);
 
-  const active =
-    mode === "light" ? tinycolor(baseColor).darken(10) : tinycolor(baseColor).lighten(10);
+  const active = mode === "light" ? tinycolor(hex).darken(10) : tinycolor(hex).lighten(10);
 
-  const disabled = tinycolor.mix(base, "#cccccc", 60);
+  const disabled = tinycolor.mix(hex, "#b0b0b0", 60);
 
-  const whiteContrast = tinycolor.readability(base, "#ffffff");
+  const whiteContrast = tinycolor.readability(hex, "#ffffff");
 
-  const onPrimary = whiteContrast >= 4.5 ? "#ffffff" : "#000000";
+  const onPrimary = whiteContrast >= 4.5 ? "#ffffff" : "#1a1a1e";
 
   return {
-    base: base.toHexString(),
+    base: hex,
     hover: hover.toHexString(),
     active: active.toHexString(),
     disabled: disabled.toHexString(),
@@ -28,9 +32,6 @@ export function generateThemeColors(baseColor: string, mode: ThemeMode): ThemeCo
   };
 }
 
-/**
- * 把主题颜色同步到 CSS 变量
- */
 export function applyThemeColorsToCSSVars(colors: ThemeColors) {
   const root = document.documentElement;
 
@@ -41,18 +42,11 @@ export function applyThemeColorsToCSSVars(colors: ThemeColors) {
   root.style.setProperty("--color-on-primary", colors.onPrimary);
 }
 
-/**
- * 设置整体明暗模式
- */
 export function applyBaseThemeMode(mode: ThemeMode) {
   const root = document.documentElement;
   root.setAttribute("data-theme", mode);
 }
 
-/**
- * 如果浏览器支持 View Transition API，则对当前文档应用视图过渡。
- * 如果浏览器不支持视图过渡，则立即执行提供的函数。
- */
 export function withViewTransition(applyFn: () => void, direction: boolean = true) {
   if (typeof document !== "undefined" && document.startViewTransition) {
     const transition = document.startViewTransition(async () => {

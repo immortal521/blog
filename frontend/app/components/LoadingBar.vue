@@ -25,7 +25,7 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
     width: 100%;
     height: 0;
     text-indent: -9999px;
-    background: #786bcf;
+    background: var(--brand-primary);
     animation: change-bar 2.25s infinite;
 
     &::before {
@@ -54,27 +54,27 @@ const { isVisible = true } = defineProps<{ isVisible?: boolean }>();
 
 @keyframes change-bar {
   0% {
-    background-color: #786bcf;
+    background-color: var(--brand-primary);
   }
 
   33.3% {
-    background-color: #786bcf;
+    background-color: var(--brand-primary);
   }
 
   33.33% {
-    background-color: #78e0f5;
+    background-color: var(--state-info);
   }
 
   66.6% {
-    background-color: #78e0f5;
+    background-color: var(--state-info);
   }
 
   66.66% {
-    background-color: #fc6fb1;
+    background-color: var(--state-success);
   }
 
   99.9% {
-    background-color: #fc6fb1;
+    background-color: var(--state-success);
   }
 }
 

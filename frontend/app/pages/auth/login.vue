@@ -50,7 +50,7 @@ const formData = ref({
   min-width: 350px;
   max-width: 90vw;
   padding: 20px;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
   border-radius: 10px;
   color: var(--text-color-primary);
@@ -80,7 +80,7 @@ const formData = ref({
   margin-left: 1rem;
   font-weight: 700;
   border-radius: 8px;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
 }
 
 .login-button {

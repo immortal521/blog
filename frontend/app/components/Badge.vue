@@ -22,7 +22,7 @@ const { value } = defineProps<Props>();
 
   border-radius: 999px;
 
-  background: #f56c6c;
+  background: var(--state-error);
   color: white;
 
   font-size: 12px;

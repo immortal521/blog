@@ -79,7 +79,7 @@ const handleDownArrowClick = () => {
 .greetings {
   height: 60px;
   width: 100%;
-  background: var(--glass-gradient), var(--bg-nav-base);
+  background: var(--bg-nav-base);
   color: var(--text-color-primary);
   border: 1px solid var(--border-color-nav);
   border-radius: 10px;

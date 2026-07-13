@@ -103,7 +103,7 @@ const startTimer = (msg: Message, duration: number) => {
   }, duration);
 };
 
-// Pause the timer (on hover)
+// Pause the timer on hover
 const pauseTimer = (msg: Message) => {
   if (!msg.timer) return;
   clearTimeout(msg.timer);
@@ -111,7 +111,7 @@ const pauseTimer = (msg: Message) => {
   msg.timer = undefined;
 };
 
-// Resume the timer (on mouse leave)
+// Resume the timer on mouse leave
 const resumeTimer = (msg: Message) => {
   if (msg.timer || (msg.remainTime ?? 0) <= 0) return;
   startTimer(msg, msg.remainTime!);
@@ -124,7 +124,7 @@ const createMessageApi =
 
 // Message API object
 const messageApi = {
-  create, // General create function to send any type (including default)
+  create, // General create function for any type
   success: createMessageApi("success"),
   error: createMessageApi("error"),
   info: createMessageApi("info"),
@@ -191,7 +191,7 @@ const beforeLeave = (el: Element) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
   border: 2px solid;
   position: relative;
   width: max-content;

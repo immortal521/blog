@@ -65,7 +65,7 @@ useAddClassOnIntersect(postCardRef, "show");
   height: 100%;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
   transition: color 0.5s ease-in-out;
 
@@ -74,7 +74,7 @@ useAddClassOnIntersect(postCardRef, "show");
     width: 100%;
     border-radius: 10px;
     overflow: hidden;
-    background: var(--glass-gradient), var(--bg-card-base);
+    background: var(--bg-card-base);
     transition:
       transform 0.5s ease,
       height 0.5s ease;

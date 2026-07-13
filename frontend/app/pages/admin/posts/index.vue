@@ -21,7 +21,7 @@
     height: 30px;
     line-height: 30px;
     font-size: 14px;
-    background: var(--glass-gradient), var(--bg-card-base);
+    background: var(--bg-card-base);
     padding: 0 8px;
     border-radius: 8px;
   }

@@ -155,7 +155,7 @@ const onAfterLeave = (el: Element) => {
   right: 0;
   width: 100%;
   height: calc(100vh - 60px);
-  background: var(--glass-gradient-strong), var(--bg-nav-active);
+  background: var(--bg-nav-active);
   border-top: 2px solid var(--border-color-nav);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(10px);
@@ -208,7 +208,7 @@ const onAfterLeave = (el: Element) => {
       &:hover {
         border-bottom: 1px solid var(--color-primary-base);
         color: var(--color-primary-base);
-        background: var(--glass-gradient);
+        background: var(--bg-interactive-hover);
       }
 
       :deep(.svg-icon) {

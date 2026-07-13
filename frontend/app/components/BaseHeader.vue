@@ -26,7 +26,7 @@ const { isSticky = false } = defineProps<Props>();
   position: relative;
   max-width: 1000px;
   margin: auto;
-  background: var(--glass-gradient), var(--bg-nav-base);
+  background: var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
   backdrop-filter: var(--blur-nav);
   overflow: hidden;
@@ -45,7 +45,7 @@ const { isSticky = false } = defineProps<Props>();
   box-shadow: var(--shadow-nav);
 
   &:not(.is-sticky):hover {
-    background: var(--glass-gradient-strong), var(--bg-nav-hover);
+    background: var(--bg-nav-hover);
   }
 
   &.is-sticky {

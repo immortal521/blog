@@ -77,7 +77,7 @@ useAddClassOnIntersect(linkCards, "show");
 
 .submit-link-tips {
   position: relative;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
   border-radius: 10px;
   box-shadow: var(--shadow-card-base);
   padding: 20px;
@@ -96,7 +96,7 @@ useAddClassOnIntersect(linkCards, "show");
     padding: 0 1.5rem;
     height: 30px;
     background: var(--color-primary-base);
-    color: #e0e0e0;
+    color: var(--text-on-brand);
     border-radius: 5px;
 
     &:hover {
@@ -111,8 +111,8 @@ useAddClassOnIntersect(linkCards, "show");
 
 .links {
   width: 100%;
-  display: grid; /* 启用 Flexbox */
-  gap: 20px; /* 卡片之间的间距 */
+  display: grid;
+  gap: 20px;
   margin-top: 20px;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
@@ -142,7 +142,7 @@ useAddClassOnIntersect(linkCards, "show");
     width: 60px;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid #b0b0b0;
+    border: 2px solid var(--border-default);
   }
 }
 
@@ -159,10 +159,10 @@ useAddClassOnIntersect(linkCards, "show");
 .description {
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box; /* Webkit 浏览器专用，将元素作为弹性盒子显示 */
-  -webkit-box-orient: vertical; /* 垂直方向排列内容 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
   line-clamp: 3;
-  -webkit-line-clamp: 3; /* 限制显示为 3 行 */
+  -webkit-line-clamp: 3;
   color: var(--text-color-secondary);
   font-size: 0.925em;
 }

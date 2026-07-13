@@ -43,7 +43,7 @@ onClickOutside(panelContent, (event) => {
 }
 
 .action-button {
-  background: var(--glass-gradient), var(--bg-nav-base);
+  background: var(--bg-nav-base);
   border-radius: var(--radius-nav);
   width: 100%;
   height: 40px;

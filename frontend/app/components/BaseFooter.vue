@@ -8,7 +8,7 @@
 .footer {
   position: relative;
   padding: 3.2rem 1.6rem;
-  background: var(--glass-gradient), var(--bg-content);
+  background: var(--bg-content);
   backdrop-filter: blur(10px);
   text-align: center;
   line-height: 1.8;

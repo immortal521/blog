@@ -15,25 +15,38 @@ const { isVisible } = useLoadingBar();
 </template>
 
 <style lang="less">
-.page-enter-active,
-.page-leave-active {
-  transition: all 0.4s;
+.page-enter-active {
+  transition:
+    opacity 0.25s ease-out,
+    transform 0.25s ease-out;
 }
 
-.page-enter-from,
+.page-leave-active {
+  transition: opacity 0.2s ease-in;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
 .page-leave-to {
   opacity: 0;
-  filter: blur(10px);
 }
 
-.layout-enter-active,
+.layout-enter-active {
+  transition: opacity 0.2s ease-out;
+}
+
 .layout-leave-active {
-  transition: all 0.4s;
+  transition: opacity 0.15s ease-in;
 }
 
-.layout-enter-from,
+.layout-enter-from {
+  opacity: 0;
+}
+
 .layout-leave-to {
   opacity: 0;
-  filter: blur(10px);
 }
 </style>

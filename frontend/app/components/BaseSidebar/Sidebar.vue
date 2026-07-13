@@ -51,7 +51,7 @@ const handleToggle = (key: string) => {
 
 <style lang="less" scoped>
 .sidebar-wrapper {
-  background: var(--glass-gradient), var(--bg-sidebar);
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border-color-nav);
   backdrop-filter: var(--glass-blur);
   height: 100vh;
@@ -168,7 +168,7 @@ const handleToggle = (key: string) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgb(0 0 0 / 50%);
+  background: var(--bg-overlay);
 }
 
 @media (width <= 768px) {

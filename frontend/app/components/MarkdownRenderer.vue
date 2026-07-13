@@ -128,7 +128,7 @@ watch(
   width: 100%;
   border-collapse: collapse;
   border-radius: 8px;
-  background: var(--glass-gradient), var(--bg-content);
+  background: var(--bg-content);
   overflow: hidden;
   font-size: var(--font-size-table-row);
   color: var(--text-color-primary);
@@ -167,7 +167,7 @@ watch(
 :deep(blockquote) {
   border-radius: 5px;
   padding: 10px 16px;
-  background: var(--glass-gradient), var(--bg-card-base);
+  background: var(--bg-card-base);
   position: relative;
   border-left: none;
 
@@ -200,12 +200,12 @@ watch(
   position: relative;
 }
 
-/* 无序列表圆点样式 */
+// 无序列表圆点样式
 :deep(ul li::marker) {
   color: var(--text-color-secondary);
 }
 
-/* 有序列表数字样式 */
+// 有序列表数字样式
 :deep(ol li::marker) {
   font-weight: bold;
   color: var(--text-color-secondary);
@@ -227,7 +227,7 @@ watch(
 
 :deep(mark) {
   padding: 0 0.5rem;
-  color: #fff;
+  color: var(--text-on-brand);
   background-color: var(--color-primary-base);
   border-radius: 10px;
 }
