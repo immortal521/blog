@@ -36,8 +36,8 @@ type PostPageReq struct {
 
 // AdminPostListReq is the request query for admin post list.
 type AdminPostListReq struct {
-	Page     int                `json:"page" query:"page,default:1" validate:"omitempty,min=1"`
-	PageSize int                `json:"pageSize" query:"pageSize,default:10" validate:"omitempty,min=1,max=100"`
+	Page     int                `json:"page" query:"page" validate:"omitempty,min=1"`
+	PageSize int                `json:"pageSize" query:"pageSize" validate:"omitempty,min=1,max=100"`
 	Status   *entity.PostStatus `json:"status" query:"status" validate:"omitempty,oneof=draft published archived"`
 	Keyword  *string            `json:"keyword" query:"keyword" validate:"omitempty,max=100"`
 }
