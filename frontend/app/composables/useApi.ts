@@ -85,7 +85,7 @@ export function useClientApi() {
       return doRequest<T>(url, options).catch((retryErr: FetchError) => {
         if (retryErr?.response?.status === 401) {
           // TODO: layout logic
-          useAuthStore().lagout();
+          useAuthStore().logout();
           navigateTo("/auth/login");
         }
         throw retryErr;
@@ -139,5 +139,5 @@ export function useClientApi() {
     return apiFetch<T>(url, { ...options, method: "delete" });
   };
 
-  return { apiFetch, get, post, put, delete: del, patch };
+  return { apiFetch, get, post, put, del, patch };
 }

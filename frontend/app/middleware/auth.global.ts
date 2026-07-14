@@ -6,10 +6,10 @@ export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore();
   const { $localePath } = useI18n();
 
-  const { accessToken, lagout } = authStore;
+  const { accessToken, logout } = authStore;
 
   if (!accessToken) {
-    lagout();
+    logout();
     return navigateTo($localePath("/auth/login"));
   }
 });

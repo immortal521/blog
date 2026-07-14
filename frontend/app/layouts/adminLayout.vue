@@ -102,5 +102,7 @@ const handleToggle = () => {
 
 .main {
   padding: 10px;
+  height: calc(100vh - 50px);
+  overflow-y: auto;
 }
 </style>

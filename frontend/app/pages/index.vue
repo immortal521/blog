@@ -2,11 +2,27 @@
 import type { ApiPageResponse } from "~/types/api";
 import type { Post } from "~/types/post";
 
+const page = ref<number>(1);
+const pageSize = ref<number>(10);
+
 const { data } = await useFetch<ApiPageResponse<Post>>("/api/v1/posts", {
   method: "get",
+  query: {
+    page,
+    pageSize,
+  },
 });
 
 const posts = computed(() => data.value?.data.list ?? []);
+const total = computed(() => data.value?.data.total ?? posts.value.length);
+
+watch(page, () => {
+  scrollTo({
+    left: 0,
+    top: window.innerHeight - 40,
+    behavior: "smooth",
+  } as ScrollToOptions);
+});
 </script>
 
 <template>
@@ -26,6 +42,24 @@ const posts = computed(() => data.value?.data.list ?? []);
           :summary="post.summary"
         />
       </div>
+      <BasePagination v-model:page="page" :page-size="pageSize" :total="total">
+        <template #default="{ items, select }">
+          <nav class="pagination">
+            <button
+              v-for="item in items"
+              :key="item.key"
+              :disabled="item.disabled"
+              :class="{
+                active: item.active,
+                item: true,
+              }"
+              @click="select(item)"
+            >
+              {{ item.label }}
+            </button>
+          </nav>
+        </template>
+      </BasePagination>
     </ContentPanel>
   </div>
 </template>
@@ -60,5 +94,37 @@ const posts = computed(() => data.value?.data.list ?? []);
   gap: 10px;
   padding: 10px 20px;
   grid-template-columns: 1fr;
+}
+
+.pagination {
+  margin: 0 auto;
+  width: max-content;
+}
+
+.item {
+  margin: 0 8px;
+  background: var(--bg-card-base);
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: var(--radius-card);
+  padding: 8px;
+  color: var(--text-color-primary);
+  box-shadow: var(--shadow-card-base);
+  backdrop-filter: var(--filter-blur-sm);
+  font-family: "MapleMono";
+  font-weight: bold;
+
+  &:hover {
+    background-color: var(--bg-card-hover);
+  }
+
+  &:active {
+    background-color: var(--bg-card-active);
+  }
+
+  &.active {
+    background-color: var(--color-primary-base);
+    color: var(--color-primary-text);
+  }
 }
 </style>

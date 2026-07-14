@@ -40,6 +40,6 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken,
     setAccessToken,
     login,
-    lagout: logout,
+    logout,
   };
 });
