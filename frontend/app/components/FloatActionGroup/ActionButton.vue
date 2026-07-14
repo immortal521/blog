@@ -17,6 +17,7 @@ const { height = 30, icon } = defineProps<{
 
 <style lang="less" scoped>
 .action-button {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -27,9 +28,20 @@ const { height = 30, icon } = defineProps<{
   box-shadow: var(--shadow-nav);
   cursor: pointer;
   transition: var(--transition-nav);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight);
+    pointer-events: none;
+    border-radius: inherit;
+  }
 }
 
 .icon {
+  position: relative;
   color: var(--text-color-primary);
 }
 </style>

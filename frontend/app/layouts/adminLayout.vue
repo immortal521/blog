@@ -65,6 +65,7 @@ const handleToggle = () => {
 }
 
 .header {
+  position: relative;
   height: 50px;
   width: 100%;
   border-bottom: 1px solid var(--border-color-default);
@@ -74,13 +75,28 @@ const handleToggle = () => {
   align-items: center;
   padding: 0 10px;
 
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight);
+    pointer-events: none;
+  }
+
   .menu-btn {
+    position: relative;
     background: none;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 10px;
     color: inherit;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: var(--bg-interactive-hover);
+    }
   }
 }
 

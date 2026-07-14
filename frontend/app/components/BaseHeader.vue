@@ -35,14 +35,24 @@ const { isSticky = false } = defineProps<Props>();
   top: 25px;
   border-radius: 15px;
   transition:
-    top 0.5s ease-in-out,
-    width 0.5s ease-in-out,
-    max-width 0.5s ease-in-out,
-    border-radius 0.5s ease-in-out,
-    background 0.3s ease-in-out,
-    border-color 0.3s ease-in-out;
-  animation: scale-in 0.5s ease-in-out;
+    top 0.5s ease,
+    width 0.5s ease,
+    max-width 0.5s ease,
+    border-radius 0.5s ease,
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  animation: scale-in 0.5s ease;
   box-shadow: var(--shadow-nav);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--glass-highlight);
+    pointer-events: none;
+  }
 
   &:not(.is-sticky):hover {
     background: var(--bg-nav-hover);

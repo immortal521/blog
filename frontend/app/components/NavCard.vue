@@ -24,25 +24,41 @@ const route = useRoute();
 .aside {
   height: max-content;
   width: 200px;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: var(--shadow-md);
   position: absolute;
   top: 20px;
   left: 10px;
   background: var(--bg-nav-base);
+  backdrop-filter: var(--blur-nav);
+  border: 1px solid var(--border-color-nav);
   color: var(--text-color-primary);
   overflow: hidden;
 
   ul {
     list-style: none;
+    padding: 6px;
 
     li {
-      padding: 10px;
+      padding: 10px 14px;
       border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      font-size: 1.5rem;
+
+      &:hover {
+        background: var(--bg-interactive-hover);
+      }
     }
 
     .active {
       background: var(--color-primary-base);
+      color: var(--text-on-brand);
+      font-weight: 600;
+
+      &:hover {
+        background: var(--color-primary-hover);
+      }
     }
   }
 }

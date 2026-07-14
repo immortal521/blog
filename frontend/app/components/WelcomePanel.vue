@@ -77,19 +77,31 @@ const handleDownArrowClick = () => {
 }
 
 .greetings {
+  position: relative;
   height: 60px;
   width: 100%;
   background: var(--bg-nav-base);
   color: var(--text-color-primary);
   border: 1px solid var(--border-color-nav);
-  border-radius: 10px;
+  border-radius: 12px;
   line-height: 60px;
   margin: 25px 0;
   font-family: var(--font-family-caveat);
   font-size: 2.5rem;
   font-weight: 800;
-  animation: fade-in-down 1s ease-in-out;
+  animation: fade-in-down 1s ease;
   box-shadow: var(--shadow-md);
+  backdrop-filter: var(--blur-nav);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight);
+    pointer-events: none;
+    border-radius: inherit;
+  }
 }
 
 .contect {

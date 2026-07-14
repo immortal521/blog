@@ -74,25 +74,28 @@
   --text-visited: var(--brand-600);
 
   // Backgrounds
-  --bg-app: #e8e7e9;
-  --bg-inset: rgb(0 0 0 / 3%);
-  --bg-surface: rgb(255 255 255 / 74%);
-  --bg-surface-muted: rgb(255 255 255 / 64%);
-  --bg-elevated: rgb(255 255 255 / 88%);
-  --bg-overlay: rgb(0 0 0 / 40%);
-  --bg-disabled: rgb(0 0 0 / 5%);
+  --bg-app: #e2e1e4;
+  --bg-inset: rgb(0 0 0 / 4%);
+  --bg-surface: rgb(255 255 255 / 78%);
+  --bg-surface-muted: rgb(255 255 255 / 68%);
+  --bg-elevated: rgb(255 255 255 / 92%);
+  --bg-overlay: rgb(0 0 0 / 45%);
+  --bg-disabled: rgb(0 0 0 / 6%);
   --bg-content: var(--bg-surface);
 
   // Interactive
-  --bg-interactive-hover: rgb(0 0 0 / 4%);
-  --bg-interactive-active: rgb(0 0 0 / 8%);
+  --bg-interactive-hover: rgb(0 0 0 / 5%);
+  --bg-interactive-active: rgb(0 0 0 / 10%);
 
   // Glass
-  --glass-bg: rgb(255 255 255 / 62%);
-  --glass-bg-strong: rgb(255 255 255 / 76%);
-  --glass-border: rgb(255 255 255 / 16%);
-  --glass-blur: blur(12px);
-  --glass-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+  --glass-bg: rgb(255 255 255 / 66%);
+  --glass-bg-strong: rgb(255 255 255 / 80%);
+  --glass-border: rgb(255 255 255 / 28%);
+  --glass-blur: blur(16px);
+  --glass-shadow: 0 8px 32px rgb(0 0 0 / 10%);
+
+  // Glass inner highlight
+  --glass-highlight: inset 0 1px 0 rgb(255 255 255 / 40%);
 
   // Brand
   --brand-primary: var(--brand-500);
@@ -100,18 +103,18 @@
   --brand-active: var(--brand-600);
   --brand-disabled: var(--brand-200);
   --brand-bg: var(--brand-50);
-  --brand-bg-active: color-mix(in srgb, var(--brand-500) 20%, transparent);
+  --brand-bg-active: color-mix(in srgb, var(--brand-500) 22%, transparent);
   --brand-bg-muted: color-mix(in srgb, var(--brand-500) 10%, transparent);
 
   // Borders
-  --border-default: rgb(0 0 0 / 8%);
-  --border-hover: rgb(0 0 0 / 14%);
+  --border-default: rgb(0 0 0 / 10%);
+  --border-hover: rgb(0 0 0 / 18%);
   --border-active: var(--brand-500);
-  --border-subtle: rgb(0 0 0 / 4%);
-  --border-disabled: rgb(0 0 0 / 3%);
+  --border-subtle: rgb(0 0 0 / 5%);
+  --border-disabled: rgb(0 0 0 / 4%);
 
   // Focus
-  --focus-ring: 0 0 0 2px color-mix(in srgb, var(--brand-500) 30%, transparent);
+  --focus-ring: 0 0 0 2px color-mix(in srgb, var(--brand-500) 35%, transparent);
 
   // Selection
   --selection-bg: var(--brand-500);
@@ -128,27 +131,27 @@
   --state-info-bg: var(--blue-100);
 
   // Card
-  --bg-card-base: rgb(255 255 255 / 82%);
-  --bg-card-hover: rgb(255 255 255 / 90%);
-  --bg-card-active: rgb(255 255 255 / 94%);
-  --bg-card-title: rgb(255 255 255 / 86%);
-  --border-color-card: rgb(0 0 0 / 6%);
-  --border-color-card-hover: color-mix(in srgb, var(--brand-500) 20%, transparent);
-  --radius-card: 10px;
-  --shadow-card-base: 0 1px 3px rgb(0 0 0 / 6%);
-  --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 8%);
+  --bg-card-base: rgb(255 255 255 / 86%);
+  --bg-card-hover: rgb(255 255 255 / 94%);
+  --bg-card-active: rgb(255 255 255 / 97%);
+  --bg-card-title: rgb(255 255 255 / 88%);
+  --border-color-card: rgb(0 0 0 / 8%);
+  --border-color-card-hover: color-mix(in srgb, var(--brand-500) 24%, transparent);
+  --radius-card: 12px;
+  --shadow-card-base: 0 2px 8px rgb(0 0 0 / 6%);
+  --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 10%);
 
   // Tooltip
-  --tooltip-bg: var(--gray-0);
-  --tooltip-border-color: rgb(0 0 0 / 10%);
+  --tooltip-bg: rgb(255 255 255 / 96%);
+  --tooltip-border-color: rgb(0 0 0 / 12%);
   --tooltip-arrow-color: var(--tooltip-bg);
   --tooltip-arrow-border-color: var(--tooltip-border-color);
 
   // Table
-  --border-table: rgb(0 0 0 / 8%);
-  --table-row-even-bg: rgb(0 0 0 / 2%);
-  --table-row-hover-bg: rgb(0 0 0 / 4%);
-  --table-head-bg: rgb(0 0 0 / 3%);
+  --border-table: rgb(0 0 0 / 10%);
+  --table-row-even-bg: rgb(0 0 0 / 3%);
+  --table-row-hover-bg: rgb(0 0 0 / 5%);
+  --table-head-bg: rgb(0 0 0 / 4%);
   --table-head-border: var(--border-default);
   --font-size-table-header: 1.5rem;
   --font-size-table-row: 1.5rem;
@@ -161,29 +164,30 @@
   // Nav / Sidebar
   --bg-nav-base: var(--glass-bg);
   --bg-nav-hover: var(--glass-bg-strong);
-  --bg-nav-active: var(--gray-0);
+  --bg-nav-active: rgb(255 255 255 / 92%);
   --bg-sidebar: var(--glass-bg);
-  --bg-sidebar-item-hover: color-mix(in srgb, var(--brand-500) 40%, transparent);
+  --bg-sidebar-item-hover: color-mix(in srgb, var(--brand-500) 38%, transparent);
   --border-color-nav: var(--glass-border);
-  --radius-nav: var(--radius-card);
+  --radius-nav: 12px;
   --shadow-nav: var(--glass-shadow);
   --blur-nav: var(--glass-blur);
   --transition-nav: background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 
   // Toggle
-  --bg-button-toggle-track: rgb(0 0 0 / 8%);
+  --bg-button-toggle-track: rgb(0 0 0 / 10%);
   --bg-button-toggle-thumb: var(--gray-0);
-  --border-color-button-toggle: rgb(0 0 0 / 10%);
+  --border-color-button-toggle: rgb(0 0 0 / 12%);
 
   // Select
   --bg-select: var(--gray-0);
   --border-color-select: var(--border-default);
 
   // Scrollbar
-  --scrollbar-width: 4px;
+  --scrollbar-width: 5px;
   --scrollbar-thumb-bg: var(--brand-500);
   --scrollbar-thumb-hover: var(--brand-400);
   --scrollbar-thumb-active: var(--brand-600);
+  --scrollbar-track-bg: transparent;
 
   // Misc
   --color-header: var(--text-primary);
@@ -199,17 +203,17 @@
   --transition-base: all 0.25s ease;
 
   // Shadows
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 6%);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 6%);
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 8%);
-  --shadow-xl: 0 16px 40px rgb(0 0 0 / 10%);
+  --shadow-sm: 0 1px 4px rgb(0 0 0 / 6%);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 8%);
+  --shadow-lg: 0 8px 32px rgb(0 0 0 / 10%);
+  --shadow-xl: 0 16px 48px rgb(0 0 0 / 12%);
 
   // Filters
   --filter-blur-sm: blur(4px);
-  --filter-blur-md: blur(10px);
-  --filter-blur-lg: blur(20px);
-  --filter-brightness-dim: brightness(0.92);
-  --filter-brightness-strong: brightness(1.15);
+  --filter-blur-md: blur(12px);
+  --filter-blur-lg: blur(24px);
+  --filter-brightness-dim: brightness(0.9);
+  --filter-brightness-strong: brightness(1.12);
   --filter-shadow-md: drop-shadow(0 4px 16px rgb(0 0 0 / 16%));
 
   // Compatibility mappings
@@ -222,7 +226,6 @@
   --color-primary-bg-active: color-mix(in srgb, var(--brand-500) 35%, transparent);
   --color-primary-bg-muted: var(--brand-bg-muted);
   --color-on-primary: var(--text-on-brand);
-  --color-header: var(--text-primary);
   --color-success: var(--state-success);
   --color-danger: var(--state-error);
   --color-info: var(--state-info);
@@ -236,13 +239,13 @@
   --border-color-disabled: var(--border-disabled);
 
   // Deprecated glass
-  --glass-gradient: linear-gradient(rgb(255 255 255 / 12%), transparent);
-  --glass-gradient-strong: linear-gradient(rgb(255 255 255 / 18%), transparent);
+  --glass-gradient: linear-gradient(rgb(255 255 255 / 14%), transparent);
+  --glass-gradient-strong: linear-gradient(rgb(255 255 255 / 20%), transparent);
   --glass-border-color: var(--glass-border);
-  --glass-highlight-color: rgb(255 255 255 / 16%);
-  --glass-shadow-color: rgb(0 0 0 / 16%);
+  --glass-highlight-color: rgb(255 255 255 / 18%);
+  --glass-shadow-color: rgb(0 0 0 / 18%);
   --glass-shadow-soft: var(--glass-shadow);
-  --glass-shadow-strong: 0 12px 32px rgb(0 0 0 / 12%);
+  --glass-shadow-strong: 0 14px 36px rgb(0 0 0 / 14%);
 }
 
 [data-theme="dark"] {
@@ -257,63 +260,66 @@
   --text-visited: var(--brand-400);
 
   // Backgrounds
-  --bg-app: #141519;
-  --bg-inset: rgb(0 0 0 / 20%);
-  --bg-surface: rgb(22 24 30 / 66%);
-  --bg-surface-muted: rgb(22 24 30 / 56%);
-  --bg-elevated: rgb(28 30 38 / 82%);
-  --bg-overlay: rgb(0 0 0 / 60%);
-  --bg-disabled: rgb(255 255 255 / 6%);
+  --bg-app: #101117;
+  --bg-inset: rgb(0 0 0 / 24%);
+  --bg-surface: rgb(18 20 27 / 70%);
+  --bg-surface-muted: rgb(18 20 27 / 60%);
+  --bg-elevated: rgb(26 28 36 / 86%);
+  --bg-overlay: rgb(0 0 0 / 65%);
+  --bg-disabled: rgb(255 255 255 / 7%);
   --bg-content: var(--bg-surface);
 
   // Interactive
-  --bg-interactive-hover: rgb(255 255 255 / 5%);
-  --bg-interactive-active: rgb(255 255 255 / 10%);
+  --bg-interactive-hover: rgb(255 255 255 / 6%);
+  --bg-interactive-active: rgb(255 255 255 / 12%);
 
   // Glass
-  --glass-bg: rgb(22 24 30 / 56%);
-  --glass-bg-strong: rgb(30 33 42 / 68%);
-  --glass-border: rgb(148 152 168 / 18%);
-  --glass-blur: blur(14px);
-  --glass-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+  --glass-bg: rgb(18 20 27 / 60%);
+  --glass-bg-strong: rgb(28 30 38 / 74%);
+  --glass-border: rgb(148 152 168 / 24%);
+  --glass-blur: blur(18px);
+  --glass-shadow: 0 8px 32px rgb(0 0 0 / 28%);
+
+  // Glass inner highlight
+  --glass-highlight: inset 0 1px 0 rgb(255 255 255 / 6%);
 
   // Brand
   --brand-hover: var(--brand-300);
   --brand-active: var(--brand-400);
   --brand-disabled: #373f4a;
-  --brand-bg-active: color-mix(in srgb, var(--brand-500) 25%, transparent);
-  --brand-bg-muted: color-mix(in srgb, var(--brand-500) 12%, transparent);
+  --brand-bg-active: color-mix(in srgb, var(--brand-500) 28%, transparent);
+  --brand-bg-muted: color-mix(in srgb, var(--brand-500) 14%, transparent);
 
   // Borders
-  --border-default: rgb(255 255 255 / 10%);
-  --border-hover: rgb(255 255 255 / 18%);
-  --border-subtle: rgb(255 255 255 / 5%);
-  --border-disabled: rgb(255 255 255 / 3%);
+  --border-default: rgb(255 255 255 / 12%);
+  --border-hover: rgb(255 255 255 / 20%);
+  --border-subtle: rgb(255 255 255 / 6%);
+  --border-disabled: rgb(255 255 255 / 4%);
 
   // Focus
-  --focus-ring: 0 0 0 2px color-mix(in srgb, var(--brand-400) 30%, transparent);
+  --focus-ring: 0 0 0 2px color-mix(in srgb, var(--brand-400) 35%, transparent);
 
   // Card
-  --bg-card-base: rgb(22 24 30 / 60%);
-  --bg-card-hover: rgb(28 31 40 / 72%);
-  --bg-card-active: rgb(32 36 46 / 82%);
-  --bg-card-title: rgb(22 24 30 / 66%);
+  --bg-card-base: rgb(18 20 27 / 64%);
+  --bg-card-hover: rgb(26 28 36 / 76%);
+  --bg-card-active: rgb(30 33 42 / 86%);
+  --bg-card-title: rgb(18 20 27 / 70%);
   --border-color-card: var(--glass-border);
-  --border-color-card-hover: color-mix(in srgb, var(--brand-400) 30%, transparent);
-  --shadow-card-base: 0 1px 3px rgb(0 0 0 / 16%);
-  --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 20%);
+  --border-color-card-hover: color-mix(in srgb, var(--brand-400) 34%, transparent);
+  --shadow-card-base: 0 2px 8px rgb(0 0 0 / 18%);
+  --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 24%);
 
   // Tooltip
-  --tooltip-bg: rgb(26 28 36 / 94%);
-  --tooltip-border-color: rgb(80 85 100 / 30%);
+  --tooltip-bg: rgb(24 26 34 / 96%);
+  --tooltip-border-color: rgb(80 85 100 / 34%);
   --tooltip-arrow-color: var(--tooltip-bg);
   --tooltip-arrow-border-color: var(--tooltip-border-color);
 
   // Table
-  --border-table: rgb(255 255 255 / 8%);
-  --table-row-even-bg: rgb(255 255 255 / 2%);
-  --table-row-hover-bg: rgb(255 255 255 / 5%);
-  --table-head-bg: rgb(255 255 255 / 3%);
+  --border-table: rgb(255 255 255 / 10%);
+  --table-row-even-bg: rgb(255 255 255 / 3%);
+  --table-row-hover-bg: rgb(255 255 255 / 6%);
+  --table-head-bg: rgb(255 255 255 / 4%);
   --table-head-border: var(--border-default);
 
   // Code
@@ -324,47 +330,48 @@
   // Nav / Sidebar
   --bg-nav-base: var(--glass-bg);
   --bg-nav-hover: var(--glass-bg-strong);
-  --bg-nav-active: rgb(34 38 48 / 72%);
+  --bg-nav-active: rgb(30 33 42 / 74%);
   --bg-sidebar: var(--glass-bg);
-  --bg-sidebar-item-hover: color-mix(in srgb, var(--brand-500) 40%, transparent);
+  --bg-sidebar-item-hover: color-mix(in srgb, var(--brand-500) 38%, transparent);
   --border-color-nav: var(--glass-border);
   --shadow-nav: var(--glass-shadow);
   --blur-nav: var(--glass-blur);
 
   // Toggle
-  --bg-button-toggle-track: rgb(255 255 255 / 14%);
-  --bg-button-toggle-thumb: rgb(180 185 200 / 40%);
-  --border-color-button-toggle: rgb(255 255 255 / 8%);
+  --bg-button-toggle-track: rgb(255 255 255 / 16%);
+  --bg-button-toggle-thumb: rgb(180 185 200 / 44%);
+  --border-color-button-toggle: rgb(255 255 255 / 10%);
 
   // Select
-  --bg-select: rgb(26 28 36 / 80%);
+  --bg-select: rgb(24 26 34 / 84%);
   --border-color-select: var(--border-default);
 
   // Scrollbar
   --scrollbar-thumb-bg: var(--brand-400);
   --scrollbar-thumb-hover: var(--brand-300);
   --scrollbar-thumb-active: var(--brand-500);
+  --scrollbar-track-bg: transparent;
 
   // Shadows
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 16%);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 20%);
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 28%);
-  --shadow-xl: 0 16px 40px rgb(0 0 0 / 36%);
+  --shadow-sm: 0 1px 4px rgb(0 0 0 / 18%);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 22%);
+  --shadow-lg: 0 8px 32px rgb(0 0 0 / 30%);
+  --shadow-xl: 0 16px 48px rgb(0 0 0 / 38%);
 
   // Filters
-  --filter-shadow-md: drop-shadow(0 4px 16px rgb(0 0 0 / 36%));
+  --filter-shadow-md: drop-shadow(0 4px 16px rgb(0 0 0 / 38%));
 
   // Article cover
   --article-title-color: #e4e3e8;
 
   // Deprecated glass
-  --glass-gradient: linear-gradient(rgb(255 255 255 / 6%), rgb(0 0 0 / 6%));
-  --glass-gradient-strong: linear-gradient(rgb(255 255 255 / 10%), rgb(0 0 0 / 8%));
+  --glass-gradient: linear-gradient(rgb(255 255 255 / 8%), rgb(0 0 0 / 8%));
+  --glass-gradient-strong: linear-gradient(rgb(255 255 255 / 12%), rgb(0 0 0 / 10%));
   --glass-border-color: var(--glass-border);
-  --glass-highlight-color: rgb(255 255 255 / 8%);
-  --glass-shadow-color: rgb(0 0 0 / 36%);
+  --glass-highlight-color: rgb(255 255 255 / 10%);
+  --glass-shadow-color: rgb(0 0 0 / 38%);
   --glass-shadow-soft: var(--glass-shadow);
-  --glass-shadow-strong: 0 12px 34px rgb(0 0 0 / 32%);
+  --glass-shadow-strong: 0 14px 38px rgb(0 0 0 / 34%);
 
   // Compatibility overrides
   --color-primary-hover: var(--brand-hover);

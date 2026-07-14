@@ -63,16 +63,20 @@ useAddClassOnIntersect(postCardRef, "show");
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
-  transition: color 0.5s ease-in-out;
+  border: 1px solid var(--border-color-card);
+  transition:
+    color 0.5s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 
   .cover {
     height: calc(100% - 65px);
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
     background: var(--bg-card-base);
     transition:
@@ -83,16 +87,18 @@ useAddClassOnIntersect(postCardRef, "show");
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.5s ease;
     }
   }
 
   .date,
   .title {
     position: absolute;
-    padding: 4px 8px;
+    padding: 4px 10px;
     background: var(--bg-card-title);
     border: 1px solid var(--border-color-default);
-    border-radius: 5px;
+    border-radius: 6px;
+    backdrop-filter: blur(6px);
   }
 
   .date {
@@ -131,9 +137,16 @@ useAddClassOnIntersect(postCardRef, "show");
   }
 
   &:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-color-card-hover);
+
     .cover {
       transform: scale(1.1);
       height: 100%;
+
+      img {
+        transform: scale(1.05);
+      }
     }
 
     .title {

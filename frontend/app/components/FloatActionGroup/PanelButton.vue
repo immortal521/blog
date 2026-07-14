@@ -43,6 +43,7 @@ onClickOutside(panelContent, (event) => {
 }
 
 .action-button {
+  position: relative;
   background: var(--bg-nav-base);
   border-radius: var(--radius-nav);
   width: 100%;
@@ -54,6 +55,16 @@ onClickOutside(panelContent, (event) => {
   cursor: pointer;
   box-shadow: var(--shadow-nav);
   transition: var(--transition-nav);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight);
+    pointer-events: none;
+    border-radius: inherit;
+  }
 }
 
 .panel-content {

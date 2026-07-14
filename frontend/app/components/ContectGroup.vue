@@ -46,6 +46,7 @@ const contectItems = computed<ContectItem[]>(() => [
 }
 
 .contect-item {
+  position: relative;
   width: 35px;
   height: 35px;
   flex-shrink: 0;
@@ -54,6 +55,16 @@ const contectItems = computed<ContectItem[]>(() => [
   border: 1px solid var(--border-color-nav);
   box-shadow: var(--shadow-nav);
   transition: var(--transition-nav);
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight);
+    pointer-events: none;
+    border-radius: inherit;
+  }
 
   &:hover {
     background: var(--bg-nav-hover);
@@ -64,6 +75,7 @@ const contectItems = computed<ContectItem[]>(() => [
   }
 
   a {
+    position: relative;
     width: 100%;
     height: 100%;
     display: flex;

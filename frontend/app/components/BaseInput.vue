@@ -75,11 +75,14 @@ const togglePasswordVisibility = () => {
   width: 100%;
   color: inherit;
   border: 1px solid var(--border-color-default);
-  transition: border 0.2s ease-in-out;
+  border-radius: 8px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus-within {
-    border: 1px solid var(--color-primary-base);
-    box-shadow: 0 0 0 1px var(--color-primary-base);
+    border-color: var(--color-primary-base);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-base) 20%, transparent);
   }
 
   .input-prefix,
