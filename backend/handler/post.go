@@ -42,7 +42,7 @@ func NewPostHandler(svc service.PostService, validate validatorx.Validator) Post
 
 // GetPosts retrieves all published posts.
 func (h *postHandler) GetPosts(c *echo.Context) error {
-	query := new(request.PostPageReq)
+	query := &request.PostPageReq{Page: 1, PageSize: 10}
 	if err := c.Bind(query); err != nil {
 		return errx.New(errx.CodeInvalidParam, err)
 	}

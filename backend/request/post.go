@@ -30,8 +30,8 @@ type UpdatePostReq struct {
 
 // PostPageReq is the request query for paginating posts.
 type PostPageReq struct {
-	Page     int `json:"page" query:"page,default:1" validate:"omitempty,min=1"`
-	PageSize int `json:"pageSize" query:"pageSize,default:10" validate:"omitempty,min=1,max=100"`
+	Page     int `json:"page" query:"page" validate:"omitempty,min=1"`
+	PageSize int `json:"pageSize" query:"pageSize" validate:"omitempty,min=1,max=100"`
 }
 
 // AdminPostListReq is the request query for admin post list.
