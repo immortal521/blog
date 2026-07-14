@@ -126,7 +126,7 @@ func (h *modelHandler) stream(c *echo.Context, sessionID string) error {
 			if text == "" {
 				continue
 			}
-			for _, line := range strings.Split(text, "\n") {
+			for line := range strings.SplitSeq(text, "\n") {
 				if _, werr := fmt.Fprintf(w, "data: %s\n\n", line); werr != nil {
 					return werr
 				}

@@ -63,7 +63,7 @@ func (h *rssHandler) Complete(c *echo.Context) error {
 }
 
 // RegisterRssRoutes registers all RSS-related routes.
-func RegisterRssRoute(r *echo.Group, h RssHandler) {
+func RegisterRssRoutes(r *echo.Group, h RssHandler) {
 	group := r.Group("/rss")
 	group.GET("", h.Subscript)
 	group.GET("/complete", h.Complete)

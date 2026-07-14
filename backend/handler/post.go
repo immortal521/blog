@@ -234,7 +234,7 @@ func (h *postHandler) DeletePost(c *echo.Context) error {
 }
 
 // RegisterPostRoutes registers all post-related routes.
-func RegisterPostRoute(r *echo.Group, h PostHandler, am *middleware.AuthMiddleware) {
+func RegisterPostRoutes(r *echo.Group, h PostHandler, am *middleware.AuthMiddleware) {
 	group := r.Group("/posts")
 	group.GET("", h.GetPosts)
 	group.GET("/meta", h.GetPostIds)
