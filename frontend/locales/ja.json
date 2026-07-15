@@ -1,4 +1,8 @@
 {
+  "nuxtSiteConfig": {
+    "name": "私のブログ",
+    "description": "個人ウェブサイトへようこそ"
+  },
   "navbar": { "home": "ホーム", "about": "概要", "links": "フレンド" },
   "themeControl": {
     "themeMode": "テーマモード",

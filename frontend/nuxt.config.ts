@@ -92,9 +92,9 @@ export default defineNuxtConfig({
     strategy: "prefix_except_default",
     defaultLocale: "zh",
     locales: [
-      { code: "en", name: "English", file: "en.json" },
-      { code: "zh", name: "简体中文", file: "zh.json" },
-      { code: "ja", name: "日本語", file: "ja.json" },
+      { code: "en", name: "English", file: "en.json", iso: "en-US", dir: "ltr" },
+      { code: "zh", name: "简体中文", file: "zh.json", iso: "zh-CN", dir: "ltr" },
+      { code: "ja", name: "日本語", file: "ja.json", iso: "ja-JP", dir: "ltr" },
     ],
     disablePageLocales: true,
     redirects: true,

@@ -1,4 +1,8 @@
 {
+  "nuxtSiteConfig": {
+    "name": "My Blog",
+    "description": "Welcome to my personal website"
+  },
   "navbar": { "home": "Home", "about": "About", "links": "Friends" },
   "themeControl": {
     "themeMode": "Theme Mode",
