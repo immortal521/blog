@@ -1,33 +1,384 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ImageViewer } from "#components";
+import type { Column } from "~/components/BaseTable.vue";
+import type { ApiPageResponse } from "~/types/api";
+import type { PostAdminMeta } from "~/types/post";
+
+const { get } = useClientApi();
+// const message = useMessage();
+
+const searchQuery = ref("");
+const currentPage = ref(1);
+const pageSize = ref(20);
+
+const { data, refresh } = useAsyncData(
+  "admin-posts",
+  () =>
+    get<ApiPageResponse<PostAdminMeta>>("/admin/posts", {
+      params: { page: currentPage.value, pageSize: pageSize.value, search: searchQuery.value },
+    }),
+  { default: () => ({ code: 0, msg: "", data: { list: [], total: 0, page: 1, pageSize: 20 } }) },
+);
+
+const posts = computed(() => data.value?.data?.list ?? []);
+const total = computed(() => data.value?.data?.total ?? 0);
+const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
+
+function onSearch() {
+  currentPage.value = 1;
+  refresh();
+}
+
+function changePage(page: number) {
+  currentPage.value = page;
+  refresh();
+}
+
+// async function deletePost(id: number) {
+//   try {
+//     await del(`/admin/posts/${id}`);
+//     message.success("文章已删除");
+//     refresh();
+//   } catch {
+//     message.error("删除失败");
+//   }
+// }
+
+const columns: Column<PostAdminMeta>[] = [
+  {
+    key: "id",
+    title: "id",
+    width: "35px",
+  },
+  {
+    key: "cover",
+    title: "封面",
+    width: "100px",
+    render: (row, _) => h(ImageViewer, { src: row.cover, style: "width:80px; height: 40px" }),
+  },
+  {
+    key: "title",
+    title: "标题",
+  },
+  {
+    key: "status",
+    title: "状态",
+  },
+];
+
+console.log(columns);
+</script>
 
 <template>
-  <div>
-    <div class="title">
-      <h2 class="content">文章管理</h2>
-      <span class="count">{{ `共  文章` }}</span>
-      <button class="create">新建文章</button>
+  <div class="posts-page">
+    <header class="page-header">
+      <div class="header-left">
+        <h1 class="page-title">文章管理</h1>
+        <span class="post-count">共 {{ total }} 篇文章</span>
+      </div>
+      <NuxtLinkLocale :to="'/admin/posts/edit'" class="create-btn">
+        <Icon name="mdi:plus" size="18" />
+        新建文章
+      </NuxtLinkLocale>
+    </header>
+
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <Icon name="material-symbols:search" size="18" class="search-icon" />
+        <input
+          v-model="searchQuery"
+          class="search-input"
+          placeholder="搜索文章标题..."
+          @input="onSearch"
+        />
+      </div>
+    </div>
+
+    <BaseTable :columns="columns" :data="posts" class="table-wrapper"></BaseTable>
+
+    <div v-if="totalPages > 1" class="pagination">
+      <button class="page-btn" :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">
+        <Icon name="mingcute:left-line" size="16" />
+      </button>
+      <template v-for="page in totalPages" :key="page">
+        <button
+          v-if="page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2"
+          class="page-btn"
+          :class="{ active: page === currentPage }"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+        <span v-else-if="page === currentPage - 3 || page === currentPage + 3" class="page-ellipsis"
+          >...</span
+        >
+      </template>
+      <button
+        class="page-btn"
+        :disabled="currentPage >= totalPages"
+        @click="changePage(currentPage + 1)"
+      >
+        <Icon name="mingcute:right-line" size="16" />
+      </button>
     </div>
   </div>
 </template>
 
 <style lang="less" scoped>
-.title {
-  display: flex;
-  height: 40px;
-  line-height: 40px;
+.posts-page {
+  padding: 24px;
+  color: var(--text-color-primary);
+}
 
-  .count {
-    margin-left: 8px;
-    height: 30px;
-    line-height: 30px;
-    font-size: 14px;
-    background: var(--bg-card-base);
-    padding: 0 8px;
-    border-radius: 8px;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
-  .create {
-    margin-left: auto;
+  .page-title {
+    font-size: 2.4rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .post-count {
+    font-size: 1.3rem;
+    color: var(--text-color-secondary);
+    background: var(--bg-card-base);
+    padding: 2px 10px;
+    border-radius: 6px;
+  }
+
+  .create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    background: var(--color-primary-base);
+    color: var(--color-on-primary);
+    border-radius: 8px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+.search-bar {
+  margin-bottom: 20px;
+
+  .search-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 360px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color-default);
+    border-radius: 8px;
+    background: var(--bg-card-base);
+    transition: border-color 0.2s;
+
+    &:focus-within {
+      border-color: var(--color-primary-base);
+    }
+  }
+
+  .search-icon {
+    flex-shrink: 0;
+    color: var(--text-color-secondary);
+  }
+
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-color-primary);
+    font-size: 1.4rem;
+    font-family: inherit;
+
+    &::placeholder {
+      color: var(--text-color-tertiary);
+    }
+  }
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border-color-default);
+  border-radius: var(--radius-card);
+  background: var(--bg-card-base);
+}
+
+.post-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.4rem;
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    border-bottom: 1px solid var(--border-color-default);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color-default);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover {
+    background: var(--bg-interactive-hover);
+  }
+}
+
+.col-title {
+  min-width: 200px;
+
+  .title-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    overflow: hidden;
+    font-weight: 500;
+  }
+}
+
+.col-status {
+  width: 80px;
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  &.published {
+    background: var(--green-100);
+    color: var(--green-600);
+  }
+
+  &.draft {
+    background: var(--yellow-100);
+    color: var(--yellow-600);
+  }
+}
+
+.col-views {
+  width: 60px;
+  text-align: center;
+  color: var(--text-color-secondary);
+}
+
+.col-date {
+  width: 100px;
+  color: var(--text-color-secondary);
+  font-size: 1.3rem;
+  white-space: nowrap;
+}
+
+.col-actions {
+  width: 80px;
+  text-align: right;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-color-secondary);
+  background: transparent;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: var(--bg-interactive-hover);
+  }
+
+  &.edit-btn:hover {
+    color: var(--color-primary-base);
+  }
+
+  &.delete-btn:hover {
+    color: var(--color-danger);
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 16px 0;
+
+  .page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border-color-default);
+    border-radius: 6px;
+    background: var(--bg-card-base);
+    color: var(--text-color-primary);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
+
+    &:hover {
+      border-color: var(--color-primary-base);
+    }
+
+    &.active {
+      background: var(--color-primary-base);
+      color: var(--color-on-primary);
+      border-color: var(--color-primary-base);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  .page-ellipsis {
+    color: var(--text-color-tertiary);
+    padding: 0 4px;
   }
 }
 </style>

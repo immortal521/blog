@@ -22,3 +22,7 @@ export interface PostInput {
   tagIds: number[];
   status: "draft" | "published";
 }
+
+export interface PostAdminMeta extends PostMeta {
+  status: "draft" | "published" | "archived";
+}
