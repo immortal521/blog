@@ -11,14 +11,22 @@ const searchQuery = ref("");
 const currentPage = ref(1);
 const pageSize = ref(20);
 
-const { data, refresh } = useAsyncData(
+const { data, pending, refresh } = useAsyncData(
   "admin-posts",
   () =>
     get<ApiPageResponse<PostAdminMeta>>("/admin/posts", {
-      params: { page: currentPage.value, pageSize: pageSize.value, search: searchQuery.value },
+      query: { page: currentPage.value, pageSize: pageSize.value, search: searchQuery.value },
     }),
   { default: () => ({ code: 0, msg: "", data: { list: [], total: 0, page: 1, pageSize: 20 } }) },
 );
+
+onMounted(() => {
+  refresh();
+});
+
+watch(pending, () => {
+  console.log(pending.value);
+});
 
 const posts = computed(() => data.value?.data?.list ?? []);
 const total = computed(() => data.value?.data?.total ?? 0);
@@ -94,7 +102,7 @@ console.log(columns);
       </div>
     </div>
 
-    <BaseTable :columns="columns" :data="posts" class="table-wrapper"></BaseTable>
+    <BaseTable :columns="columns" :data="posts" :virtual="true" class="table-wrapper"></BaseTable>
 
     <div v-if="totalPages > 1" class="pagination">
       <button class="page-btn" :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">

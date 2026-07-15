@@ -5,13 +5,9 @@ import type { VNode } from "vue";
 export interface Column<RowType extends Record<string, any>> {
   key: keyof RowType | string;
   title: string;
-
   width?: string;
-
   align?: "left" | "center" | "right";
-
   formatter?: (row: RowType) => string | number;
-
   render?: (row: RowType, index: number) => VNode;
 }
 
@@ -25,17 +21,11 @@ const {
   overscan = 5,
 } = defineProps<{
   data: T[];
-
   columns: Column<T>[];
-
   rowKey?: keyof T | ((row: T) => string | number);
-
   virtual?: boolean;
-
   height?: number;
-
   rowHeight?: number;
-
   overscan?: number;
 }>();
 
@@ -47,17 +37,16 @@ const getRowKey = (row: T, index: number): string | number => {
   return (row[rowKey] as string | number) ?? index;
 };
 
-function renderCell(column: Column<T>, row: T, index: number) {
+const TableCell = (cellProps: { column: Column<T>; row: T; index: number }) => {
+  const { column, row, index } = cellProps;
   if (column.render) {
     return column.render(row, index);
   }
-
   if (column.formatter) {
     return column.formatter(row);
   }
-
   return row[column.key];
-}
+};
 
 const scrollTop = ref(0);
 
@@ -78,9 +67,7 @@ const endIndex = computed(() => {
 });
 
 const visibleRows = computed(() => data.slice(startIndex.value, endIndex.value));
-
 const offsetTop = computed(() => startIndex.value * rowHeight);
-
 const totalHeight = computed(() => data.length * rowHeight);
 
 function onScroll(e: Event) {
@@ -89,15 +76,14 @@ function onScroll(e: Event) {
 </script>
 
 <template>
-  <div class="my-table">
-    <!-- header -->
-
-    <div class="table-header">
-      <div class="table-row">
+  <div class="my-table" role="table">
+    <div class="table-header" role="rowgroup">
+      <div class="table-row" role="row">
         <div
           v-for="column in columns"
           :key="column.key"
           class="table-cell"
+          role="columnheader"
           :class="`align-${column.align ?? 'left'}`"
           :style="{
             width: column.width,
@@ -109,78 +95,59 @@ function onScroll(e: Event) {
       </div>
     </div>
 
-    <!-- body -->
-
     <div
       class="table-body"
+      role="rowgroup"
       :style="{
         height: virtual ? `${height}px` : undefined,
         overflow: virtual ? 'auto' : undefined,
       }"
-      @scroll="onScroll"
+      @scroll="virtual ? onScroll : undefined"
     >
-      <!-- virtual -->
+      <div v-if="!data.length" class="table-empty" role="status">No data</div>
 
-      <template v-if="virtual">
-        <div
-          :style="{
-            height: `${totalHeight}px`,
-            position: 'relative',
-          }"
-        >
-          <div
-            :style="{
-              transform: `translateY(${offsetTop}px)`,
-            }"
-          >
+      <template v-else-if="virtual">
+        <div class="table-virtual-spacer" :style="{ height: `${totalHeight}px` }">
+          <div class="table-virtual-viewport" :style="{ transform: `translateY(${offsetTop}px)` }">
             <div
-              v-for="(row, index) in visibleRows"
-              :key="getRowKey(row, startIndex + index)"
+              v-for="(row, idx) in visibleRows"
+              :key="getRowKey(row, startIndex + idx)"
               class="table-row"
-              :style="{
-                height: `${rowHeight}px`,
-              }"
+              role="row"
+              :style="{ height: `${rowHeight}px` }"
             >
               <div
                 v-for="column in columns"
                 :key="column.key"
                 class="table-cell"
+                role="cell"
                 :class="`align-${column.align ?? 'left'}`"
                 :style="{
                   width: column.width,
                   flex: column.width ? 'none' : 1,
                 }"
               >
-                <component :is="renderCell(column, row, startIndex + index)" v-if="column.render" />
-
-                <template v-else>
-                  {{ renderCell(column, row, startIndex + index) }}
-                </template>
+                <TableCell :column="column" :row="row" :index="startIndex + idx" />
               </div>
             </div>
           </div>
         </div>
       </template>
 
-      <!-- normal -->
-
       <template v-else>
-        <div v-for="(row, index) in data" :key="getRowKey(row, index)" class="table-row">
+        <div v-for="(row, index) in data" :key="getRowKey(row, index)" class="table-row" role="row">
           <div
             v-for="column in columns"
             :key="column.key"
             class="table-cell"
+            role="cell"
             :class="`align-${column.align ?? 'left'}`"
             :style="{
               width: column.width,
               flex: column.width ? 'none' : 1,
             }"
           >
-            <component :is="renderCell(column, row, index)" v-if="column.render" />
-
-            <template v-else>
-              {{ renderCell(column, row, index) }}
-            </template>
+            <TableCell :column="column" :row="row" :index="index" />
           </div>
         </div>
       </template>
@@ -197,15 +164,15 @@ function onScroll(e: Event) {
     display: flex;
     width: 100%;
     align-items: center;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border-table);
 
     &:hover {
-      background-color: #fafafa;
+      background-color: var(--table-row-hover-bg);
     }
   }
 
   .table-header .table-row {
-    background-color: #fafafa;
+    background-color: var(--table-head-bg);
     font-weight: 600;
   }
 
@@ -214,21 +181,39 @@ function onScroll(e: Event) {
     box-sizing: border-box;
     text-overflow: ellipsis;
     overflow: hidden;
-    white-space: nowrap; /* 视情况决定是否开启单行截断 */
+    white-space: nowrap;
 
-    // 真正起作用的对齐样式
     &.align-left {
       text-align: left;
       justify-content: flex-start;
     }
+
     &.align-center {
       text-align: center;
       justify-content: center;
     }
+
     &.align-right {
       text-align: right;
       justify-content: flex-end;
     }
+  }
+
+  .table-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+
+  .table-virtual-spacer {
+    position: relative;
+  }
+
+  .table-virtual-viewport {
+    will-change: transform;
   }
 }
 </style>
