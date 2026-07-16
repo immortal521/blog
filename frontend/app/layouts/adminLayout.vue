@@ -47,7 +47,10 @@ const handleToggle = () => {
 }
 
 .right {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
@@ -67,7 +70,7 @@ const handleToggle = () => {
 .header {
   position: relative;
   height: 50px;
-  width: 100%;
+  flex-shrink: 0;
   border-bottom: 1px solid var(--border-color-default);
   background: var(--bg-nav-base);
   backdrop-filter: var(--filter-blur-sm);
@@ -101,8 +104,9 @@ const handleToggle = () => {
 }
 
 .main {
+  flex: 1;
+  min-height: 0;
   padding: 10px;
-  height: calc(100vh - 50px);
   overflow-y: auto;
 }
 </style>
