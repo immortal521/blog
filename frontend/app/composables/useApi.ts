@@ -69,27 +69,24 @@ export function useClientApi() {
       throw new Error("apiFetch must be called on the client");
     }
 
-    // Wait if a token refresh is in progress
-    if (isRefreshing) {
-      await new Promise<void>((resolve, reject) => {
-        pendingRequests.push((err?: Error) => (err ? reject(err) : resolve()));
-      });
-    }
-
     try {
       return await doRequest<T>(url, options);
     } catch (err: unknown) {
       const fetchErr = err as FetchError;
-      if (fetchErr?.response?.status !== 401) throw fetchErr;
-      await refreshAccessToken();
-      return doRequest<T>(url, options).catch((retryErr: FetchError) => {
-        if (retryErr?.response?.status === 401) {
-          // TODO: layout logic
-          useAuthStore().logout();
-          navigateTo("/auth/login");
-        }
-        throw retryErr;
-      });
+
+      if (fetchErr?.response?.status !== 401) {
+        throw fetchErr;
+      }
+
+      try {
+        await refreshAccessToken();
+      } catch (refreshErr) {
+        useAuthStore().logout();
+        await navigateTo("/auth/login");
+        throw refreshErr;
+      }
+
+      return doRequest<T>(url, options);
     }
   }
 
@@ -102,8 +99,17 @@ export function useClientApi() {
    * @async
    */
   async function refreshAccessToken() {
-    if (isRefreshing) return;
+    if (isRefreshing) {
+      return new Promise<void>((resolve, reject) => {
+        pendingRequests.push((err?: Error) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+
     isRefreshing = true;
+
     try {
       const res = await $baseFetch<ApiResponse<RefreshData>>("/auth/refresh", {
         method: "POST",
@@ -112,6 +118,7 @@ export function useClientApi() {
 
       // Update the token in Pinia store
       useAuthStore().setAccessToken(res.data.accessToken);
+
       pendingRequests.forEach((resolve) => resolve());
     } catch (err) {
       pendingRequests.forEach((resolve) => resolve(err as Error));

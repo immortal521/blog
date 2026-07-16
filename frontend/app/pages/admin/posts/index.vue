@@ -4,25 +4,40 @@ import type { Column } from "~/components/BaseTable.vue";
 import type { ApiPageResponse } from "~/types/api";
 import type { PostAdminMeta } from "~/types/post";
 
-const { get } = useClientApi();
 // const message = useMessage();
 
 const searchQuery = ref("");
 const currentPage = ref(1);
 const pageSize = ref(20);
 
+const { get } = useClientApi();
+
 const { data, pending, refresh } = useAsyncData(
   "admin-posts",
-  () =>
-    get<ApiPageResponse<PostAdminMeta>>("/admin/posts", {
-      query: { page: currentPage.value, pageSize: pageSize.value, search: searchQuery.value },
+  () => {
+    return get<ApiPageResponse<PostAdminMeta>>("/admin/posts", {
+      query: {
+        page: currentPage.value,
+        pageSize: pageSize.value,
+        search: searchQuery.value,
+      },
+    });
+  },
+  {
+    default: () => ({
+      code: 0,
+      msg: "",
+      data: {
+        list: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+      },
     }),
-  { default: () => ({ code: 0, msg: "", data: { list: [], total: 0, page: 1, pageSize: 20 } }) },
+    server: false,
+    watch: [currentPage, pageSize, searchQuery],
+  },
 );
-
-onMounted(() => {
-  refresh();
-});
 
 watch(pending, () => {
   console.log(pending.value);
@@ -73,8 +88,6 @@ const columns: Column<PostAdminMeta>[] = [
     title: "状态",
   },
 ];
-
-console.log(columns);
 </script>
 
 <template>

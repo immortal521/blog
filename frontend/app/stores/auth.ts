@@ -15,9 +15,13 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.setItem("accessToken", newAccessToken);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await apiFetch("/auth/logout", {
+      method: "POST",
+    });
     accessToken.value = "";
     localStorage.removeItem("accessToken");
+    navigateTo("/auth/login");
   };
 
   const login = async (email: string, password: string) => {
@@ -36,9 +40,20 @@ export const useAuthStore = defineStore("auth", () => {
     navigateTo("/admin");
   };
 
+  async function refresh() {
+    const res = await $fetch<ApiResponse<{ accessToken: string }>>("/api/v1/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    accessToken.value = res.data.accessToken;
+    localStorage.setItem("accessToken", res.data.accessToken);
+  }
+
   return {
     accessToken,
     setAccessToken,
+    refresh,
     login,
     logout,
   };
