@@ -59,13 +59,13 @@ const handleToggle = (key: string) => {
   width: 100%;
   max-width: calc(v-bind(width) * 1px);
   overflow-x: hidden;
+  overflow-y: auto;
   transition:
     transform 0.3s ease,
     max-width 0.3s ease;
   transform: translateX(0);
   will-change: transform;
   padding-bottom: 30px;
-  scrollbar-width: none;
 
   &::before {
     content: "";
