@@ -29,6 +29,8 @@ const {
   overscan?: number;
 }>();
 
+const gridTemplate = computed(() => columns.map((col) => col.width || "1fr").join(" "));
+
 const getRowKey = (row: T, index: number): string | number => {
   if (typeof rowKey === "function") {
     return rowKey(row);
@@ -85,10 +87,6 @@ function onScroll(e: Event) {
           class="table-cell"
           role="columnheader"
           :class="`align-${column.align ?? 'left'}`"
-          :style="{
-            width: column.width,
-            flex: column.width ? 'none' : 1,
-          }"
         >
           {{ column.title }}
         </div>
@@ -114,7 +112,7 @@ function onScroll(e: Event) {
               :key="getRowKey(row, startIndex + idx)"
               class="table-row"
               role="row"
-              :style="{ height: `${rowHeight}px` }"
+              :style="{ display: 'grid', gridTemplateColumns: gridTemplate }"
             >
               <div
                 v-for="column in columns"
@@ -122,10 +120,6 @@ function onScroll(e: Event) {
                 class="table-cell"
                 role="cell"
                 :class="`align-${column.align ?? 'left'}`"
-                :style="{
-                  width: column.width,
-                  flex: column.width ? 'none' : 1,
-                }"
               >
                 <TableCell :column="column" :row="row" :index="startIndex + idx" />
               </div>
@@ -142,10 +136,6 @@ function onScroll(e: Event) {
             class="table-cell"
             role="cell"
             :class="`align-${column.align ?? 'left'}`"
-            :style="{
-              width: column.width,
-              flex: column.width ? 'none' : 1,
-            }"
           >
             <TableCell :column="column" :row="row" :index="index" />
           </div>
@@ -158,10 +148,10 @@ function onScroll(e: Event) {
 <style lang="less" scoped>
 .my-table {
   width: 100%;
-  border-collapse: collapse;
 
   .table-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: v-bind(gridTemplate);
     width: 100%;
     align-items: center;
     border-bottom: 1px solid var(--border-table);
@@ -185,17 +175,14 @@ function onScroll(e: Event) {
 
     &.align-left {
       text-align: left;
-      justify-content: flex-start;
     }
 
     &.align-center {
       text-align: center;
-      justify-content: center;
     }
 
     &.align-right {
       text-align: right;
-      justify-content: flex-end;
     }
   }
 

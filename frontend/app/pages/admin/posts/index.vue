@@ -76,8 +76,12 @@ const columns: Column<PostAdminMeta>[] = [
   {
     key: "cover",
     title: "封面",
-    width: "100px",
-    render: (row, _) => h(ImageViewer, { src: row.cover, style: "width:80px; height: 40px" }),
+    width: "80px",
+    render: (row, _) =>
+      h(ImageViewer, {
+        src: row.cover,
+        style: "width:56px; height: 40px; object-fit: cover; border-radius: 4px; display: block",
+      }),
   },
   {
     key: "title",
@@ -86,6 +90,15 @@ const columns: Column<PostAdminMeta>[] = [
   {
     key: "status",
     title: "状态",
+    formatter: (row) => {
+      if (row.status === "published") {
+        return "已发布";
+      }
+      if (row.status === "draft") {
+        return "草稿";
+      }
+      return "归档中";
+    },
   },
 ];
 </script>
@@ -115,7 +128,7 @@ const columns: Column<PostAdminMeta>[] = [
       </div>
     </div>
 
-    <BaseTable :columns="columns" :data="posts" :virtual="true" class="table-wrapper"></BaseTable>
+    <BaseTable :columns="columns" :data="posts" class="table-wrapper"></BaseTable>
 
     <div v-if="totalPages > 1" class="pagination">
       <button class="page-btn" :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">

@@ -1,3 +1,5 @@
+export type PostStatus = "draft" | "published" | "archived";
+
 export interface PostMeta {
   id: number;
   cover: string;
@@ -20,9 +22,9 @@ export interface PostInput {
   title: string;
   content: string;
   tagIds: number[];
-  status: "draft" | "published";
+  status: PostStatus;
 }
 
 export interface PostAdminMeta extends PostMeta {
-  status: "draft" | "published" | "archived";
+  status: PostStatus;
 }
