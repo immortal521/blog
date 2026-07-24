@@ -23,6 +23,7 @@ const post = computed<Post>(() => {
       readTimeMinutes: 0,
       cover: "",
       tags: [],
+      categories: [],
     }
   );
 });
