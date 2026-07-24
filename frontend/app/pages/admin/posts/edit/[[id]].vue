@@ -1,14 +1,25 @@
 <script setup lang="ts">
+import type { ApiResponse } from "~/types/api";
+import type { PostAdminDetail } from "~/types/post";
+
 definePageMeta({
   layout: false,
 });
 
-// const route = useRoute();
+const { get } = useClientApi();
 
-// const id = computed<number>(() => Number(route.params.id) || -1);
+const route = useRoute();
+
+const id = computed<number>(() => Number(route.params.id) || -1);
 
 const content = ref<string>("");
 const title = ref<string>("");
+
+onMounted(async () => {
+  const { data } = await get<ApiResponse<PostAdminDetail>>(`/admin/posts/${id.value}`);
+  content.value = data.content;
+  title.value = data.title;
+});
 
 const charCount = computed(() => content.value.length);
 

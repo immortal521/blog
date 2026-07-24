@@ -9,7 +9,8 @@ export interface PostMeta {
   updatedAt: string;
   readTimeMinutes: number;
   viewCount: number;
-  tags: [];
+  tags: Array<unknown>;
+  categories: Array<unknown>;
 }
 
 export interface Post extends PostMeta {
@@ -26,5 +27,10 @@ export interface PostInput {
 }
 
 export interface PostAdminMeta extends PostMeta {
+  status: PostStatus;
+}
+
+export interface PostAdminDetail extends Post {
+  createdAt: string;
   status: PostStatus;
 }
