@@ -90,14 +90,36 @@ const columns: Column<PostAdminMeta>[] = [
   {
     key: "status",
     title: "状态",
-    formatter: (row) => {
+    render: (row) => {
+      let status: string = "归档中";
       if (row.status === "published") {
-        return "已发布";
+        status = "已发布";
       }
       if (row.status === "draft") {
-        return "草稿";
+        status = "草稿";
       }
-      return "归档中";
+      return h(
+        "span",
+        {
+          class: `status-tag status-tag-${row.status}`,
+        },
+        status,
+      );
+    },
+  },
+  {
+    key: "actions",
+    title: "操作",
+    render: (row) => {
+      return h(
+        "button",
+        {
+          onClick: () => {
+            navigateTo(`/admin/posts/edit/${row.id}`);
+          },
+        },
+        "编辑",
+      );
     },
   },
 ];
@@ -105,30 +127,34 @@ const columns: Column<PostAdminMeta>[] = [
 
 <template>
   <div class="posts-page">
-    <header class="page-header">
-      <div class="header-left">
-        <h1 class="page-title">文章管理</h1>
-        <span class="post-count">共 {{ total }} 篇文章</span>
-      </div>
-      <NuxtLinkLocale :to="'/admin/posts/edit'" class="create-btn">
-        <Icon name="mdi:plus" size="18" />
-        新建文章
-      </NuxtLinkLocale>
-    </header>
+    <div class="sticky-area">
+      <header class="page-header">
+        <div class="header-left">
+          <h1 class="page-title">文章管理</h1>
+          <span class="post-count">共 {{ total }} 篇文章</span>
+        </div>
+        <NuxtLinkLocale :to="'/admin/posts/edit'" class="create-btn">
+          <Icon name="mdi:plus" size="18" />
+          新建文章
+        </NuxtLinkLocale>
+      </header>
 
-    <div class="search-bar">
-      <div class="search-input-wrapper">
-        <Icon name="material-symbols:search" size="18" class="search-icon" />
-        <input
-          v-model="searchQuery"
-          class="search-input"
-          placeholder="搜索文章标题..."
-          @input="onSearch"
-        />
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <Icon name="material-symbols:search" size="18" class="search-icon" />
+          <input
+            v-model="searchQuery"
+            class="search-input"
+            placeholder="搜索文章标题..."
+            @input="onSearch"
+          />
+        </div>
       </div>
     </div>
 
-    <BaseTable :columns="columns" :data="posts" class="table-wrapper"></BaseTable>
+    <div class="table-wrapper">
+      <BaseTable :columns="columns" :data="posts" />
+    </div>
 
     <div v-if="totalPages > 1" class="pagination">
       <button class="page-btn" :disabled="currentPage <= 1" @click="changePage(currentPage - 1)">
@@ -160,15 +186,24 @@ const columns: Column<PostAdminMeta>[] = [
 
 <style lang="less" scoped>
 .posts-page {
-  padding: 24px;
+  padding: 0 24px;
   color: var(--text-color-primary);
+}
+
+.sticky-area {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-page);
+  padding-top: 24px;
+  padding-bottom: 20px;
 }
 
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 
   .header-left {
     display: flex;
@@ -211,7 +246,7 @@ const columns: Column<PostAdminMeta>[] = [
 }
 
 .search-bar {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 
   .search-input-wrapper {
     display: flex;
@@ -250,10 +285,17 @@ const columns: Column<PostAdminMeta>[] = [
 }
 
 .table-wrapper {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: calc(100vh - 240px);
   border: 1px solid var(--border-color-default);
   border-radius: var(--radius-card);
   background: var(--bg-card-base);
+
+  :deep(.table-header) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
 }
 
 .post-table {
@@ -369,13 +411,33 @@ const columns: Column<PostAdminMeta>[] = [
   }
 }
 
+:deep(.status-tag) {
+  padding: 2px 8px;
+  display: inline-block;
+  border-radius: var(--radius-card);
+  background: var(--gray-500);
+  color: var(--text-color-primary);
+  font-size: 14px;
+
+  &-published {
+    background: var(--green-500);
+  }
+
+  &-draft {
+    background: var(--yellow-500);
+  }
+}
+
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 20px;
-  padding: 16px 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--bg-page);
+  padding: 16px 0 24px;
 
   .page-btn {
     display: inline-flex;

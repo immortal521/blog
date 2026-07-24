@@ -1,5 +1,8 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-import type { VNode } from "vue";
+import type { VNodeChild } from "vue";
+
+export type RowKey = string | number;
+export type ColumnKey = string | number;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Column<RowType extends Record<string, any>> {
@@ -7,8 +10,7 @@ export interface Column<RowType extends Record<string, any>> {
   title: string;
   width?: string;
   align?: "left" | "center" | "right";
-  formatter?: (row: RowType) => string | number;
-  render?: (row: RowType, index: number) => VNode;
+  render?: (row: RowType, index: number) => VNodeChild;
 }
 
 const {
@@ -43,9 +45,6 @@ const TableCell = (cellProps: { column: Column<T>; row: T; index: number }) => {
   const { column, row, index } = cellProps;
   if (column.render) {
     return column.render(row, index);
-  }
-  if (column.formatter) {
-    return column.formatter(row);
   }
   return row[column.key];
 };
