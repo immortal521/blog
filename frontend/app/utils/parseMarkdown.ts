@@ -175,13 +175,17 @@ function tokensToVNode(
       if (token.attrs) {
         const attrs = Object.fromEntries(token.attrs);
         pushToParent(
-          h(NuxtImg, {
-            key,
-            src: attrs.src ?? "",
-            alt: attrs.alt,
-            class: "img",
-            loading: "lazy",
-          }),
+          h(
+            NuxtImg,
+            {
+              key,
+              src: attrs.src ?? "",
+              alt: attrs.alt,
+              class: "img",
+              loading: "lazy",
+            },
+            { default: () => null },
+          ),
         );
       }
       continue;

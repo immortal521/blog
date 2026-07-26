@@ -15,15 +15,15 @@
     "dev:backend": "cd backend && go run ./cmd"
   },
   "dependencies": {
-    "typescript": "^5.9.3",
-    "vue-tsc": "^3.2.5"
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.8"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.1",
-    "@commitlint/config-conventional": "^19.8.1",
-    "eslint": "^9.39.4",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "eslint": "^10.8.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.3.2"
+    "lint-staged": "^17.2.0"
   },
   "lint-staged": {
     "frontend/**/*.{js,vue,ts}": [
