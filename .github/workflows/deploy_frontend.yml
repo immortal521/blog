@@ -27,36 +27,35 @@ jobs:
           node-version: 24.14.0
           package-manager-cache: false
 
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          version: 10.30.3
+          version: 11.15.1
           cache: true
 
-      - name: Install dependencies in frontend
-        run: |
-          cd frontend
-          pnpm install --frozen-lockfile
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
 
-      - name: Build Nuxt SSR in frontend
+      - name: Build Nuxt SSR
+        working-directory: frontend
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: |
-          cd frontend
-          pnpm build
+        run: pnpm build
 
       - name: Archive build artifacts
+        working-directory: frontend
         run: |
-          cd frontend
-          tar -czf build.tar.gz .output package.json pnpm-lock.yaml
+          tar -czf build.tar.gz .output
 
-      - name: Upload to server
+      - name: Upload build artifacts
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "frontend/build.tar.gz"
-          target: "~/projects/blog"
+          target: "~/projects/blog/frontend"
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.10
@@ -66,27 +65,41 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+
+            echo "加载 Node 环境"
+
             export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            case ":$PATH:" in
-              *":$PNPM_HOME:"*) ;;
-              *) export PATH="$PNPM_HOME:$PATH" ;;
-            esac
+
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              . "$NVM_DIR/nvm.sh"
+            fi
+
+            nvm use 24.14.0
+
             APP_DIR="$HOME/projects/blog/frontend"
+
             cd "$APP_DIR"
 
-            echo "解压产物"
+            echo "解压构建产物"
+
             rm -rf .output
+
             tar -xzf build.tar.gz
+
             rm -f build.tar.gz
 
-            echo "安装生产依赖"
-            pnpm install --prod --frozen-lockfile --ignore-scripts
 
             echo "重启服务"
-            pm2 start .output/server/index.mjs --name blog-frontend --update-env || pm2 restart blog-frontend
+
+            if pm2 describe blog-frontend > /dev/null 2>&1; then
+              pm2 restart blog-frontend --update-env
+            else
+              pm2 start .output/server/index.mjs \
+                --name blog-frontend \
+                --update-env
+            fi
+
+
             pm2 save
 
             echo "部署完成"
