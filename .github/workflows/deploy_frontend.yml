@@ -89,6 +89,12 @@ jobs:
 
             mise install
 
+            export PNPM_HOME="~/.local/share/pnpm"
+            case ":$PATH:" in
+              *":$PNPM_HOME/bin:"*) ;;
+              *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+            esac
+
             #
             # 安装 pm2（如不存在）
             #
