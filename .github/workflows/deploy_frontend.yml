@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - "frontend/**"
+      - "mise.toml"
       - ".github/workflows/deploy_frontend.yml"
   workflow_dispatch:
 
@@ -21,17 +22,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
+      - name: Setup mise
+        uses: jdx/mise-action@v2
         with:
-          node-version: 24.14.0
-          package-manager-cache: false
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 11.15.1
           cache: true
+
+      - name: Show tool versions
+        run: |
+          node -v
+          pnpm -v
 
       - name: Install dependencies
         working-directory: frontend
@@ -45,8 +44,7 @@ jobs:
 
       - name: Archive build artifacts
         working-directory: frontend
-        run: |
-          tar -czf build.tar.gz .output
+        run: tar -czf build.tar.gz .output
 
       - name: Upload build artifacts
         uses: appleboy/scp-action@v0.1.7
@@ -54,9 +52,11 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "frontend/build.tar.gz"
-          target: "~/projects/blog/frontend"
-          strip_components: 1
+          source: |
+            mise.toml
+            frontend/build.tar.gz
+          target: "~/projects/blog"
+          strip_components: 0
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.10
@@ -65,34 +65,59 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
+            set -euo pipefail
 
-            echo "加载 Node 环境"
+            PROJECT_DIR="$HOME/projects/blog"
+            APP_DIR="$PROJECT_DIR/frontend"
 
-            export NVM_DIR="$HOME/.nvm"
+            #
+            # 安装 mise
+            #
+            export PATH="$HOME/.local/bin:$PATH"
 
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
-              . "$NVM_DIR/nvm.sh"
+            if ! command -v mise >/dev/null 2>&1; then
+              curl https://mise.run | sh
+              export PATH="$HOME/.local/bin:$PATH"
             fi
 
-            nvm use 24.14.0
+            eval "$(mise activate bash)"
 
-            APP_DIR="$HOME/projects/blog/frontend"
+            #
+            # 安装 Node / pnpm（根据 mise.toml）
+            #
+            cd "$PROJECT_DIR"
+
+            mise install
+
+            #
+            # 安装 pm2（如不存在）
+            #
+            if ! command -v pm2 >/dev/null 2>&1; then
+              npm install -g pm2
+            fi
+
+            echo "========== Versions =========="
+            echo "Node : $(node -v)"
+            echo "pnpm : $(pnpm -v)"
+            echo "pm2  : $(pm2 -v)"
+            echo "=============================="
 
             cd "$APP_DIR"
 
-            echo "解压构建产物"
+            if [ ! -f build.tar.gz ]; then
+              echo "build.tar.gz not found!"
+              exit 1
+            fi
+
+            echo "Extract build..."
 
             rm -rf .output
-
             tar -xzf build.tar.gz
-
             rm -f build.tar.gz
 
+            echo "Restart service..."
 
-            echo "重启服务"
-
-            if pm2 describe blog-frontend > /dev/null 2>&1; then
+            if pm2 describe blog-frontend >/dev/null 2>&1; then
               pm2 restart blog-frontend --update-env
             else
               pm2 start .output/server/index.mjs \
@@ -100,7 +125,6 @@ jobs:
                 --update-env
             fi
 
-
             pm2 save
 
-            echo "部署完成"
+            echo "Deploy completed."
