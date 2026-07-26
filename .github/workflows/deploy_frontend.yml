@@ -92,7 +92,7 @@ jobs:
             # 安装 pm2（如不存在）
             #
             if ! command -v pm2 >/dev/null 2>&1; then
-              npm install -g pm2
+              pnpm install -g pm2
             fi
 
             echo "========== Versions =========="
