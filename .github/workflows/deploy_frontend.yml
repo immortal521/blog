@@ -53,8 +53,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: |
-            mise.toml
-            frontend/build.tar.gz
+            mise.toml,frontend/build.tar.gz
           target: "~/projects/blog"
           strip_components: 0
 
