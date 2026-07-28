@@ -5,30 +5,44 @@ interface ContectItem {
   title: string;
 }
 
+const show = defineModel<boolean>("show", { default: false, required: true });
+
 const { $ts } = useI18n();
 
-const contectItems = computed<ContectItem[]>(() => [
-  {
-    url: "https://github.com/immortal521",
-    icon: "codicon:github",
-    title: $ts("tooltip.github"),
-  },
-  {
-    url: "https://qm.qq.com/cgi-bin/qm/qr?k=82gkG9i3QYouTHUsD9h4mk1UGFYZdlxT",
-    icon: "streamline-logos:qq-logo-solid",
-    title: $ts("tooltip.addQQFriend"),
-  },
-]);
+const contectItems = computed<ContectItem[]>(() =>
+  show.value
+    ? [
+        {
+          url: "https://github.com/immortal521",
+          icon: "codicon:github",
+          title: $ts("tooltip.github"),
+        },
+        {
+          url: "https://qm.qq.com/cgi-bin/qm/qr?k=82gkG9i3QYouTHUsD9h4mk1UGFYZdlxT",
+          icon: "streamline-logos:qq-logo-solid",
+          title: $ts("tooltip.addQQFriend"),
+        },
+      ]
+    : [],
+);
 </script>
 
 <template>
-  <ul class="contect">
-    <li v-for="item in contectItems" :key="item.url" :title="item.title" class="contect-item">
+  <TransitionGroup name="contect" tag="ul" class="contect">
+    <li
+      v-for="(item, index) in contectItems"
+      :key="item.url"
+      :title="item.title"
+      class="contect-item"
+      :style="{
+        transitionDelay: `${index * 50}ms`,
+      }"
+    >
       <a :href="item.url" target="_blank">
         <Icon :name="item.icon" size="24" class="icon" />
       </a>
     </li>
-  </ul>
+  </TransitionGroup>
 </template>
 
 <style lang="less" scoped>
@@ -45,6 +59,18 @@ const contectItems = computed<ContectItem[]>(() => [
   flex-wrap: wrap;
 }
 
+.contect-enter-active,
+.contect-leave-active {
+  transition: all 0.3s ease;
+}
+
+.contect-enter-from,
+.contect-leave-to {
+  opacity: 0;
+  transform-origin: right center;
+  transform: translateX(10px) scale(0.9);
+}
+
 .contect-item {
   position: relative;
   width: 35px;
@@ -54,7 +80,6 @@ const contectItems = computed<ContectItem[]>(() => [
   border-radius: var(--radius-nav);
   border: 1px solid var(--border-color-nav);
   box-shadow: var(--shadow-nav);
-  transition: var(--transition-nav);
   overflow: hidden;
 
   &:hover {

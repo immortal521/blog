@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
+import type { Component } from "vue";
 
-const { icon, animation = undefined } = defineProps<{
+const { icon, component } = defineProps<{
   icon: string;
-  animation?: "up" | "down" | "left" | "right" | "scale";
+  component: Component;
 }>();
 
 const open = ref(false);
@@ -25,11 +26,9 @@ onClickOutside(panelContent, (event) => {
       <Icon :name="icon" size="24" class="icon" />
     </button>
 
-    <Transition :name="animation ?? 'none'">
-      <div v-if="open" ref="panelContent" class="panel-content">
-        <slot />
-      </div>
-    </Transition>
+    <div ref="panelContent" class="panel-content">
+      <Component :is="component" v-model:show="open" />
+    </div>
   </div>
 </template>
 
@@ -43,8 +42,8 @@ onClickOutside(panelContent, (event) => {
 }
 
 .action-button {
-  position: relative;
   background: var(--bg-nav-base);
+  position: relative;
   border-radius: var(--radius-nav);
   width: 100%;
   height: 40px;
@@ -64,80 +63,5 @@ onClickOutside(panelContent, (event) => {
   right: 120%;
   bottom: 0;
   z-index: 10;
-}
-
-.down-enter-active,
-.down-leave-active {
-  transition:
-    opacity 0.5s ease-in-out,
-    transform 0.5s ease-in-out;
-}
-
-.down-enter-from,
-.down-leave-to {
-  opacity: 0;
-  transform: scale(0.3) translateY(100%);
-}
-
-.up-enter-active,
-.up-leave-active {
-  transition:
-    opacity 0.5s ease-in-out,
-    transform 0.5s ease-in-out;
-}
-
-.up-enter-from,
-.up-leave-to {
-  opacity: 0;
-  transform: scale(0.3) translateY(-100%);
-}
-
-.left-enter-active,
-.left-leave-active {
-  transition:
-    opacity 0.5s ease-in-out,
-    transform 0.5s ease-in-out;
-}
-
-.left-enter-from,
-.left-leave-to {
-  opacity: 0;
-  transform: scale(0.3) translateX(-100%);
-}
-
-.right-enter-active,
-.right-leave-active {
-  transition:
-    opacity 0.5s ease-in-out,
-    transform 0.5s ease-in-out;
-}
-
-.right-enter-from,
-.right-leave-to {
-  opacity: 0;
-  transform: scale(0.3) translateX(100%);
-}
-
-.scale-enter-active,
-.scale-leave-active {
-  transition:
-    opacity 0.5s ease-in-out,
-    transform 0.5s ease-in-out;
-}
-
-.scale-enter-from,
-.scale-leave-to {
-  opacity: 0;
-  transform: scale(0.3);
-}
-
-.none-enter-active,
-.none-leave-active {
-  transition: opacity 0.5s ease-in-out;
-}
-
-.none-enter-from,
-.none-leave-to {
-  opacity: 1;
 }
 </style>

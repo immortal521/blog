@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
+import type { FloatActionItem } from "./types";
+import ActionButton from "./ActionButton.vue";
+import PanelButton from "./PanelButton.vue";
 
 const { width = 40 } = defineProps<{
   width?: number | string;
+  items: FloatActionItem[];
 }>();
 
 const show = ref(false);
@@ -36,10 +40,24 @@ onUnmounted(() => {
   window.removeEventListener("scroll", debouncedHandleScroll);
 });
 </script>
+
 <template>
   <Transition name="float-action-bar">
     <div v-if="show" class="float-action-bar" :style="{ width: `${width}px` }">
-      <slot />
+      <template v-for="item in items" :key="item.id">
+        <ActionButton
+          v-if="item.type === 'button'"
+          :icon="item.icon"
+          :title="$ts(item.label)"
+          @click="item.onClick"
+        />
+        <PanelButton
+          v-else-if="item.type === 'panel'"
+          :icon="item.icon"
+          :title="$ts(item.label)"
+          :component="item.component"
+        />
+      </template>
     </div>
   </Transition>
 </template>

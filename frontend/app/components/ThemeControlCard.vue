@@ -2,7 +2,7 @@
 import type { ThemeMode } from "~/types/theme";
 
 const mode = storeToRefs(useThemeStore()).mode;
-const isShow = ref(true);
+const show = defineModel<boolean>("show", { required: true, default: false });
 
 const primaryColorList = [
   "#99a2ff", // periwinkle
@@ -50,39 +50,41 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="isShow" ref="themeControlCard" class="theme-control-card">
-    <p class="title">{{ $ts("themeControl.themeMode") }}</p>
-    <div :class="{ 'buttons-track': true, dark: isDark }">
-      <button :class="{ 'buttons-item': true, active: !isDark }" @click="setThemeMode('light')">
-        <Icon name="streamline-plump-color:sun" :size="20" />
-        {{ $ts("themeControl.light") }}
-      </button>
-      <button :class="{ 'buttons-item': true, active: isDark }" @click="setThemeMode('dark')">
-        <Icon name="streamline-plump-color:moon-stars" :size="20" />
-        {{ $ts("themeControl.dark") }}
-      </button>
+  <Transition name="test">
+    <div v-if="show" ref="themeControlCard" class="theme-control-card">
+      <p class="title">{{ $ts("themeControl.themeMode") }}</p>
+      <div :class="{ 'buttons-track': true, dark: isDark }">
+        <button :class="{ 'buttons-item': true, active: !isDark }" @click="setThemeMode('light')">
+          <Icon name="streamline-plump-color:sun" :size="20" />
+          {{ $ts("themeControl.light") }}
+        </button>
+        <button :class="{ 'buttons-item': true, active: isDark }" @click="setThemeMode('dark')">
+          <Icon name="streamline-plump-color:moon-stars" :size="20" />
+          {{ $ts("themeControl.dark") }}
+        </button>
+      </div>
+      <p class="title">{{ $ts("themeControl.primaryColor") }}</p>
+      <div class="color-picker">
+        <button
+          v-for="item in primaryColorList"
+          :key="item"
+          class="color-picker-item"
+          :style="{ background: item }"
+          @click="setPrimaryColor(item)"
+        />
+        <button class="color-picker-item" @click="colorInput?.click()">+</button>
+        <input
+          v-show="false"
+          ref="colorInput"
+          v-model="colorInputValue"
+          type="color"
+          @change="handleColorChange"
+        />
+      </div>
+      <p class="title">{{ $ts("themeControl.language") }}</p>
+      <InputSelect v-model:value="localeRef" :options />
     </div>
-    <p class="title">{{ $ts("themeControl.primaryColor") }}</p>
-    <div class="color-picker">
-      <button
-        v-for="item in primaryColorList"
-        :key="item"
-        class="color-picker-item"
-        :style="{ background: item }"
-        @click="setPrimaryColor(item)"
-      />
-      <button class="color-picker-item" @click="colorInput?.click()">+</button>
-      <input
-        v-show="false"
-        ref="colorInput"
-        v-model="colorInputValue"
-        type="color"
-        @change="handleColorChange"
-      />
-    </div>
-    <p class="title">{{ $ts("themeControl.language") }}</p>
-    <InputSelect v-model:value="localeRef" :options />
-  </div>
+  </Transition>
 </template>
 
 <style lang="less" scoped>
@@ -97,6 +99,18 @@ onMounted(() => {
   border: 1px solid var(--border-color-nav);
   box-shadow: var(--shadow-nav);
   transition: var(--transition-nav);
+}
+
+.test-enter-active,
+.test-leave-active {
+  transition: all 0.3s ease-in-out;
+  transform-origin: right bottom;
+}
+
+.test-enter-from,
+.test-leave-to {
+  transform: scale(0.3);
+  opacity: 0;
 }
 
 .title {
