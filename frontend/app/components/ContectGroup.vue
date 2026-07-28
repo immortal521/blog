@@ -101,6 +101,6 @@ const contectItems = computed<ContectItem[]>(() =>
 }
 
 .icon {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 </style>

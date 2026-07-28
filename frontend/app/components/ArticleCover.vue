@@ -100,7 +100,7 @@ onMounted(() => {
     bottom: -12px;
     left: 0;
     border-radius: 2px;
-    background: linear-gradient(90deg, var(--color-primary-base), var(--color-primary-hover));
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-hover));
     animation: title-underline 1s ease-out 0.5s both;
   }
 }

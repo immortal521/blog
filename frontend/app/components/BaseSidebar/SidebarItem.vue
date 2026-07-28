@@ -191,7 +191,7 @@ const onAfterLeave = (el: Element) => {
   min-height: 35px;
   font-family: "Maple Mono", monospace;
   text-decoration: none;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   padding: 2px 0;
   border-radius: 8px;
   cursor: pointer;
@@ -212,7 +212,7 @@ const onAfterLeave = (el: Element) => {
 }
 
 .active > .btn {
-  background: var(--color-primary-bg-active);
+  background: var(--brand-bg-active);
 }
 
 .active-group > .btn {
@@ -230,7 +230,7 @@ const onAfterLeave = (el: Element) => {
 }
 
 .row > .btn:active {
-  background: var(--color-primary-bg-active);
+  background: var(--brand-bg-active);
 }
 
 .divider {
@@ -243,14 +243,14 @@ const onAfterLeave = (el: Element) => {
   .label {
     padding-right: 5px;
     font-size: 1.2rem;
-    color: var(--text-color-secondary);
+    color: var(--text-secondary);
   }
 
   .divider-line {
     width: 100%;
     height: 1px;
     border-radius: 5px;
-    background: var(--border-color-divider);
+    background: var(--border-default);
   }
 }
 
@@ -261,7 +261,7 @@ const onAfterLeave = (el: Element) => {
 
 .collapsed-open-group {
   border-radius: 20px;
-  background-color: var(--color-primary-bg-muted);
+  background-color: var(--brand-bg-muted);
 }
 
 .row.collapsed > .btn {
@@ -306,15 +306,15 @@ const onAfterLeave = (el: Element) => {
 }
 
 .row.collapsed > .btn:hover .icon {
-  background: var(--color-primary-bg);
+  background: var(--brand-bg-active);
 }
 
 .row.collapsed > .btn:active .icon {
-  background: var(--color-primary-bg-active);
+  background: var(--brand-bg-active);
 }
 
 .row.collapsed.active > .btn .icon {
-  background-color: var(--color-primary-bg-active);
+  background-color: var(--brand-bg-active);
 }
 
 .row.collapsed > .btn.disabled:hover .icon,

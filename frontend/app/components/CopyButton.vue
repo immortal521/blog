@@ -28,15 +28,15 @@ const copy = async () => {
 .btn {
   background: var(--bg-card-base);
   padding: 0 1rem;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   border-radius: 5px;
   font-size: 1.2rem;
   font-family: var(--font-family-base);
-  border: 1px solid var(--color-primary-base);
+  border: 1px solid var(--brand-primary);
 
   &:hover {
-    border: 1px solid var(--color-primary-hover);
-    background-color: var(--color-primary-hover);
+    border: 1px solid var(--brand-hover);
+    background-color: var(--brand-hover);
   }
 }
 </style>

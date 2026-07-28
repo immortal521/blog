@@ -32,7 +32,7 @@ const { section, collapsed = false, openKeys } = defineProps<Props>();
 <style lang="less" scoped>
 .section-title {
   font-size: 1.2rem;
-  color: var(--text-color-secondary);
+  color: var(--text-secondary);
   margin: 10px 0;
 }
 

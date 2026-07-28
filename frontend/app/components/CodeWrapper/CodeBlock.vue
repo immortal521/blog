@@ -86,7 +86,7 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   }
 
   &:hover code::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary-base);
+    background-color: var(--brand-primary);
   }
 }
 
@@ -126,10 +126,10 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   margin-right: 0.5rem;
   background-color: var(--bg-code);
   text-align: right;
-  color: var(--text-color-secondary);
+  color: var(--text-secondary);
   font-size: 1.5rem;
   line-height: 1.5;
-  border-right: 1px solid var(--border-color-disabled);
+  border-right: 1px solid var(--border-disabled);
   cursor: default;
   user-select: none;
   counter-reset: line-number 0;

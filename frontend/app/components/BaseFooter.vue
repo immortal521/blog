@@ -11,6 +11,6 @@
   background: var(--bg-content);
   text-align: center;
   line-height: 1.8;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 </style>

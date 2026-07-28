@@ -95,7 +95,7 @@ function toggleMode() {
 
 <style lang="less" scoped>
 .article-edit {
-  border: 1.5px solid var(--border-color-default);
+  border: 1.5px solid var(--border-default);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
   width: 100%;
@@ -112,7 +112,7 @@ function toggleMode() {
   display: flex;
   align-items: center;
   padding: 5px 15px;
-  border-bottom: 1px solid var(--border-color-divider);
+  border-bottom: 1px solid var(--border-default);
 
   .tools-left {
     display: flex;
@@ -130,7 +130,7 @@ function toggleMode() {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    color: var(--text-color-primary);
+    color: var(--text-primary);
     background-color: transparent;
     padding: 6px;
     border-radius: 6px;
@@ -173,10 +173,10 @@ function toggleMode() {
   flex: 1;
   width: 100%;
   height: 100%;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   padding: 10px 20px;
   resize: none;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   line-height: 1.5;
   outline: none;
   border: none;
@@ -187,7 +187,7 @@ function toggleMode() {
 }
 
 .edit textarea.split-border {
-  border-right: 1px solid var(--border-color-divider);
+  border-right: 1px solid var(--border-default);
   border-radius: 8px 0 0 8px;
 }
 

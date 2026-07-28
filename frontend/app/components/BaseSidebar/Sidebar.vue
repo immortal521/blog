@@ -110,7 +110,7 @@ const handleToggle = (key: string) => {
     padding: 0 5px;
     line-height: 35px;
     border-radius: 8px;
-    color: var(--text-color-primary);
+    color: var(--text-primary);
     user-select: none;
     cursor: pointer;
     position: relative;
@@ -118,11 +118,11 @@ const handleToggle = (key: string) => {
     margin: 5px 0;
 
     &.is-active {
-      background: var(--color-primary-base);
+      background: var(--brand-primary);
     }
 
     &:not(.is-active):hover {
-      background: var(--color-primary-bg);
+      background: var(--brand-bg-active);
     }
 
     .icon {

@@ -74,15 +74,15 @@ const togglePasswordVisibility = () => {
   align-items: center;
   width: 100%;
   color: inherit;
-  border: 1px solid var(--border-color-default);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
   &:focus-within {
-    border-color: var(--color-primary-base);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-base) 20%, transparent);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 20%, transparent);
   }
 
   .input-prefix,
@@ -90,7 +90,7 @@ const togglePasswordVisibility = () => {
     display: flex;
     align-items: center;
     padding: 8px 0;
-    color: var(--text-color-secondary);
+    color: var(--text-secondary);
     font-size: 14px;
   }
 
@@ -129,10 +129,10 @@ const togglePasswordVisibility = () => {
     transition: color 0.2s;
 
     .icon {
-      color: var(--text-color-secondary);
+      color: var(--text-secondary);
 
       &:hover:not(.password-toggle-button:disabled) {
-        color: var(--color-primary-base);
+        color: var(--brand-primary);
       }
     }
   }

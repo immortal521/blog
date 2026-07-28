@@ -251,8 +251,8 @@ onBeforeUnmount(() => {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   background-color: var(--tooltip-bg, var(--bg-card-base));
-  border: 1px solid var(--tooltip-border-color, var(--border-color-default));
-  color: var(--text-color-primary);
+  border: 1px solid var(--tooltip-border-color, var(--border-default));
+  color: var(--text-primary);
   box-shadow: var(--shadow-sm);
   position: relative;
   pointer-events: auto;
@@ -262,7 +262,7 @@ onBeforeUnmount(() => {
   --arrow-color: var(--tooltip-arrow-color, var(--tooltip-bg, var(--bg-card-base)));
   --arrow-border-color: var(
     --tooltip-arrow-border-color,
-    var(--tooltip-border-color, var(--border-color-default))
+    var(--tooltip-border-color, var(--border-default))
   );
   --arrow-inset-fix: 1px;
 }

@@ -37,14 +37,14 @@ const handleTocClick = (id: string) => {
   margin: 0;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-primary-base) transparent;
+  scrollbar-color: var(--brand-primary) transparent;
 
   &::-webkit-scrollbar {
     width: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary-base);
+    background-color: var(--brand-primary);
     border-radius: 2px;
   }
 
@@ -60,29 +60,33 @@ const handleTocClick = (id: string) => {
     transition: all 0.2s ease;
     border-left: 2px solid transparent;
 
-    &:hover {
-      background-color: var(--brand-hover);
-    }
-
     &.active {
-      background-color: var(--brand-active);
+      background-color: var(--brand-primary);
 
       a {
-        color: var(--text-color-primary);
+        color: var(--text-primary);
         font-weight: 500;
       }
     }
 
+    &:hover {
+      background-color: var(--brand-hover);
+    }
+
+    &:active {
+      background-color: var(--brand-active);
+    }
+
     a {
       display: block;
-      color: var(--text-color-primary);
+      color: var(--text-primary);
       text-decoration: none;
       font-size: 1.4rem;
       line-height: 1.4;
       transition: color 0.2s ease;
 
       &:hover {
-        color: var(--text-color-primary);
+        color: var(--text-primary);
       }
     }
   }
