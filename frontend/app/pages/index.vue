@@ -72,7 +72,7 @@ watch(page, () => {
 
 .title {
   position: relative;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   font-weight: 500;
 
   &::after {
@@ -83,7 +83,7 @@ watch(page, () => {
     left: 0;
     bottom: 0;
     border-radius: 5px;
-    background-color: var(--color-primary-base);
+    background-color: var(--brand-primary);
   }
 }
 
@@ -109,7 +109,7 @@ watch(page, () => {
   border-radius: var(--radius-card);
   border: 1px solid var(--border-color-card);
   padding: 8px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   box-shadow: var(--shadow-card-base);
   font-family: "MapleMono";
   font-weight: bold;
@@ -123,8 +123,8 @@ watch(page, () => {
   }
 
   &.active {
-    background-color: var(--color-primary-base);
-    color: var(--color-primary-text);
+    background-color: var(--brand-primary);
+    color: var(--text-primary);
   }
 }
 </style>

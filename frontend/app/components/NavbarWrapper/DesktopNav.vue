@@ -60,7 +60,7 @@ const items = computed<MenuItem[]>(() => {
       width: 100%;
       height: 100%;
       display: flex;
-      color: var(--text-color-primary);
+      color: var(--text-primary);
       position: relative;
       align-items: center;
       transition: color 0.3s ease-in-out;
@@ -72,17 +72,17 @@ const items = computed<MenuItem[]>(() => {
         height: 6px;
         border-radius: 10px;
         width: 0;
-        background-color: var(--color-primary-base);
+        background-color: var(--brand-primary);
         bottom: 10px;
         transition: width 0.3s ease-in-out;
       }
 
       &:active {
-        color: var(--color-primary-active);
+        color: var(--brand-active);
       }
 
       &:hover {
-        color: var(--color-primary-base);
+        color: var(--brand-primary);
       }
 
       &:hover::after {
@@ -94,11 +94,11 @@ const items = computed<MenuItem[]>(() => {
       }
 
       &:hover:deep(.svg-icon) {
-        color: var(--color-primary-base);
+        color: var(--brand-primary);
       }
 
       &:active::after {
-        background-color: var(--color-primary-active);
+        background-color: var(--brand-active);
       }
 
       .icon {

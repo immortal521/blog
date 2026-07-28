@@ -146,7 +146,7 @@ const onAfterLeave = (el: Element) => {
   align-items: center;
   height: 100%;
   width: 50px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .dropdown {
@@ -189,24 +189,24 @@ const onAfterLeave = (el: Element) => {
       width: 100%;
       height: 100%;
       display: flex;
-      color: var(--text-color-primary);
+      color: var(--text-primary);
       position: relative;
       align-items: center;
       padding: 0 8px;
       border-radius: 10px 10px 0 0;
-      border-bottom: 1px solid var(--border-color-divider);
+      border-bottom: 1px solid var(--border-default);
       transition:
         color 0.2s ease-in-out,
         border-bottom 0.2s ease-in-out,
         background-color 0.3s ease-in-out;
 
       &:active {
-        color: var(--color-primary-active);
+        color: var(--brand-active);
       }
 
       &:hover {
-        border-bottom: 1px solid var(--color-primary-base);
-        color: var(--color-primary-base);
+        border-bottom: 1px solid var(--brand-primary);
+        color: var(--brand-primary);
         background: var(--bg-interactive-hover);
       }
 
@@ -215,7 +215,7 @@ const onAfterLeave = (el: Element) => {
       }
 
       &:hover:deep(.svg-icon) {
-        color: var(--color-primary-base);
+        color: var(--brand-primary);
       }
 
       .icon {

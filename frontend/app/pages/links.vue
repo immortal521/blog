@@ -67,7 +67,7 @@ useAddClassOnIntersect(linkCards, "show");
 
 .title {
   text-align: center;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   display: block;
   height: 130px;
   line-height: 130px;
@@ -81,7 +81,7 @@ useAddClassOnIntersect(linkCards, "show");
   border-radius: 10px;
   box-shadow: var(--shadow-card-base);
   padding: 20px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 
   li {
     list-style: none;
@@ -95,16 +95,16 @@ useAddClassOnIntersect(linkCards, "show");
     width: 100px;
     padding: 0 1.5rem;
     height: 30px;
-    background: var(--color-primary-base);
+    background: var(--brand-primary);
     color: var(--text-on-brand);
     border-radius: 5px;
 
     &:hover {
-      background-color: var(--color-primary-hover);
+      background-color: var(--brand-hover);
     }
 
     &:active {
-      background-color: var(--color-primary-active);
+      background-color: var(--brand-active);
     }
   }
 }
@@ -163,7 +163,7 @@ useAddClassOnIntersect(linkCards, "show");
   -webkit-box-orient: vertical;
   line-clamp: 3;
   -webkit-line-clamp: 3;
-  color: var(--text-color-secondary);
+  color: var(--text-secondary);
   font-size: 0.925em;
 }
 </style>

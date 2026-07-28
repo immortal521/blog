@@ -24,13 +24,13 @@ const handleBack = () => {
 .admin-sub-layout {
   width: 100%;
   height: 100dvh;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .header {
   height: var(--header-height);
   width: 100%;
-  border-bottom: 1px solid var(--border-color-default);
+  border-bottom: 1px solid var(--border-default);
   background: var(--bg-nav-base);
   box-shadow: var(--shadow-sm);
   display: flex;

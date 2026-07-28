@@ -53,7 +53,7 @@ const formData = ref({
   background: var(--bg-card-base);
   box-shadow: var(--shadow-card-base);
   border-radius: 10px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   text-align: center;
 }
 
@@ -76,7 +76,7 @@ const formData = ref({
 .input {
   width: 100%;
   height: 40px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   margin-left: 1rem;
   font-weight: 700;
   border-radius: 8px;
@@ -87,16 +87,16 @@ const formData = ref({
   height: 40px;
   margin-top: 20px;
   border-radius: 10px;
-  color: var(--color-on-primary);
+  color: var(--text-on-brand);
   font-size: 1.75rem;
-  background-color: var(--color-primary-base);
+  background-color: var(--brand-primary);
 
   &:hover {
-    background-color: var(--color-primary-hover);
+    background-color: var(--brand-hover);
   }
 
   &:active {
-    background-color: var(--color-primary-active);
+    background-color: var(--brand-active);
   }
 }
 </style>

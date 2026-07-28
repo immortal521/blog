@@ -68,7 +68,7 @@ const handleDownArrowClick = () => {
   .avatar-image {
     width: 100px;
     height: 100px;
-    border: 3px solid var(--color-primary-disabled);
+    border: 3px solid var(--brand-disabled);
     border-radius: 50%;
     object-fit: cover;
     animation: breathing-light 5s ease-in-out infinite;
@@ -81,7 +81,7 @@ const handleDownArrowClick = () => {
   height: 60px;
   width: 100%;
   background: var(--bg-nav-base);
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   border: 1px solid var(--border-color-nav);
   border-radius: 12px;
   line-height: 60px;
@@ -111,7 +111,7 @@ const handleDownArrowClick = () => {
   left: 50%;
   cursor: pointer;
   transform: translateX(-50%);
-  color: var(--text-color-secondary);
+  color: var(--text-secondary);
   animation: bounce 2.5s infinite ease-in-out;
   background-color: transparent;
 }

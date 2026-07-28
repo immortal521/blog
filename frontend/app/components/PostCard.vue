@@ -42,7 +42,7 @@ useAddClassOnIntersect(postCardRef, "show");
   width: 100%;
   margin: 10px 0;
   opacity: 0;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   transform: translateY(50px);
   transition:
     opacity 0.5s ease-out,
@@ -96,7 +96,7 @@ useAddClassOnIntersect(postCardRef, "show");
     position: absolute;
     padding: 4px 10px;
     background: var(--bg-card-title);
-    border: 1px solid var(--border-color-default);
+    border: 1px solid var(--border-default);
     border-radius: 6px;
   }
 

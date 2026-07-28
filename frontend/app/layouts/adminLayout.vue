@@ -43,7 +43,7 @@ const handleToggle = () => {
   width: 100%;
   height: 100vh;
   display: flex;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .right {
@@ -59,7 +59,7 @@ const handleToggle = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 
   .logo-image {
     width: 100%;
@@ -71,7 +71,7 @@ const handleToggle = () => {
   position: relative;
   height: var(--header-height);
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border-color-default);
+  border-bottom: 1px solid var(--border-default);
   background: var(--bg-nav-base);
   display: flex;
   align-items: center;

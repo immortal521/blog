@@ -117,7 +117,7 @@ onMounted(() => {
   font-size: 12px;
   font-family: "Maple Mono", monospace;
   font-weight: 500;
-  color: var(--text-color-secondary);
+  color: var(--text-secondary);
 }
 
 .buttons-track {

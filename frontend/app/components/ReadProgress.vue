@@ -29,7 +29,7 @@ onUnmounted(() => {
   left: 0;
   width: 0;
   height: 2px;
-  background-color: var(--color-primary-base);
+  background-color: var(--brand-primary);
   z-index: 9998;
 }
 </style>
