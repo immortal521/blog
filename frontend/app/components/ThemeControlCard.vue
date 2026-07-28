@@ -53,11 +53,11 @@ onMounted(() => {
   <div v-if="isShow" ref="themeControlCard" class="theme-control-card">
     <p class="title">{{ $ts("themeControl.themeMode") }}</p>
     <div :class="{ 'buttons-track': true, dark: isDark }">
-      <button class="buttons-item" @click="setThemeMode('light')">
+      <button :class="{ 'buttons-item': true, active: !isDark }" @click="setThemeMode('light')">
         <Icon name="streamline-plump-color:sun" :size="20" />
         {{ $ts("themeControl.light") }}
       </button>
-      <button class="buttons-item" @click="setThemeMode('dark')">
+      <button :class="{ 'buttons-item': true, active: isDark }" @click="setThemeMode('dark')">
         <Icon name="streamline-plump-color:moon-stars" :size="20" />
         {{ $ts("themeControl.dark") }}
       </button>
@@ -109,28 +109,29 @@ onMounted(() => {
 .buttons-track {
   width: calc(100% - 10px);
   height: 35px;
-  background: var(--bg-button-toggle-track);
+  background: var(--bg-interactive-hover);
   margin: 0 auto;
-  border-radius: 5px;
+  border-radius: 8px;
   position: relative;
   display: flex;
+  border: 1px solid var(--border-subtle);
 
   &::after {
     content: "";
     position: absolute;
     left: 2px;
     top: 2px;
-    width: 50%;
+    width: calc(50% - 3px);
     height: calc(100% - 4px);
-    background: var(--bg-button-toggle-thumb);
-    z-index: -1;
-    border-radius: 5px;
+    background: var(--brand-primary);
+    z-index: 0;
+    border-radius: 6px;
     transition: transform 0.3s ease-in-out;
-    border: 1px solid var(--border-color-button-toggle);
+    box-shadow: var(--shadow-sm);
   }
 
   &.dark::after {
-    transform: translateX(calc(100% - 4px));
+    transform: translateX(calc(100% - 2px));
   }
 }
 
@@ -140,11 +141,19 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   font-weight: 600;
-  color: var(--text-color-primary);
+  font-size: 13px;
+  color: var(--text-tertiary);
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 5px;
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s ease;
+
+  &.active {
+    color: var(--text-on-brand);
+  }
 }
 
 .color-picker {
