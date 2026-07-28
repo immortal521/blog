@@ -18,6 +18,7 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
   background: var(--bg-content);
   animation: opacity 0.5s ease;
   padding-bottom: 140px;
+  min-height: 100vh;
 }
 
 .blur-layer-container {
@@ -38,5 +39,7 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: transform, opacity;
+  background: radial-gradient(ellipse at 50% 0%, var(--color-primary-bg-muted) 0%, transparent 70%);
+  opacity: 0.3;
 }
 </style>

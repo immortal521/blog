@@ -50,9 +50,17 @@ watch(
 .container:deep(.img) {
   max-width: 100%;
   margin: 0 auto;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 :deep(em) {
@@ -65,7 +73,7 @@ watch(
 :deep(ol),
 :deep(dl),
 :deep(table) {
-  margin: 0.8rem 0;
+  margin: 1.2rem 0;
 }
 
 :deep(h1),
@@ -77,19 +85,42 @@ watch(
   scroll-margin-top: var(--header-height);
   font-weight: 700;
   color: var(--color-header);
-  line-height: 1.5;
-  margin-top: 2rem;
-  margin-bottom: 0.8rem;
+  line-height: 1.4;
+  margin-top: 2.4rem;
+  margin-bottom: 1rem;
+  position: relative;
 }
 
 :deep(h1) {
   font-size: 3.2rem;
-  padding-bottom: 0.48rem;
+  padding-bottom: 0.6rem;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary-base), transparent);
+    border-radius: 2px;
+  }
 }
 
 :deep(h2) {
   font-size: 2.6rem;
-  padding-bottom: 0.32rem;
+  padding-bottom: 0.4rem;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary-base), transparent);
+    border-radius: 2px;
+  }
 }
 
 :deep(h3) {
@@ -115,6 +146,7 @@ watch(
 :deep(p) {
   color: var(--text-color-primary);
   overflow-wrap: break-word;
+  line-height: 1.8;
 }
 
 :deep(:not(pre.shiki) > code) {
@@ -139,6 +171,7 @@ watch(
   overflow: hidden;
   font-size: var(--font-size-table-row);
   color: var(--text-color-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 :deep(thead) {
@@ -151,12 +184,13 @@ watch(
 :deep(thead) th {
   padding: 0.75em 1em;
   text-align: left;
-  border-bottom: 1px solid var(--table-head-border);
+  border-bottom: 2px solid var(--table-head-border);
 }
 
 :deep(tbody) tr {
   border-bottom: 1px solid var(--border-table);
   font-size: var(--font-size-table-row);
+  transition: background-color 0.2s ease;
 }
 
 :deep(tbody) td {
@@ -172,11 +206,13 @@ watch(
 }
 
 :deep(blockquote) {
-  border-radius: 5px;
-  padding: 10px 16px;
+  border-radius: 8px;
+  padding: 16px 20px;
   background: var(--bg-card-base);
   position: relative;
   border-left: none;
+  margin: 1.5rem 0;
+  box-shadow: var(--shadow-sm);
 
   &::before {
     display: block;
@@ -186,14 +222,14 @@ watch(
     left: 0;
     top: 0;
     height: 100%;
-    background-color: var(--color-primary-base);
+    background: linear-gradient(180deg, var(--color-primary-base), var(--color-primary-hover));
     border-radius: 2px;
   }
 }
 
 :deep(ul),
 :deep(ol) {
-  margin: 1em 0;
+  margin: 1.2em 0;
   padding-left: 1.5em;
   color: var(--text-color-primary);
   font-size: 1.5rem;
@@ -202,20 +238,20 @@ watch(
 
 :deep(ul li),
 :deep(ol li) {
-  margin: 0.3rem 0;
+  margin: 0.4rem 0;
   padding-left: 0.25rem;
   position: relative;
 }
 
 // 无序列表圆点样式
 :deep(ul li::marker) {
-  color: var(--text-color-secondary);
+  color: var(--color-primary-base);
 }
 
 // 有序列表数字样式
 :deep(ol li::marker) {
   font-weight: bold;
-  color: var(--text-color-secondary);
+  color: var(--color-primary-base);
 }
 
 :deep(ul ul),
@@ -235,8 +271,8 @@ watch(
 :deep(mark) {
   padding: 0 0.5rem;
   color: var(--text-on-brand);
-  background-color: var(--color-primary-base);
-  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-primary-base), var(--color-primary-hover));
+  border-radius: 4px;
 }
 
 :deep(u) {
@@ -244,5 +280,34 @@ watch(
   text-decoration-color: var(--color-primary-base);
   text-underline-offset: 0.5rem;
   text-decoration-thickness: 2px;
+}
+
+:deep(a) {
+  color: var(--color-primary-base);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.2s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--color-primary-base);
+    transition: width 0.2s ease;
+  }
+
+  &:hover::after {
+    width: 100%;
+  }
+}
+
+:deep(hr) {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-color-default), transparent);
+  margin: 2rem 0;
 }
 </style>

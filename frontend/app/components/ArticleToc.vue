@@ -33,5 +33,58 @@ const handleTocClick = (id: string) => {
   max-height: 500px;
   width: 100%;
   list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-base) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-base);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  li {
+    position: relative;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border-left: 2px solid transparent;
+
+    &:hover {
+      background-color: var(--brand-hover);
+    }
+
+    &.active {
+      background-color: var(--brand-active);
+
+      a {
+        color: var(--text-color-primary);
+        font-weight: 500;
+      }
+    }
+
+    a {
+      display: block;
+      color: var(--text-color-primary);
+      text-decoration: none;
+      font-size: 1.4rem;
+      line-height: 1.4;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--text-color-primary);
+      }
+    }
+  }
 }
 </style>

@@ -62,38 +62,58 @@ const { activeId } = useActiveToc(toc);
   display: flex;
   justify-content: center;
   align-self: flex-start;
+  gap: 24px;
+  padding: 0 20px;
+  padding-top: 30px;
 }
 
 .content {
   width: 100%;
   max-width: 800px;
-  padding-top: 30px;
-  margin-right: 20px;
   background-color: var(--bg-card-base);
   animation: article-show 1s ease-in-out;
-  box-shadow: var(--shadow-md);
-  padding: 10px;
-  margin-top: 4px;
+  box-shadow: var(--shadow-lg);
+  padding: 40px;
+  margin-top: 8px;
   border: 1px solid var(--border-color-card);
-  border-radius: 8px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
 }
 
 .toc-container {
   position: sticky;
-  top: 70px;
-  width: 220px;
+  top: 80px;
+  width: 240px;
   height: max-content;
   background-color: var(--bg-card-base);
   box-shadow: var(--shadow-md);
-  padding: 10px;
-  margin-top: 4px;
+  padding: 16px;
+  margin-top: 8px;
   border: 1px solid var(--border-color-card);
-  border-radius: 8px;
+  border-radius: 12px;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
 }
 
 @media (width <= 1200px) {
   .toc-container {
     display: none;
+  }
+
+  .article {
+    padding: 0;
+  }
+
+  .content {
+    padding: 0 16px;
+    margin-top: 0;
   }
 }
 </style>
