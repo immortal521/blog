@@ -71,7 +71,7 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   line-height: 1.5;
   padding: 3rem 3rem 1.5rem 0;
   border-radius: var(--radius-card, 0.5rem);
-  box-shadow: 0 1px 3px #00000010;
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition: all 0.3s ease-in-out;
   margin-top: 20px;
@@ -81,7 +81,7 @@ if (preVNode.children && Array.isArray(preVNode.children)) {
   & code::-webkit-scrollbar-thumb {
     height: 2px;
     width: 2px;
-    background-color: #0000;
+    background-color: transparent;
     transition: background 0.3s ease-in-out;
   }
 

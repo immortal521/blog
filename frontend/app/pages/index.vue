@@ -67,7 +67,7 @@ watch(page, () => {
 <style lang="less" scoped>
 .content-panel {
   border-radius: 10px 10px 0 0;
-  box-shadow: 0 -4px 8px #00000014;
+  box-shadow: var(--shadow-md);
 }
 
 .title {

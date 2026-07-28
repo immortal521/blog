@@ -23,7 +23,7 @@ const { value } = defineProps<Props>();
   border-radius: 999px;
 
   background: var(--state-error);
-  color: white;
+  color: var(--text-inverse);
 
   font-size: 12px;
 
