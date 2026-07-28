@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import "viewerjs/dist/viewer.css";
-import { parseMarkdownToVNode } from "@/utils/parseMarkdown";
+import { parseMarkdownToVNode, type TocItem } from "@/utils/parseMarkdown";
 import type { VNodeChild } from "vue";
 
-const props = defineProps({
-  markdown: {
-    type: String,
-    required: true,
-  },
-});
+interface Props {
+  markdown: string;
+  toc?: boolean;
+}
+
+interface Emits {
+  tocChange: [toc: TocItem[]];
+}
+
+const { markdown, toc = false } = defineProps<Props>();
+const emits = defineEmits<Emits>();
 
 const renderedVNode = shallowRef<VNodeChild>([]);
 const containerRef = useTemplateRef("container");
@@ -16,12 +21,17 @@ const containerRef = useTemplateRef("container");
 const { update } = useViewer(containerRef);
 
 const renderMarkdown = () => {
-  const { content } = parseMarkdownToVNode(props.markdown, { toc: true });
+  const { content, toc: tocItems } = parseMarkdownToVNode(markdown, { toc: toc });
+
+  if (toc && tocItems) {
+    emits("tocChange", tocItems);
+  }
+
   renderedVNode.value = content;
 };
 
 watch(
-  () => props.markdown,
+  () => markdown,
   async () => {
     renderMarkdown();
     await update();
@@ -64,6 +74,7 @@ watch(
 :deep(h4),
 :deep(h5),
 :deep(h6) {
+  scroll-margin-top: var(--header-height);
   font-weight: 700;
   color: var(--color-header);
   line-height: 1.5;

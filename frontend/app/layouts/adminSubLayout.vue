@@ -28,7 +28,7 @@ const handleBack = () => {
 }
 
 .header {
-  height: 50px;
+  height: var(--header-height);
   width: 100%;
   border-bottom: 1px solid var(--border-color-default);
   background: var(--bg-nav-base);

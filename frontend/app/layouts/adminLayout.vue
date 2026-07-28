@@ -69,7 +69,7 @@ const handleToggle = () => {
 
 .header {
   position: relative;
-  height: 50px;
+  height: var(--header-height);
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color-default);
   background: var(--bg-nav-base);

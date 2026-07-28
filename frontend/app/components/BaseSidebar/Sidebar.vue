@@ -96,7 +96,7 @@ const handleToggle = (key: string) => {
 }
 
 .sidebar-header {
-  height: 50px;
+  height: var(--header-height);
   width: 100%;
 }
 

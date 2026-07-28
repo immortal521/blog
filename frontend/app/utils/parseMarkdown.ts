@@ -15,7 +15,7 @@ interface ParseResult {
   toc?: TocItem[];
 }
 
-interface TocItem {
+export interface TocItem {
   id: string;
   level: number;
   text: string;
@@ -69,7 +69,6 @@ export function parseMarkdownToVNode(markdown: string, options?: Options): Parse
   const keyCounters = new Map<string, number>();
   const toc: TocItem[] = [];
   const content = tokensToVNode(tokens, normalizedOptions, keyCounters, toc);
-  console.log(toc);
 
   return { content, toc };
 }

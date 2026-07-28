@@ -17,14 +17,14 @@ export interface Post extends PostMeta {
   content: string;
 }
 
-export interface PostInput {
+export type PostInput = {
   cover: string;
   summary: string;
   title: string;
   content: string;
   tagIds: number[];
   status: PostStatus;
-}
+};
 
 export interface PostAdminMeta extends PostMeta {
   status: PostStatus;
