@@ -158,7 +158,6 @@ const onAfterLeave = (el: Element) => {
   background: var(--bg-nav-active);
   border-top: 2px solid var(--border-color-nav);
   box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
   padding-top: 20px;
   z-index: 9999;
 }

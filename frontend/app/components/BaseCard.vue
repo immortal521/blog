@@ -19,15 +19,6 @@
     border-color 0.3s ease,
     transform 0.3s ease;
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: var(--glass-highlight);
-    pointer-events: none;
-  }
-
   &:hover {
     box-shadow: var(--shadow-card-hover);
     background: var(--bg-card-hover);

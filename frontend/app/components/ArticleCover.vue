@@ -27,7 +27,6 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: 400px;
-  backdrop-filter: blur(10px);
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;

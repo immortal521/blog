@@ -35,7 +35,6 @@ const { spacer = true } = defineProps<{ spacer?: boolean }>();
   width: 100%;
   height: 100%;
   max-height: 100vh;
-  backdrop-filter: var(--glass-blur);
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: transform, opacity;

@@ -54,7 +54,6 @@ const handleToggle = (key: string) => {
   position: relative;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-color-nav);
-  backdrop-filter: var(--glass-blur);
   height: 100vh;
   width: 100%;
   max-width: calc(v-bind(width) * 1px);
@@ -66,14 +65,6 @@ const handleToggle = (key: string) => {
   transform: translateX(0);
   will-change: transform;
   padding-bottom: 30px;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--glass-highlight);
-    pointer-events: none;
-  }
 
   &::-webkit-scrollbar {
     display: none;

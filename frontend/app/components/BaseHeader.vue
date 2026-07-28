@@ -28,7 +28,6 @@ const { isSticky = false } = defineProps<Props>();
   margin: auto;
   background: var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
-  backdrop-filter: var(--blur-nav);
   overflow: hidden;
   width: calc(100% - 40px);
   height: 60px;
@@ -44,15 +43,6 @@ const { isSticky = false } = defineProps<Props>();
     box-shadow 0.3s ease;
   animation: scale-in 0.5s ease;
   box-shadow: var(--shadow-nav);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: var(--glass-highlight);
-    pointer-events: none;
-  }
 
   &:not(.is-sticky):hover {
     background: var(--bg-nav-hover);

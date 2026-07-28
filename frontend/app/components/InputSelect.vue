@@ -155,7 +155,6 @@ onClickOutside(selectRef, close);
   top: 100%;
   margin-top: 4px;
   border: 1px solid var(--border-color-select);
-  backdrop-filter: blur(20px);
   background: var(--bg-select);
   border-radius: 4px;
   min-width: 100%;

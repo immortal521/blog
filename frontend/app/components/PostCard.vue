@@ -98,7 +98,6 @@ useAddClassOnIntersect(postCardRef, "show");
     background: var(--bg-card-title);
     border: 1px solid var(--border-color-default);
     border-radius: 6px;
-    backdrop-filter: blur(6px);
   }
 
   .date {

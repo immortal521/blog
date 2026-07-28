@@ -200,7 +200,6 @@ const beforeLeave = (el: Element) => {
   padding: 8px 12px;
   margin: 5px 0;
   color: var(--text-color-primary);
-  backdrop-filter: blur(15px);
   overflow-wrap: break-word;
   pointer-events: auto;
   box-shadow: var(--shadow-md);

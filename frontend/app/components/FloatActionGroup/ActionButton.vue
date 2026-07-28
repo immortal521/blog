@@ -29,15 +29,6 @@ const { height = 30, icon } = defineProps<{
   cursor: pointer;
   transition: var(--transition-nav);
   overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--glass-highlight);
-    pointer-events: none;
-    border-radius: inherit;
-  }
 }
 
 .icon {

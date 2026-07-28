@@ -94,7 +94,6 @@ onMounted(() => {
   padding: 12px;
   border-radius: var(--radius-nav);
   background: var(--bg-nav-base);
-  backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color-nav);
   box-shadow: var(--shadow-nav);
   transition: var(--transition-nav);
@@ -128,7 +127,6 @@ onMounted(() => {
     border-radius: 5px;
     transition: transform 0.3s ease-in-out;
     border: 1px solid var(--border-color-button-toggle);
-    backdrop-filter: blur(2px);
   }
 
   &.dark::after {

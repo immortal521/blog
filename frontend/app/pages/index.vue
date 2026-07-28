@@ -67,7 +67,7 @@ watch(page, () => {
 <style lang="less" scoped>
 .content-panel {
   border-radius: 10px 10px 0 0;
-  box-shadow: 0 -4px 8px rgb(0 0 0 / 8%);
+  box-shadow: 0 -4px 8px #00000014;
 }
 
 .title {
@@ -107,10 +107,10 @@ watch(page, () => {
   min-width: 32px;
   min-height: 32px;
   border-radius: var(--radius-card);
+  border: 1px solid var(--border-color-card);
   padding: 8px;
   color: var(--text-color-primary);
   box-shadow: var(--shadow-card-base);
-  backdrop-filter: var(--filter-blur-sm);
   font-family: "MapleMono";
   font-weight: bold;
 

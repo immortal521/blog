@@ -91,17 +91,7 @@ const handleDownArrowClick = () => {
   font-weight: 800;
   animation: fade-in-down 1s ease;
   box-shadow: var(--shadow-md);
-  backdrop-filter: var(--blur-nav);
   overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--glass-highlight);
-    pointer-events: none;
-    border-radius: inherit;
-  }
 }
 
 .contect {

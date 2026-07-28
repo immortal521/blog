@@ -56,15 +56,6 @@ onClickOutside(panelContent, (event) => {
   box-shadow: var(--shadow-nav);
   transition: var(--transition-nav);
   overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--glass-highlight);
-    pointer-events: none;
-    border-radius: inherit;
-  }
 }
 
 .panel-content {

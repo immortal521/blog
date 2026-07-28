@@ -73,18 +73,9 @@ const handleToggle = () => {
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color-default);
   background: var(--bg-nav-base);
-  backdrop-filter: var(--filter-blur-sm);
   display: flex;
   align-items: center;
   padding: 0 10px;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--glass-highlight);
-    pointer-events: none;
-  }
 
   .menu-btn {
     position: relative;
