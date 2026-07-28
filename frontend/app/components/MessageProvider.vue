@@ -37,10 +37,10 @@ interface Message {
 
 const messageIconMap: Record<MessageType, MessageIconProps> = {
   default: { name: "" },
-  success: { name: "icon-park-solid:success", color: "var(--color-success)" },
-  error: { name: "icon-park-solid:error", color: "var(--color-danger)" },
-  info: { name: "fluent:info-sparkle-24-filled", color: "var(--color-info)" },
-  warning: { name: "typcn:warning", color: "var(--color-warning)" },
+  success: { name: "icon-park-solid:success", color: "var(--state-success)" },
+  error: { name: "icon-park-solid:error", color: "var(--state-error)" },
+  info: { name: "fluent:info-sparkle-24-filled", color: "var(--state-info)" },
+  warning: { name: "typcn:warning", color: "var(--state-warning)" },
 };
 
 const defaultOptions: Required<MessageOptions> = {
@@ -199,7 +199,7 @@ const beforeLeave = (el: Element) => {
   border-radius: 10px;
   padding: 8px 12px;
   margin: 5px 0;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   overflow-wrap: break-word;
   pointer-events: auto;
   box-shadow: var(--shadow-md);
@@ -216,7 +216,7 @@ const beforeLeave = (el: Element) => {
   .close-btn {
     cursor: pointer;
     border: none;
-    color: var(--text-color-primary);
+    color: var(--text-primary);
     background-color: transparent;
     padding: 2px;
     border-radius: 50%;
@@ -229,38 +229,38 @@ const beforeLeave = (el: Element) => {
   }
 
   &--default {
-    border-color: var(--border-color-default);
+    border-color: var(--border-default);
   }
 
   &--success {
-    border-color: var(--color-success);
+    border-color: var(--state-success);
 
     .icon {
-      color: var(--color-success);
+      color: var(--state-success);
     }
   }
 
   &--info {
-    border-color: var(--color-info);
+    border-color: var(--state-info);
 
     .icon {
-      color: var(--color-info);
+      color: var(--state-info);
     }
   }
 
   &--error {
-    border-color: var(--color-danger);
+    border-color: var(--state-error);
 
     .icon {
-      color: var(--color-danger);
+      color: var(--state-error);
     }
   }
 
   &--warning {
-    border-color: var(--color-warning);
+    border-color: var(--state-warning);
 
     .icon {
-      color: var(--color-warning);
+      color: var(--state-warning);
     }
   }
 

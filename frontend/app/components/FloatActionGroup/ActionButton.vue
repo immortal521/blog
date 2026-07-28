@@ -33,6 +33,6 @@ const { height = 30, icon } = defineProps<{
 
 .icon {
   position: relative;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 </style>

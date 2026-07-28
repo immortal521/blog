@@ -38,7 +38,7 @@ onClickOutside(panelContent, (event) => {
 }
 
 .icon {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .action-button {

@@ -102,7 +102,7 @@ watch(
     left: 0;
     width: 80px;
     height: 4px;
-    background: linear-gradient(90deg, var(--color-primary-base), transparent);
+    background: linear-gradient(90deg, var(--brand-primary), transparent);
     border-radius: 2px;
   }
 }
@@ -118,7 +118,7 @@ watch(
     left: 0;
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, var(--color-primary-base), transparent);
+    background: linear-gradient(90deg, var(--brand-primary), transparent);
     border-radius: 2px;
   }
 }
@@ -140,11 +140,11 @@ watch(
 :deep(h6) {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-color-secondary);
+  color: var(--text-secondary);
 }
 
 :deep(p) {
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   overflow-wrap: break-word;
   line-height: 1.8;
 }
@@ -170,7 +170,7 @@ watch(
   background: var(--bg-content);
   overflow: hidden;
   font-size: var(--font-size-table-row);
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   box-shadow: var(--shadow-sm);
 }
 
@@ -222,7 +222,7 @@ watch(
     left: 0;
     top: 0;
     height: 100%;
-    background: linear-gradient(180deg, var(--color-primary-base), var(--color-primary-hover));
+    background: linear-gradient(180deg, var(--brand-primary), var(--brand-hover));
     border-radius: 2px;
   }
 }
@@ -231,7 +231,7 @@ watch(
 :deep(ol) {
   margin: 1.2em 0;
   padding-left: 1.5em;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   font-size: 1.5rem;
   line-height: 1.75;
 }
@@ -245,13 +245,13 @@ watch(
 
 // 无序列表圆点样式
 :deep(ul li::marker) {
-  color: var(--color-primary-base);
+  color: var(--brand-primary);
 }
 
 // 有序列表数字样式
 :deep(ol li::marker) {
   font-weight: bold;
-  color: var(--color-primary-base);
+  color: var(--brand-primary);
 }
 
 :deep(ul ul),
@@ -271,19 +271,19 @@ watch(
 :deep(mark) {
   padding: 0 0.5rem;
   color: var(--text-on-brand);
-  background: linear-gradient(135deg, var(--color-primary-base), var(--color-primary-hover));
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover));
   border-radius: 4px;
 }
 
 :deep(u) {
   text-decoration-line: underline;
-  text-decoration-color: var(--color-primary-base);
+  text-decoration-color: var(--brand-primary);
   text-underline-offset: 0.5rem;
   text-decoration-thickness: 2px;
 }
 
 :deep(a) {
-  color: var(--color-primary-base);
+  color: var(--brand-primary);
   text-decoration: none;
   position: relative;
   transition: color 0.2s ease;
@@ -295,7 +295,7 @@ watch(
     left: 0;
     width: 0;
     height: 2px;
-    background: var(--color-primary-base);
+    background: var(--brand-primary);
     transition: width 0.2s ease;
   }
 
@@ -307,7 +307,7 @@ watch(
 :deep(hr) {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-color-default), transparent);
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
   margin: 2rem 0;
 }
 </style>

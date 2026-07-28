@@ -137,7 +137,7 @@ onClickOutside(selectRef, close);
   padding: 6px 12px;
   border: 1px solid var(--border-color-select);
   background: var(--bg-select);
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   border-radius: 4px;
   width: 100%;
   height: 32px;
@@ -202,7 +202,7 @@ onClickOutside(selectRef, close);
   cursor: pointer;
   font-weight: 500;
   font-size: 1em;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   transition:
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
@@ -210,7 +210,7 @@ onClickOutside(selectRef, close);
 
 .select-item.highlighted,
 .select-item:hover {
-  background-color: var(--color-primary-base);
-  color: var(--color-on-primary);
+  background-color: var(--brand-primary);
+  color: var(--text-on-brand);
 }
 </style>

@@ -31,7 +31,7 @@ const route = useRoute();
   left: 10px;
   background: var(--bg-nav-base);
   border: 1px solid var(--border-color-nav);
-  color: var(--text-color-primary);
+  color: var(--text-primary);
   overflow: hidden;
 
   ul {
@@ -51,12 +51,12 @@ const route = useRoute();
     }
 
     .active {
-      background: var(--color-primary-base);
+      background: var(--brand-primary);
       color: var(--text-on-brand);
       font-weight: 600;
 
       &:hover {
-        background: var(--color-primary-hover);
+        background: var(--brand-hover);
       }
     }
   }

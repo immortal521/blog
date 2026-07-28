@@ -164,7 +164,7 @@ async function handleSubmit() {
   box-shadow: var(--shadow-card-base);
   border-radius: 10px;
   padding: 20px;
-  color: var(--text-color-primary);
+  color: var(--text-primary);
 }
 
 .title {
@@ -180,20 +180,20 @@ async function handleSubmit() {
   width: 100%;
   padding: 8px 10px;
   background: var(--bg-content);
-  color: var(--text-color-primary);
-  border: 1px solid var(--border-color-default);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
 }
 
 .input:focus {
-  outline: 1px solid var(--color-primary-base);
+  outline: 1px solid var(--brand-primary);
   border: 1px solid transparent;
 }
 
 .submit-btn {
   display: block;
   padding: 8px 12px;
-  background: var(--color-primary-base);
+  background: var(--brand-primary);
   color: var(--text-on-brand);
   border-radius: 6px;
   cursor: pointer;
@@ -202,16 +202,16 @@ async function handleSubmit() {
   margin-left: auto;
 
   &:hover {
-    background-color: var(--color-primary-hover);
+    background-color: var(--brand-hover);
   }
 
   &:active {
-    background-color: var(--color-primary-active);
+    background-color: var(--brand-active);
   }
 }
 
 .submit-btn:disabled {
-  background: var(--color-primary-disabled);
+  background: var(--brand-disabled);
   cursor: not-allowed;
 }
 </style>
