@@ -19,10 +19,8 @@ export interface ThemeColors {
   active: string;
   disabled: string;
 
-  // Brand backgrounds
+  // Brand background
   bg: string;
-  bgActive: string;
-  bgMuted: string;
 
   // On-brand text colors
   onPrimary: string;

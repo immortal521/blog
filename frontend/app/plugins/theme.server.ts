@@ -28,15 +28,12 @@ export default defineNuxtPlugin((nuxtApp) => {
               --brand-active: ${colors.active};
               --brand-disabled: ${colors.disabled};
               --brand-bg: ${colors.bg};
-              --brand-bg-active: ${colors.bgActive};
-              --brand-bg-muted: ${colors.bgMuted};
               --text-on-brand: ${colors.onPrimary};
               --text-on-brand-hover: ${colors.onPrimaryHover};
               --text-on-brand-active: ${colors.onPrimaryActive};
+              --state-hover-brand: ${colors.hover};
+              --state-active-brand: ${colors.active};
               --border-active: ${colors.primary};
-              --border-color-card-hover: ${colors.hover};
-              --bg-sidebar-item-hover: ${colors.bgActive};
-              --focus-ring: 0 0 0 2px ${colors.bgMuted};
               --selection-bg: ${colors.primary};
               --scrollbar-thumb-bg: ${colors.primary};
               --scrollbar-thumb-hover: ${colors.hover};

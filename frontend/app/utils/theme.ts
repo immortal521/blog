@@ -19,17 +19,37 @@ function generateBrandScale(baseColor: string): BrandScale {
   const base = tinycolor(baseColor);
   const { h, s, l } = base.toHsl();
 
+  // Tight scale: narrow saturation, fixed lightness targets
+  const sMin = Math.max(s * 0.7, 0.15);
+  const sMax = Math.min(s * 1.15, 1);
+
   return {
-    brand50: tinycolor({ h, s: Math.max(s * 0.3, 0.1), l: 0.97 }).toHexString(),
-    brand100: tinycolor({ h, s: Math.max(s * 0.4, 0.15), l: 0.93 }).toHexString(),
-    brand200: tinycolor({ h, s: Math.max(s * 0.5, 0.2), l: 0.86 }).toHexString(),
-    brand300: tinycolor({ h, s: Math.max(s * 0.6, 0.25), l: 0.76 }).toHexString(),
-    brand400: tinycolor({ h, s: Math.max(s * 0.8, 0.3), l: 0.64 }).toHexString(),
+    brand50: tinycolor({ h, s: sMin, l: 0.96 }).toHexString(),
+    brand100: tinycolor({ h, s: sMin, l: 0.92 }).toHexString(),
+    brand200: tinycolor({ h, s: Math.max(s * 0.8, 0.2), l: 0.86 }).toHexString(),
+    brand300: tinycolor({ h, s: Math.max(s * 0.85, 0.25), l: 0.78 }).toHexString(),
+    brand400: tinycolor({ h, s: Math.max(s * 0.9, 0.3), l: 0.72 }).toHexString(),
     brand500: base.toHexString(),
-    brand600: tinycolor({ h, s: Math.min(s * 1.1, 1), l: Math.max(l - 0.15, 0.2) }).toHexString(),
-    brand700: tinycolor({ h, s: Math.min(s * 1.2, 1), l: Math.max(l - 0.25, 0.15) }).toHexString(),
-    brand800: tinycolor({ h, s: Math.min(s * 1.3, 1), l: Math.max(l - 0.35, 0.1) }).toHexString(),
-    brand900: tinycolor({ h, s: Math.min(s * 1.4, 1), l: Math.max(l - 0.45, 0.05) }).toHexString(),
+    brand600: tinycolor({
+      h,
+      s: Math.min(s * 1.05, sMax),
+      l: Math.max(l - 0.1, 0.3),
+    }).toHexString(),
+    brand700: tinycolor({
+      h,
+      s: Math.min(s * 1.1, sMax),
+      l: Math.max(l - 0.18, 0.22),
+    }).toHexString(),
+    brand800: tinycolor({
+      h,
+      s: Math.min(s * 1.12, sMax),
+      l: Math.max(l - 0.28, 0.15),
+    }).toHexString(),
+    brand900: tinycolor({
+      h,
+      s: Math.min(s * 1.15, sMax),
+      l: Math.max(l - 0.38, 0.08),
+    }).toHexString(),
   };
 }
 
@@ -42,16 +62,7 @@ export function generateThemeColors(baseColor: string, mode: ThemeMode): ThemeCo
     mode === "light" ? tinycolor(scale.brand500).darken(10) : tinycolor(scale.brand500).lighten(10);
   const disabled = tinycolor.mix(scale.brand500, "#b0b0b0", 60);
 
-  const bgActive =
-    mode === "light"
-      ? tinycolor(scale.brand200).lighten(5).toHexString()
-      : tinycolor(scale.brand800).lighten(5).toHexString();
-
-  const bgMuted =
-    mode === "light"
-      ? tinycolor(scale.brand100).lighten(3).toHexString()
-      : tinycolor(scale.brand900).lighten(3).toHexString();
-
+  // On-brand text: check contrast
   const whiteContrast = tinycolor.readability(scale.brand500, "#ffffff");
   const onPrimary = whiteContrast >= 4.5 ? "#ffffff" : "#1a1a1e";
 
@@ -68,8 +79,6 @@ export function generateThemeColors(baseColor: string, mode: ThemeMode): ThemeCo
     active: active.toHexString(),
     disabled: disabled.toHexString(),
     bg: scale.brand50,
-    bgActive,
-    bgMuted,
     onPrimary,
     onPrimaryHover,
     onPrimaryActive,
@@ -97,21 +106,20 @@ export function applyThemeColorsToCSSVars(colors: ThemeColors) {
   root.style.setProperty("--brand-active", colors.active);
   root.style.setProperty("--brand-disabled", colors.disabled);
 
-  // Brand backgrounds
-  root.style.setProperty("--brand-bg", colors.bg);
-  root.style.setProperty("--brand-bg-active", colors.bgActive);
-  root.style.setProperty("--brand-bg-muted", colors.bgMuted);
+  // Unified state tokens (foreground)
+  root.style.setProperty("--state-hover-brand", colors.hover);
+  root.style.setProperty("--state-active-brand", colors.active);
+
+  // Brand backgrounds - now reference unified state tokens in base.less
+  // No override needed
 
   // Text on brand
   root.style.setProperty("--text-on-brand", colors.onPrimary);
   root.style.setProperty("--text-on-brand-hover", colors.onPrimaryHover);
   root.style.setProperty("--text-on-brand-active", colors.onPrimaryActive);
 
-  // Derived tokens
+  // Derived tokens - all reference unified state tokens
   root.style.setProperty("--border-active", colors.primary);
-  root.style.setProperty("--border-color-card-hover", colors.hover);
-  root.style.setProperty("--bg-sidebar-item-hover", colors.bgActive);
-  root.style.setProperty("--focus-ring", `0 0 0 2px ${colors.bgMuted}`);
   root.style.setProperty("--selection-bg", colors.primary);
   root.style.setProperty("--scrollbar-thumb-bg", colors.primary);
   root.style.setProperty("--scrollbar-thumb-hover", colors.hover);

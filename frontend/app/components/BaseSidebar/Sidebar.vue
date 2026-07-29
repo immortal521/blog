@@ -110,7 +110,7 @@ const handleToggle = (key: string) => {
     padding: 0 5px;
     line-height: 35px;
     border-radius: 8px;
-    color: var(--text-primary);
+    color: var(--text-on-brand);
     user-select: none;
     cursor: pointer;
     position: relative;
