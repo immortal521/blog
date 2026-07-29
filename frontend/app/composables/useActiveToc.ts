@@ -35,9 +35,6 @@ export function useActiveToc(toc: MaybeRef<TocItem[]>) {
       await nextTick();
       observe();
     },
-    {
-      deep: true,
-    },
   );
 
   onUnmounted(() => {

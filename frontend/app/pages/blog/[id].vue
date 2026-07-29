@@ -6,7 +6,7 @@ const route = useRoute();
 
 const params = computed(() => route.params);
 
-const { data } = await useFetch<ApiResponse<Post>>("/api/v1/posts/" + params.value.id, {
+const { data } = await useFetch<ApiResponse<Post>>(() => `/api/v1/posts/${params.value.id}`, {
   method: "get",
 });
 
@@ -28,16 +28,20 @@ const post = computed<Post>(() => {
   );
 });
 
-useHead({
-  title: post.value.title,
+useHead(() => ({ title: post.value.title }));
+
+const rendered = computed(() => {
+  if (!post.value.content) {
+    return {
+      content: [],
+      toc: [],
+    };
+  }
+  return parseMarkdownToVNode(post.value.content, { toc: true });
 });
 
-const toc = ref<TocItem[]>([]);
-
-const handleTocChange = (value: TocItem[]) => {
-  toc.value = value;
-};
-
+const content = computed(() => rendered.value.content);
+const toc = computed(() => rendered.value.toc ?? []);
 const { activeId } = useActiveToc(toc);
 </script>
 
@@ -46,7 +50,7 @@ const { activeId } = useActiveToc(toc);
     <ArticleCover :src="post.cover" :title="post.title" />
     <article class="article">
       <main class="content">
-        <MarkdownRenderer :markdown="post.content" :toc="true" @toc-change="handleTocChange" />
+        <MarkdownRenderer :content="content" />
       </main>
       <div class="toc-container">
         <ArticleToc :toc="toc" :active-id="activeId" />

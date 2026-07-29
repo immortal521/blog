@@ -10,8 +10,10 @@ import { tasklist } from "@mdit/plugin-tasklist";
 
 const md = MarkdownIt({ html: false, linkify: true }).use(mark).use(sup).use(sub).use(tasklist);
 
+export type KeyedVNode = VNode & { key: string };
+
 interface ParseResult {
-  content: VNodeChild[];
+  content: KeyedVNode[];
   toc?: TocItem[];
 }
 
@@ -23,10 +25,6 @@ export interface TocItem {
 
 interface Options {
   toc?: boolean;
-}
-
-interface NormalizedOptions {
-  toc: boolean;
 }
 
 function slugifyHeading(text: string): string {
@@ -52,49 +50,11 @@ function ensureHeadingID(text: string, level: number, slugCounters: Map<string, 
   return uniqueSlug(`heading-${level}`, slugCounters);
 }
 
-function getInlinePlaintext(inline: Token | undefined): string {
-  if (!inline || inline.type !== "inline") return "";
-  const parts: string[] = [];
-  for (const c of inline.children ?? []) {
-    if (c.type === "text") parts.push(c.content);
-  }
-  return parts.join("");
-}
-
-export function parseMarkdownToVNode(markdown: string, options?: Options): ParseResult {
-  const tokens = md.parse(markdown, {});
-  const normalizedOptions: NormalizedOptions = {
-    toc: options?.toc ?? false,
-  };
+function createTokensParser(toc: boolean) {
   const keyCounters = new Map<string, number>();
-  const toc: TocItem[] = [];
-  const content = tokensToVNode(tokens, normalizedOptions, keyCounters, toc);
+  const slugCounters = new Map<string, number>();
 
-  return { content, toc };
-}
-
-function tokensToVNode(
-  tokens: Token[],
-  options: NormalizedOptions,
-  keyCounters: Map<string, number>,
-  toc: TocItem[],
-): VNodeChild[] {
-  interface Stack {
-    tag: string;
-    children: VNodeChild[];
-    attrs: { [k: string]: string };
-    key: string;
-  }
-  const stack: Stack[] = [];
-  const result: VNodeChild[] = [];
-
-  const pushToParent = (node: VNodeChild) => {
-    if (stack.length > 0) {
-      (stack[stack.length - 1] as Stack).children.push(node);
-    } else {
-      result.push(node);
-    }
-  };
+  const tocItems: TocItem[] = [];
 
   const getNextKey = (type: string): string => {
     const currentCount = keyCounters.get(type) ?? 0;
@@ -102,113 +62,191 @@ function tokensToVNode(
     return `${type}-${currentCount}`;
   };
 
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i]!;
-    if (options.toc && token.type === "heading_open") {
-      const level = Number(token.tag.slice(1) ?? 0);
-      const next = tokens[i + 1];
-      const text = next?.type === "inline" ? getInlinePlaintext(next) : "";
+  function tokensToVNode(tokens: Token[]): VNodeChild[] {
+    interface Stack {
+      tag: string;
+      children: VNodeChild[];
+      attrs: { [key: string]: string };
+      key: string;
+    }
+    const stack: Stack[] = [];
+    const result: VNodeChild[] = [];
 
-      if (level >= 1 && level <= 6) {
-        const id = ensureHeadingID(text, level, keyCounters);
-        token.attrs = token.attrs ?? [];
-        if (!token.attrs.some((attr) => attr[0] === "id")) token.attrs.push(["id", id]);
-        toc.push({ id, level, text });
+    const pushToParent = (node: VNodeChild) => {
+      const parent = stack.at(-1);
+      if (parent) {
+        parent.children.push(node);
+        return;
       }
-    }
+      result.push(node);
+    };
 
-    if (token.tag && token.type.endsWith("_open")) {
-      const attrs = Object.fromEntries(token.attrs ?? []);
-      // 将开放标签推入栈中
-      const key = getNextKey(token.tag);
-      stack.push({ tag: token.tag, children: [], attrs, key });
-      continue;
-    }
+    type TokenHandler = (token: Token) => void;
 
-    if (token.type.endsWith("_close")) {
-      // 封闭标签，从栈中弹出并创建 VNode
-      const top = stack.pop();
-      if (!top) continue;
-      const { tag, children, attrs, key } = top;
-      const vnode = h(tag, { ...attrs, key }, children);
-      pushToParent(vnode);
-      continue;
-    }
-
-    if (token.type === "inline") {
-      // 递归处理内联内容，并将其结果直接添加到当前父节点的 children 中
-      if (token.children) {
-        const inlineVNodes = tokensToVNode(token.children, options, keyCounters, toc);
+    const leafTokenHandlers: Record<string, TokenHandler> = {
+      inline: (token) => {
+        if (!token.children) return;
+        const inlineVNodes = tokensToVNode(token.children);
         for (const node of inlineVNodes) {
           pushToParent(node);
         }
-      }
-      continue;
-    }
-
-    if (token.type === "text" && token.content) {
-      pushToParent(token.content);
-      continue;
-    }
-
-    if (token.type === "code_inline" && token.content) {
-      const key = getNextKey("code");
-      pushToParent(h("code", { key }, token.content));
-      continue;
-    }
-
-    if (token.type === "checkbox_input" && token.attrs) {
-      const attrs = Object.fromEntries(token.attrs);
-      pushToParent(h("input", { ...attrs }));
-      continue;
-    }
-
-    if (token.type === "hr") {
-      const key = getNextKey("hr");
-      pushToParent(h("hr", { key }));
-      continue;
-    }
-
-    if (token.type === "image") {
-      const key = getNextKey("img");
-      if (token.attrs) {
+      },
+      text: (token) => {
+        if (!token.content) return;
+        pushToParent(token.content);
+      },
+      code_inline: (token) => {
+        if (!token.content) return;
+        const key = getNextKey("code");
+        pushToParent(h("code", { key }, token.content));
+      },
+      checkbox_input: (token) => {
+        if (!token.attrs) return;
+        const attrs = Object.fromEntries(token.attrs);
+        pushToParent(h("input", { ...attrs }));
+      },
+      hr: () => {
+        const key = getNextKey("hr");
+        pushToParent(h("hr", { key }));
+      },
+      image: (token) => {
+        if (!token.attrs) return;
+        const key = getNextKey("img");
         const attrs = Object.fromEntries(token.attrs);
         pushToParent(
           h(
             NuxtImg,
             {
+              ...attrs,
               key,
               src: attrs.src ?? "",
-              alt: attrs.alt,
               class: "img",
               loading: "lazy",
             },
             { default: () => null },
           ),
         );
+      },
+      fence: (token) => {
+        let lang = token.info.trim() as BundledLanguage | SpecialLanguage;
+        if (!highlighter.getLoadedLanguages().includes(lang)) {
+          lang = "plaintext";
+        }
+        const code = token.content.trim();
+        const key = getNextKey("pre");
+        pushToParent(h(CodeWrapper, { lang, code, key }));
+      },
+      softbreak: () => {
+        const key = getNextKey("br");
+        pushToParent(h("br", { key }));
+      },
+    };
+
+    function getInlinePlaintext(inline: Token | undefined): string {
+      if (!inline || inline.type !== "inline") return "";
+      const parts: string[] = [];
+      for (const c of inline.children ?? []) {
+        if (c.type === "text") parts.push(c.content);
       }
-      continue;
+      return parts.join("");
     }
 
-    if (token.type === "fence") {
-      let lang = token.info.trim() as BundledLanguage | SpecialLanguage;
-      if (!highlighter.getLoadedLanguages().includes(lang)) {
-        lang = "plaintext";
+    for (const [i, token] of tokens.entries()) {
+      if (toc && token.type === "heading_open") {
+        const level = Number(token.tag.slice(1) ?? 0);
+        const next = tokens[i + 1];
+        const text = next?.type === "inline" ? getInlinePlaintext(next) : "";
+
+        if (level >= 1 && level <= 6) {
+          const id = ensureHeadingID(text, level, slugCounters);
+          token.attrs = token.attrs ?? [];
+          if (!token.attrs.some((attr) => attr[0] === "id")) token.attrs.push(["id", id]);
+          tocItems.push({ id, level, text });
+        }
       }
-      const code = token.content.trim();
-      const key = getNextKey("pre");
-      pushToParent(h(CodeWrapper, { lang, code, key }));
-      continue;
+
+      if (token.tag && token.type.endsWith("_open")) {
+        const attrs = Object.fromEntries(token.attrs ?? []);
+        // 将开放标签推入栈中
+        const key = getNextKey(token.tag);
+        stack.push({ tag: token.tag, children: [], attrs, key });
+        continue;
+      }
+
+      if (token.type.endsWith("_close")) {
+        // 封闭标签，从栈中弹出并创建 VNode
+        const top = stack.pop();
+        if (!top) continue;
+        const { tag, children, attrs, key } = top;
+        const vnode = h(tag, { ...attrs, key }, children);
+        pushToParent(vnode);
+        continue;
+      }
+
+      const handler = leafTokenHandlers[token.type];
+      if (handler) {
+        handler(token);
+        continue;
+      }
+
+      console.warn(`未处理的 token 类型: ${token.type}`);
     }
 
-    if (token.type === "softbreak") {
-      const key = getNextKey("br");
-      pushToParent(h("br", { key }));
-      continue;
-    }
-
-    console.warn(`未处理的 token 类型: ${token.type}`);
+    return result;
   }
 
+  return { tokensToVNode, tocItems };
+}
+
+const CHCHE_MAX_SIZE = 50;
+const parseCache = new Map<string, ParseResult>();
+
+function hashString(str: string): string {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function getCacheKey(markdown: string, toc: boolean): string {
+  return `${toc ? "1" : "0"}:${markdown.length}:${hashString(markdown)}`;
+}
+
+function setCache(key: string, value: ParseResult) {
+  if (parseCache.has(key)) parseCache.delete(key);
+  parseCache.set(key, value);
+  if (parseCache.size > CHCHE_MAX_SIZE) {
+    const oldest = parseCache.keys().next().value;
+    if (oldest !== undefined) parseCache.delete(oldest);
+  }
+}
+
+export function parseMarkdownToVNode(markdown: string, options?: Options): ParseResult {
+  const wantToc = options?.toc ?? false;
+
+  const cacheKey = getCacheKey(markdown, wantToc);
+  const cached = parseCache.get(cacheKey);
+  if (cached) {
+    setCache(cacheKey, cached);
+    return cached;
+  }
+
+  const tokens = md.parse(markdown, {});
+  const { tokensToVNode, tocItems } = createTokensParser(wantToc);
+  const content = tokensToVNode(tokens);
+
+  if (import.meta.dev) {
+    content.forEach((node, i) => {
+      const hasKey =
+        typeof node === "object" && node !== null && "key" in node && (node as VNode).key != null;
+      if (!hasKey) {
+        console.warn(`[parseMarkdownToVNode] 顶层第 ${i} 项缺少 key`);
+      }
+    });
+  }
+
+  const result: ParseResult = { content: content as KeyedVNode[], toc: tocItems };
+  setCache(cacheKey, result);
   return result;
 }

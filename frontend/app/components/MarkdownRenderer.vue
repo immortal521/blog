@@ -1,40 +1,21 @@
 <script setup lang="ts">
 import "viewerjs/dist/viewer.css";
-import { parseMarkdownToVNode, type TocItem } from "@/utils/parseMarkdown";
-import type { VNodeChild } from "vue";
 
 interface Props {
-  markdown: string;
-  toc?: boolean;
+  content: KeyedVNode[];
 }
 
-interface Emits {
-  tocChange: [toc: TocItem[]];
-}
+const { content } = defineProps<Props>();
 
-const { markdown, toc = false } = defineProps<Props>();
-const emits = defineEmits<Emits>();
-
-const renderedVNode = shallowRef<VNodeChild>([]);
 const containerRef = useTemplateRef("container");
 
 const { update } = useViewer(containerRef);
 
-const renderMarkdown = () => {
-  const { content, toc: tocItems } = parseMarkdownToVNode(markdown, { toc: toc });
-
-  if (toc && tocItems) {
-    emits("tocChange", tocItems);
-  }
-
-  renderedVNode.value = content;
-};
-
 watch(
-  () => markdown,
+  () => content,
   async () => {
-    renderMarkdown();
-    await update();
+    await nextTick();
+    update();
   },
   { immediate: true },
 );
@@ -42,7 +23,7 @@ watch(
 
 <template>
   <div ref="container" class="container">
-    <component :is="item" v-for="item in renderedVNode" :key="item" />
+    <component :is="item" v-for="(item, index) in content" :key="item.key ?? index" />
   </div>
 </template>
 
