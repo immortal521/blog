@@ -177,7 +177,7 @@ export function getInitialMode(): ThemeMode {
 }
 
 export function getInitialPrimaryColor(): string {
-  if (import.meta.server) return "#99a2ff";
+  // if (import.meta.server) return "#99a2ff";
 
   const color = useCookie<string>("theme-primary-color");
 
