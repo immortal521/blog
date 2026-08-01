@@ -10,57 +10,76 @@ interface Props {
 
 const { code, lang } = defineProps<Props>();
 
-const lineCount = code.trim().split("\n").length;
+const preVNode = computed(() => {
+  const lineCount = code.trim().split("\n").length;
 
-// 将 code 转换为 HAST，并添加行号
-const root = highlighter.codeToHast(code, {
-  lang,
-  themes: {
-    dark: "tokyo-night",
-    light: "one-light",
-  },
-  colorReplacements: {
-    "tokyo-night": { "#1a1b26": "var(--bg-code)" },
-    "one-light": { "#fafafa": "var(--bg-code)" },
-  },
-  transformers: [
-    {
-      pre(node) {
-        const lineNumbersDiv: Element = {
-          type: "element",
-          tagName: "div",
-          properties: { class: "line-numbers" },
-          children: Array.from({ length: lineCount }, (_, i) => ({
-            type: "element",
-            tagName: "div",
-            properties: { class: "line-number", "data-line-number": i + 1 },
-            children: [],
-          })),
-        };
-
-        // 保留原有 children，并在前面插入行号
-        node.children = [lineNumbersDiv, ...node.children];
+  const root = highlighter.codeToHast(code, {
+    lang: lang,
+    themes: {
+      dark: "tokyo-night",
+      light: "one-light",
+    },
+    colorReplacements: {
+      "tokyo-night": {
+        "#1a1b26": "var(--bg-code)",
+      },
+      "one-light": {
+        "#fafafa": "var(--bg-code)",
       },
     },
-  ],
+    transformers: [
+      {
+        pre(node) {
+          const lineNumbersDiv: Element = {
+            type: "element",
+            tagName: "div",
+            properties: {
+              class: "line-numbers",
+            },
+            children: Array.from(
+              {
+                length: lineCount,
+              },
+              (_, i) => ({
+                type: "element",
+                tagName: "div",
+                properties: {
+                  class: "line-number",
+                  "data-line-number": i + 1,
+                },
+                children: [],
+              }),
+            ),
+          };
+
+          node.children = [lineNumbersDiv, ...node.children];
+        },
+      },
+    ],
+  });
+
+  const vnodes = hastToVNode(root.children as ElementContent[]);
+
+  const pre = vnodes[0] as VNode;
+
+  const headerVNode = h(CodeHeader, {
+    code: code,
+    lang: lang,
+    class: "code-header",
+  });
+
+  if (pre.children && Array.isArray(pre.children)) {
+    pre.children.unshift(headerVNode);
+  } else {
+    pre.children = [headerVNode];
+  }
+
+  return pre;
 });
-
-// 提取 <pre> 子节点并转换为 Vue VNode
-const vnodes = hastToVNode(root.children as ElementContent[]);
-const preVNode = vnodes[0] as VNode;
-
-const headerVNode = h(CodeHeader, { code, lang, class: "code-header" });
-
-// 将 header 插入到 preVNode 的 children 前面
-if (preVNode.children && Array.isArray(preVNode.children)) {
-  preVNode.children.unshift(headerVNode);
-} else {
-  preVNode.children = [headerVNode];
-}
 </script>
 
 <template>
-  <component :is="preVNode"></component>
+  <component :is="preVNode" />
 </template>
 
 <style lang="less">

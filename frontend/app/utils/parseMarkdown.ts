@@ -132,7 +132,7 @@ function createTokensParser(toc: boolean) {
         if (!highlighter.getLoadedLanguages().includes(lang)) {
           lang = "plaintext";
         }
-        const code = token.content.trim();
+        const code = token.content;
         const key = getNextKey("pre");
         pushToParent(h(CodeWrapper, { lang, code, key }));
       },
@@ -199,7 +199,7 @@ function createTokensParser(toc: boolean) {
 }
 
 const CHCHE_MAX_SIZE = 50;
-const parseCache = new Map<string, ParseResult>();
+const parseCache = new Map<string, Token[]>();
 
 function hashString(str: string): string {
   let hash = 5381;
@@ -213,7 +213,7 @@ function getCacheKey(markdown: string, toc: boolean): string {
   return `${toc ? "1" : "0"}:${markdown.length}:${hashString(markdown)}`;
 }
 
-function setCache(key: string, value: ParseResult) {
+function setCache(key: string, value: Token[]) {
   if (parseCache.has(key)) parseCache.delete(key);
   parseCache.set(key, value);
   if (parseCache.size > CHCHE_MAX_SIZE) {
@@ -226,13 +226,13 @@ export function parseMarkdownToVNode(markdown: string, options?: Options): Parse
   const wantToc = options?.toc ?? false;
 
   const cacheKey = getCacheKey(markdown, wantToc);
-  const cached = parseCache.get(cacheKey);
-  if (cached) {
-    setCache(cacheKey, cached);
-    return cached;
+  let tokens = parseCache.get(cacheKey);
+
+  if (!tokens) {
+    tokens = md.parse(markdown, {});
+    setCache(cacheKey, tokens);
   }
 
-  const tokens = md.parse(markdown, {});
   const { tokensToVNode, tocItems } = createTokensParser(wantToc);
   const content = tokensToVNode(tokens);
 
@@ -247,6 +247,5 @@ export function parseMarkdownToVNode(markdown: string, options?: Options): Parse
   }
 
   const result: ParseResult = { content: content as KeyedVNode[], toc: tocItems };
-  setCache(cacheKey, result);
   return result;
 }

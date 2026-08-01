@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const content = defineModel<string>("content", {
+const markdownRaw = defineModel<string>("content", {
   default: "",
 });
 
@@ -10,6 +10,18 @@ const { isMobile } = useResponsive();
 type Mode = "preview" | "edit" | "both";
 const mode = ref<Mode>("both");
 const userTouchedMode = ref(false);
+
+const rendered = computed(() => {
+  if (!markdownRaw.value) {
+    return {
+      content: [],
+      toc: [],
+    };
+  }
+  return parseMarkdownToVNode(markdownRaw.value, { toc: true });
+});
+
+const content = computed(() => rendered.value.content);
 
 watch(
   isMobile,
@@ -48,6 +60,24 @@ async function toggleFullscreen() {
   }
 }
 
+const editRatio = ref(0);
+const previewRatio = ref(0);
+
+function updateEditRatio() {
+  const edit = textareaRef.value;
+  if (!edit) return;
+
+  editRatio.value = edit.scrollTop / Math.max(edit.scrollHeight - edit.clientHeight, 1);
+  console.log(editRatio.value);
+}
+
+function updatePreviewRatio() {
+  const preview = previewRef.value;
+  if (!preview) return;
+
+  previewRatio.value = preview.scrollTop / Math.max(preview.scrollHeight - preview.clientHeight, 1);
+}
+
 function toggleMode() {
   userTouchedMode.value = true;
 
@@ -60,6 +90,62 @@ function toggleMode() {
   else if (mode.value === "edit") mode.value = "preview";
   else mode.value = "both";
 }
+
+const textareaRef = useTemplateRef<HTMLTextAreaElement>("textarea");
+const previewRef = useTemplateRef<HTMLDivElement>("preview");
+
+let syncing = false;
+
+function syncToPreview() {
+  if (syncing) return;
+  syncing = true;
+
+  const edit = textareaRef.value;
+  const preview = previewRef.value;
+
+  if (!edit || !preview) return;
+
+  updateEditRatio();
+
+  requestAnimationFrame(() => {
+    preview.scrollTop = editRatio.value * (preview.scrollHeight - preview.clientHeight);
+
+    syncing = false;
+  });
+}
+
+function syncToEdit() {
+  if (syncing) return;
+  syncing = true;
+
+  const edit = textareaRef.value;
+  const preview = previewRef.value;
+
+  if (!edit || !preview) return;
+
+  updatePreviewRatio();
+
+  requestAnimationFrame(() => {
+    edit.scrollTop = previewRatio.value * (edit.scrollHeight - edit.clientHeight);
+
+    syncing = false;
+  });
+}
+
+watch(mode, async () => {
+  await nextTick();
+
+  const edit = textareaRef.value;
+  const preview = textareaRef.value;
+
+  if (edit) {
+    edit.scrollTop = previewRatio.value * (edit.scrollHeight - edit.clientHeight);
+  }
+
+  if (preview) {
+    preview.scrollTop = previewRatio.value * (preview.scrollHeight - preview.clientHeight);
+  }
+});
 </script>
 
 <template>
@@ -81,13 +167,20 @@ function toggleMode() {
     <div class="main">
       <div v-if="mode === 'edit' || mode === 'both'" class="edit">
         <textarea
-          v-model="content"
+          ref="textarea"
+          v-model="markdownRaw"
           :class="{ 'split-border': mode === 'both' }"
           placeholder="输入文章内容"
+          @scroll="syncToPreview"
         ></textarea>
       </div>
-      <div v-if="mode === 'preview' || mode === 'both'" class="preview">
-        <MarkdownRenderer :markdown="content" />
+      <div
+        v-if="mode === 'preview' || mode === 'both'"
+        ref="preview"
+        class="preview"
+        @scroll="syncToEdit"
+      >
+        <MarkdownRenderer :content="content" />
       </div>
     </div>
   </div>
