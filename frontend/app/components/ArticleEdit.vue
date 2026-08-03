@@ -12,6 +12,7 @@ const mode = ref<Mode>("both");
 const userTouchedMode = ref(false);
 
 const rendered = computed(() => {
+  console.log("render markdown", markdownRaw.value);
   if (!markdownRaw.value) {
     return {
       content: [],
@@ -196,7 +197,7 @@ watch(mode, async () => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
+  background-color: var(--bg-card-base);
 }
 
 .toolbar {
@@ -277,6 +278,8 @@ watch(mode, async () => {
   background-color: transparent;
   min-width: 0;
   overflow: auto;
+
+  scrollbar-width: none;
 }
 
 .edit textarea.split-border {
