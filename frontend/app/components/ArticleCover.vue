@@ -43,7 +43,7 @@ onMounted(() => {
     left: 0;
     right: 0;
     height: 60%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    background: linear-gradient(to top, rgb(0 0 0 / 80%), transparent);
     pointer-events: none;
   }
 }
@@ -87,7 +87,6 @@ onMounted(() => {
   font-weight: 700;
   color: var(--article-title-color);
   text-shadow: 0 2px 8px rgb(0 0 0 / 60%);
-  word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
   animation: title-slide-up 0.8s ease-out;
@@ -110,6 +109,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -121,6 +121,7 @@ onMounted(() => {
     width: 0;
     opacity: 0;
   }
+
   to {
     width: 60px;
     opacity: 1;

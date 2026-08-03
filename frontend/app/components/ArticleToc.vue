@@ -60,6 +60,19 @@ const handleTocClick = (id: string) => {
     transition: all 0.2s ease;
     border-left: 2px solid transparent;
 
+    a {
+      display: block;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 1.4rem;
+      line-height: 1.4;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--text-primary);
+      }
+    }
+
     &.active {
       background-color: var(--brand-primary);
 
@@ -75,19 +88,6 @@ const handleTocClick = (id: string) => {
 
     &:active {
       background-color: var(--brand-active);
-    }
-
-    a {
-      display: block;
-      color: var(--text-primary);
-      text-decoration: none;
-      font-size: 1.4rem;
-      line-height: 1.4;
-      transition: color 0.2s ease;
-
-      &:hover {
-        color: var(--text-primary);
-      }
     }
   }
 }

@@ -14,19 +14,13 @@ const { value } = defineProps<Props>();
 .badge {
   position: absolute;
   top: -6px;
-
   min-width: 18px;
   height: 18px;
-
   padding: 0 5px;
-
   border-radius: 999px;
-
   background: var(--state-error);
   color: var(--text-inverse);
-
   font-size: 12px;
-
   display: flex;
   align-items: center;
   justify-content: center;

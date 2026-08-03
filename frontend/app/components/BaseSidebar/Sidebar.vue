@@ -57,8 +57,7 @@ const handleToggle = (key: string) => {
   height: 100vh;
   width: 100%;
   max-width: calc(v-bind(width) * 1px);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   transition:
     transform 0.3s ease,
     max-width 0.3s ease;

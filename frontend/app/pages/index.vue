@@ -111,7 +111,7 @@ watch(page, () => {
   padding: 8px;
   color: var(--text-primary);
   box-shadow: var(--shadow-card-base);
-  font-family: "MapleMono";
+  font-family: MapleMono, monospace;
   font-weight: bold;
 
   &:hover {

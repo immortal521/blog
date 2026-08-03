@@ -12,7 +12,12 @@
     "lint:go": "cd backend && golangci-lint run ./...",
     "fmt:go:staged": "cd backend && go fmt ./... && golangci-lint run --fix ./...",
     "dev:frontend": "cd frontend && pnpm dev",
-    "dev:backend": "cd backend && go run ./cmd"
+    "dev:backend": "cd backend && go run ./cmd/server",
+    "lint:frontend": "cd frontend && pnpm lint",
+    "lint:style": "cd frontend && pnpm lint:style",
+    "lint:eslint": "cd frontend && pnpm lint:eslint",
+    "lint": "pnpm lint:frontend && pnpm lint:go",
+    "lint:fix": "cd frontend && pnpm lint:fix && cd ../backend && golangci-lint run --fix ./..."
   },
   "dependencies": {
     "typescript": "^6.0.3",
@@ -26,9 +31,13 @@
     "lint-staged": "^17.2.0"
   },
   "lint-staged": {
-    "frontend/**/*.{js,vue,ts}": [
-      "eslint --fix",
-      "oxfmt"
+    "frontend/**/*.{js,ts,vue}": [
+      "pnpm --dir frontend lint:eslint:staged --fix",
+      "pnpm --dir frontend fmt"
+    ],
+    "frontend/**/*.{css,less,vue}": [
+      "pnpm --dir frontend lint:style:staged --fix",
+      "pnpm --dir frontend fmt"
     ],
     "backend": [
       "go fmt ./...",

@@ -278,7 +278,6 @@ watch(mode, async () => {
   background-color: transparent;
   min-width: 0;
   overflow: auto;
-
   scrollbar-width: none;
 }
 
