@@ -1,43 +1,45 @@
-# 本地开发环境
+[English](development.md) · [中文](development.zh.md)
 
-工具版本：Node `24`（见 `frontend/Dockerfile` 的 `node:24` 基础镜像）、pnpm `11.15.1`（见 `package.json` 的 `packageManager`）；后端见 `backend/go.mod`：`go 1.27`。
+# Local Development Environment
 
-## 后端
+Tool versions: Node `24` (see the `node:24` base image in `frontend/Dockerfile`), pnpm `11.15.1` (see `package.json`'s `packageManager`); for the backend see `backend/go.mod`: `go 1.27`.
 
-在根目录运行：
+## Backend
+
+Run from the root directory:
 
 ```bash
 pnpm dev:backend
 ```
 
-或在 `backend` 目录运行：
+Or from the `backend` directory:
 
 ```bash
 go run ./cmd
 ```
 
-后端依赖以下服务：
+The backend depends on the following services:
 
 - redis
-- postgres（需存在名为 `blog` 的数据库）
+- postgres (a database named `blog` must exist)
 
-后端程序会自动建表。
+The backend program creates the tables automatically.
 
-## 前端
+## Frontend
 
-先在 `frontend` 目录安装依赖：
+First install dependencies in the `frontend` directory:
 
 ```bash
 pnpm i --frozen-lockfile
 ```
 
-在根目录运行：
+Run from the root directory:
 
 ```bash
 pnpm dev:frontend
 ```
 
-或在 `frontend` 目录运行：
+Or from the `frontend` directory:
 
 ```bash
 pnpm dev
