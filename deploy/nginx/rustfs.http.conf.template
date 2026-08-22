@@ -1,0 +1,25 @@
+# RustFS 反代（由 RUSTFS_ENDPOINT 推导：API 用其域名，控制台自动加 admin. 前缀）
+# 仅在该 endpoint 为公网 https 地址时由部署脚本拼接进 default.conf。
+server {
+    listen 80;
+    server_name ${RUSTFS_SERVER_NAME};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 80;
+    server_name ${RUSTFS_ADMIN_SERVER_NAME};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

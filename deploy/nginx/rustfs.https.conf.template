@@ -1,0 +1,60 @@
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${RUSTFS_SERVER_NAME};
+
+    # 动态解析上游：rustfs 容器重建后 IP 变化，用 resolver + 变量形式 proxy_pass 重新解析。
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+    resolver_timeout 5s;
+
+    ssl_certificate     /etc/letsencrypt/live/${RUSTFS_SERVER_NAME}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${RUSTFS_SERVER_NAME}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    client_max_body_size 10G;
+
+    # RustFS S3 API -> rustfs:9000
+    location / {
+        set $upstream_rustfs http://rustfs:9000;
+        proxy_pass $upstream_rustfs;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${RUSTFS_ADMIN_SERVER_NAME};
+
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+    resolver_timeout 5s;
+
+    ssl_certificate     /etc/letsencrypt/live/${RUSTFS_SERVER_NAME}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${RUSTFS_SERVER_NAME}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    client_max_body_size 10G;
+
+    # RustFS 控制台 -> rustfs:9001
+    location / {
+        set $upstream_rustfs_admin http://rustfs:9001;
+        proxy_pass $upstream_rustfs_admin;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}

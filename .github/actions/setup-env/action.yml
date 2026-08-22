@@ -1,0 +1,43 @@
+name: Setup server .env
+description: >-
+  通过 SSH 在服务器上生成 ~/projects/blog/.env。
+  内容来自调用方传入的 env-content（建议存为加密的 GitHub Secret，例如 SERVER_ENV），
+  密钥只在 SSH 连接中写到服务器，绝不进入仓库，也不进入传输包（deploy-config bundle）。
+
+inputs:
+  ssh-host:
+    required: true
+    description: 服务器地址
+  ssh-username:
+    required: true
+    description: SSH 用户名
+  ssh-private-key:
+    required: true
+    description: SSH 私钥
+  env-content:
+    required: true
+    description: 完整的 .env 文件内容（含所有密钥；请存为加密 GitHub Secret）
+
+runs:
+  using: composite
+  steps:
+    - name: Write .env on server
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ inputs.ssh-host }}
+        username: ${{ inputs.ssh-username }}
+        key: ${{ inputs.ssh-private-key }}
+        script: |
+          set -euo pipefail
+
+          mkdir -p "$HOME/projects/blog"
+          ENV_FILE="$HOME/projects/blog/.env"
+
+          if [ ! -s "$ENV_FILE" ]; then
+            # base64 解码后统一转成 LF，避免 Windows 换行符 CRLF 混入：
+            # 变量值尾部 \r 会让后端整数端口（DB_PORT/EMAIL_PORT）等字段解析失败。
+            printf '%s' '${{ inputs.env-content }}' | base64 -d | sed 's/\r$//' > "$ENV_FILE"
+            chmod 600 "$ENV_FILE"
+          else
+            echo ".env already exists, skipped"
+          fi

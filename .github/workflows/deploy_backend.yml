@@ -6,8 +6,9 @@ on:
       - master
     paths:
       - "backend/**"
-      - ".github/workflows/deploy_backend.yml"
       - "config/backend_config.yml"
+      - ".github/workflows/deploy_backend.yml"
+
   workflow_dispatch:
 
 concurrency:
@@ -18,98 +19,56 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
-      APP_NAME: ${{ secrets.APP_NAME }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-      EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
-      RUSTFS_ACCESS_KEY_ID: ${{ secrets.RUSTFS_ACCESS_KEY_ID }}
-      RUSTFS_SECRET_ACCESS_KEY: ${{ secrets.RUSTFS_SECRET_ACCESS_KEY }}
-      RUSTFS_ENDPOINT: ${{ secrets.RUSTFS_ENDPOINT }}
-
     steps:
-      # Checkout code
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v5
 
-      # 设置 Go 环境
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: "backend/go.mod"
-          cache-dependency-path: backend/go.sum
-          cache: true
+      - name: Build backend image
+        run: docker build -t blog_backend:latest -f backend/Dockerfile backend/
 
-      - name: Fill secrets into config.yml
+      - name: Save image to tar
+        run: docker save blog_backend:latest > backend.tar
+
+      - name: Package deploy-config bundle
         run: |
-          cd backend
-          # 使用 envsubst 替换占位符
-          envsubst < ../config/backend_config.yml > config.yml
+          tar -czf deploy-config.tar.gz \
+            compose.prod.yml \
+            deploy/remote-deploy.sh \
+            deploy/certbot.sh \
+            deploy/nginx/http.conf.template \
+            deploy/nginx/https.conf.template \
+            deploy/nginx/rustfs.http.conf.template \
+            deploy/nginx/rustfs.https.conf.template \
+            config/backend_config.yml \
+            .env.example
 
-      # 安装依赖
-      - name: Install dependencies
-        run: |
-          cd backend
-          go mod download
-
-      # 构建 Go 应用
-      - name: Build Go application
-        run: |
-          cd backend
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o blog-server ./cmd/server
-
-      # 上传构建好的文件
-      - name: Archive build artifacts
-        run: |
-          cd backend
-          tar -czf backend.tar.gz blog-server config.yml
-
-      # 上传到服务器
-      - name: Upload to server
+      - name: Upload image + config to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "backend/backend.tar.gz"
+          source: "backend.tar,deploy-config.tar.gz"
           target: "~/projects/blog"
+          strip_components: 0
 
-      # 通过 SSH 在服务器上部署
-      - name: Deploy on server
+      - name: Setup server .env
+        uses: ./.github/actions/setup-env
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-username: ${{ secrets.SSH_USERNAME }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          env-content: ${{ secrets.SERVER_ENV }}
+
+      - name: Load image and deploy on server
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            case ":$PATH:" in
-              *":$PNPM_HOME:"*) ;;
-              *) export PATH="$PNPM_HOME:$PATH" ;;
-            esac
-            APP_DIR="$HOME/projects/blog/backend"
-            cd "$APP_DIR"
-
-            echo "解压产物"
-            rm -f blog-server
-            tar -xzf backend.tar.gz
-            rm -f backend.tar.gz
-
-            echo "启动 Go 应用"
-            pm2 start blog-server --name blog-server || pm2 restart blog-server
-            pm2 save
-
-            echo "部署完成"
+            set -euo pipefail
+            cd "$HOME/projects/blog"
+            tar -xzf deploy-config.tar.gz
+            rm -f deploy-config.tar.gz
+            bash deploy/remote-deploy.sh backend

@@ -58,8 +58,10 @@ export default defineNuxtConfig({
 
   // Nitro 配置
   nitro: {
-    routeRules: {
-      "/api/v1/**": { proxy: "http://localhost:8000/api/v1/**" }, // API 代理转发
+    esbuild: {
+      options: {
+        target: "es2022",
+      },
     },
   },
 

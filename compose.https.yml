@@ -1,0 +1,8 @@
+# 仅 NGINX_TLS=https 时与 compose.yml 叠加使用
+services:
+  nginx:
+    volumes:
+      # 须挂载整个 etc（live 软链指向 archive），否则证书加载失败
+      - ./deploy/letsencrypt/etc:/etc/letsencrypt:ro
+      # ACME HTTP-01 挑战目录，certbot 续期写入、nginx 对外服务
+      - ./deploy/acme:/var/www/certbot:ro

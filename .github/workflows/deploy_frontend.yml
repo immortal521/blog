@@ -6,8 +6,8 @@ on:
       - master
     paths:
       - "frontend/**"
-      - "mise.toml"
       - ".github/workflows/deploy_frontend.yml"
+
   workflow_dispatch:
 
 concurrency:
@@ -19,45 +19,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup mise
-        uses: jdx/mise-action@v2
-        with:
-          cache: true
+      - name: Build frontend image
+        run: docker build -t blog_frontend:latest -f frontend/Dockerfile frontend/
 
-      - name: Show tool versions
+      - name: Save image to tar
+        run: docker save blog_frontend:latest > frontend.tar
+
+      - name: Package deploy-config bundle
         run: |
-          node -v
-          pnpm -v
+          tar -czf deploy-config.tar.gz \
+            compose.prod.yml \
+            deploy/remote-deploy.sh \
+            deploy/certbot.sh \
+            deploy/nginx/http.conf.template \
+            deploy/nginx/https.conf.template \
+            deploy/nginx/rustfs.http.conf.template \
+            deploy/nginx/rustfs.https.conf.template \
+            config/backend_config.yml \
+            .env.example
 
-      - name: Install dependencies
-        working-directory: frontend
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Nuxt SSR
-        working-directory: frontend
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm build
-
-      - name: Archive build artifacts
-        working-directory: frontend
-        run: tar -czf build.tar.gz .output
-
-      - name: Upload build artifacts
+      - name: Upload image + config to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: |
-            mise.toml,frontend/build.tar.gz
+          source: "frontend.tar,deploy-config.tar.gz"
           target: "~/projects/blog"
           strip_components: 0
 
-      - name: Deploy on server
+      - name: Setup server .env
+        uses: ./.github/actions/setup-env
+        with:
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-username: ${{ secrets.SSH_USERNAME }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          env-content: ${{ secrets.SERVER_ENV }}
+
+      - name: Load image and deploy on server
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -65,72 +67,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
-
-            PROJECT_DIR="$HOME/projects/blog"
-            APP_DIR="$PROJECT_DIR/frontend"
-
-            #
-            # 安装 mise
-            #
-            export PATH="$HOME/.local/bin:$PATH"
-
-            if ! command -v mise >/dev/null 2>&1; then
-              curl https://mise.run | sh
-              export PATH="$HOME/.local/bin:$PATH"
-            fi
-
-            SHELL_NAME="$(basename "${SHELL:-sh}")"
-            eval "$(mise activate "$SHELL_NAME")"
-
-            #
-            # 安装 Node / pnpm（根据 mise.toml）
-            #
-            cd "$PROJECT_DIR"
-
-            mise install
-
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            case ":$PATH:" in
-              *":$PNPM_HOME/bin:"*) ;;
-              *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-            esac
-
-            #
-            # 安装 pm2（如不存在）
-            #
-            if ! command -v pm2 >/dev/null 2>&1; then
-              pnpm install -g pm2
-            fi
-
-            echo "========== Versions =========="
-            echo "Node : $(node -v)"
-            echo "pnpm : $(pnpm -v)"
-            echo "pm2  : $(pm2 -v)"
-            echo "=============================="
-
-            cd "$APP_DIR"
-
-            if [ ! -f build.tar.gz ]; then
-              echo "build.tar.gz not found!"
-              exit 1
-            fi
-
-            echo "Extract build..."
-
-            rm -rf .output
-            tar -xzf build.tar.gz
-            rm -f build.tar.gz
-
-            echo "Restart service..."
-
-            if pm2 describe blog-frontend >/dev/null 2>&1; then
-              pm2 restart blog-frontend --update-env
-            else
-              pm2 start .output/server/index.mjs \
-                --name blog-frontend \
-                --update-env
-            fi
-
-            pm2 save
-
-            echo "Deploy completed."
+            cd "$HOME/projects/blog"
+            tar -xzf deploy-config.tar.gz
+            rm -f deploy-config.tar.gz
+            bash deploy/remote-deploy.sh frontend

@@ -1,0 +1,63 @@
+# HTTP -> HTTPS 重定向 + ACME 挑战目录
+server {
+    listen 80;
+    server_name ${NGINX_SERVER_NAME};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${NGINX_SERVER_NAME};
+
+    # 动态解析上游（同 HTTP 配置说明）
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+    resolver_timeout 5s;
+
+    client_max_body_size 300m;
+
+    # 证书由 deploy/certbot.sh 以部署用户身份签发，位于项目目录
+    # deploy/letsencrypt/etc/live/<域名>/，容器内路径为 /etc/letsencrypt/live/<域名>/。
+    ssl_certificate     /etc/letsencrypt/live/${NGINX_SERVER_NAME}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${NGINX_SERVER_NAME}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/javascript application/json application/xml image/svg+xml;
+
+    location / {
+        set $upstream_frontend http://frontend:3000;
+        proxy_pass $upstream_frontend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /api/v1/ {
+        set $upstream_backend http://backend:8000;
+        proxy_pass $upstream_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
