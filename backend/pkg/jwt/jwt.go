@@ -81,15 +81,13 @@ func (j *jwtx) generateToken(userID uint, role entity.UserRole, expires time.Dur
 	now := time.Now()
 
 	claims := Claims{
-		ID:   userID,
-		Role: role,
-		RegisteredClaims: jwtv5.RegisteredClaims{
-			ExpiresAt: jwtv5.NewNumericDate(now.Add(expires)),
-			IssuedAt:  jwtv5.NewNumericDate(now),
-			NotBefore: jwtv5.NewNumericDate(now),
-			Issuer:    j.cfg.Issuer,
-			Subject:   "user token",
-		},
+		ID:        userID,
+		Role:      role,
+		ExpiresAt: jwtv5.NewNumericDate(now.Add(expires)),
+		IssuedAt:  jwtv5.NewNumericDate(now),
+		NotBefore: jwtv5.NewNumericDate(now),
+		Issuer:    j.cfg.Issuer,
+		Subject:   "user token",
 	}
 
 	token := jwtv5.NewWithClaims(jwtv5.SigningMethodHS256, claims)
