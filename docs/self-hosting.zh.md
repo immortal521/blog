@@ -16,9 +16,9 @@
 `blog-selfhost-<日期>.tar.gz` 包含：
 
 - `backend/bin/blog-server`、`backend/bin/migration` —— 后端二进制（CGO_ENABLED=0 静态构建）
-- `backend/bin/config.yaml` —— 已按本机 `.env` 生成好的后端配置（与二进制同级）
+- `backend/bin/config.toml` —— 已按本机 `.env` 生成好的后端配置（与二进制同级）
 - `frontend/` —— Nuxt SSR 产物
-- `config/backend_config.yml` —— 后端配置模板
+- `config/backend_config.toml` —— 后端配置模板
 - `deploy/nginx/*.template` —— Nginx 配置模板
 - `.env.example` —— 变量说明
 
@@ -42,7 +42,7 @@
 
 - **Go** `1.27`（见 `backend/go.mod`；`deploy.sh self` 用 `CGO_ENABLED=0 go build`，无需 C 工具链）
 - **Node.js** `24`（见 `frontend/Dockerfile`：`node:24`）与 **pnpm** `11.15.1`（见 `package.json` 的 `packageManager`）
-- **envsubst**（随 `gettext` 提供；用于在服务器侧按 `.env` 生成 `config/backend_config.yml`）
+- **envsubst**（随 `gettext` 提供；用于在服务器侧按 `.env` 生成 `config/backend_config.toml`）
 - **git**（clone 仓库用）
 - 磁盘与时间：首次 `pnpm install` + `pnpm build` 与 `go build` 会拉取依赖并编译，请预留足够空间与几分钟。
 
@@ -64,12 +64,12 @@
 ### 1. 放置产物
 
 解压本包到目标机某目录（如 `/srv/blog`）。后端通过环境变量 `CONFIG_FILE` 指向
-`backend/bin/config.yaml`（与 `blog-server` 同级；或自行用 `config/backend_config.yml` 生成）。
+`backend/bin/config.toml`（与 `blog-server` 同级；或自行用 `config/backend_config.toml` 生成）。
 
 ### 2. 后端
 
 先 `./backend/bin/migration`再
-  `CONFIG_FILE=/srv/blog/backend/bin/config.yaml ./backend/bin/blog-server`
+  `CONFIG_FILE=/srv/blog/backend/bin/config.toml ./backend/bin/blog-server`
 
 ### 3. 前端
 
@@ -79,7 +79,7 @@ Nuxt SSR 以 `node` 运行，目标机需装 Node.js（版本同构建，见 `fr
 
 ### 4. 数据库 / 缓存 / 对象存储
 
-- 用已有实例：直接在 `config.yaml` / `.env` 填 `DB_HOST`、`REDIS_HOST`、`RUSTFS_ENDPOINT`。
+- 用已有实例：直接在 `config.toml` / `.env` 填 `DB_HOST`、`REDIS_HOST`、`RUSTFS_ENDPOINT`。
 - 用容器：另起 postgres / redis / rustfs 容器，后端通过服务名或 `127.0.0.1` 连接。
 
 ### 5. Nginx 反代 + TLS

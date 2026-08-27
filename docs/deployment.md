@@ -51,7 +51,7 @@ sudo ./deploy.sh         # rootful: binds 80/443 directly, no port forwarding
 The script automatically:
 
 1. If there is no `.env`, generate one from `.env.example` (fill it in, then re-run).
-2. Generate the backend config `deploy/runtime/backend/config.yaml` from `config/backend_config.yml` via `envsubst`.
+2. Generate the backend config `deploy/runtime/backend/config.toml` from `config/backend_config.toml` via `envsubst`.
 3. Generate the Nginx config `deploy/runtime/nginx/default.conf` based on `NGINX_TLS` — the HTTP template by default, switching to the HTTPS template when set to `https`.
 4. Bring services up in dependency order (postgres/redis → migration → backend/frontend → nginx).
    - The `migration` service runs `ent`'s `Schema.Create` to initialize the schema once PostgreSQL is ready (one-shot; exit code 0 means success).

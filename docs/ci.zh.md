@@ -24,7 +24,7 @@
 
 | 工作流 | 触发路径 | 行为 |
 | --- | --- | --- |
-| `deploy_backend.yml` | `backend/**`、`config/backend_config.yml` | 构建 `blog_backend:latest` → SCP → 服务器 `podman load` → `bash deploy/remote-deploy.sh backend`（重建 `migration` + `backend`） |
+| `deploy_backend.yml` | `backend/**`、`config/backend_config.toml` | 构建 `blog_backend:latest` → SCP → 服务器 `podman load` → `bash deploy/remote-deploy.sh backend`（重建 `migration` + `backend`） |
 | `deploy_frontend.yml` | `frontend/**` | 构建 `blog_frontend:latest` → SCP → 服务器 `podman load` → `bash deploy/remote-deploy.sh frontend`（重建 `frontend`） |
 
 两个工作流相互独立（不同的 `concurrency` 分组），互不阻塞；各自只更新自己的服务，不会牵连另一个。

@@ -24,7 +24,7 @@ The remaining orchestration files (`compose.prod.yml`, nginx templates, backend 
 
 | Workflow | Trigger path | Behavior |
 | --- | --- | --- |
-| `deploy_backend.yml` | `backend/**`, `config/backend_config.yml` | Build `blog_backend:latest` → SCP → server `podman load` → `bash deploy/remote-deploy.sh backend` (rebuild `migration` + `backend`) |
+| `deploy_backend.yml` | `backend/**`, `config/backend_config.toml` | Build `blog_backend:latest` → SCP → server `podman load` → `bash deploy/remote-deploy.sh backend` (rebuild `migration` + `backend`) |
 | `deploy_frontend.yml` | `frontend/**` | Build `blog_frontend:latest` → SCP → server `podman load` → `bash deploy/remote-deploy.sh frontend` (rebuild `frontend`) |
 
 The two workflows are independent (different `concurrency` groups) and do not block each other; each only updates its own service and does not affect the other.

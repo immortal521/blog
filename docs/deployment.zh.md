@@ -53,7 +53,7 @@ sudo ./deploy.sh         # rootful：直接绑 80/443，无需端口转发
 脚本会自动：
 
 1. 若没有 `.env` 则基于 `.env.example` 生成一份（生成后请先填写再重跑）
-2. 通过 `envsubst` 由 `config/backend_config.yml` 生成后端配置 `deploy/runtime/backend/config.yaml`
+2. 通过 `envsubst` 由 `config/backend_config.toml` 生成后端配置 `deploy/runtime/backend/config.toml`
 3. 根据 `NGINX_TLS` 生成 Nginx 配置 `deploy/runtime/nginx/default.conf`，默认使用 HTTP 模板，设为 `https` 时切换为 HTTPS 模板
 4. 按依赖顺序拉起服务（postgres/redis → migration → backend/frontend → nginx）
    - 其中的 `migration` 服务会在 PostgreSQL 就绪后自动执行 `ent` 的

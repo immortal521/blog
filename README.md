@@ -24,7 +24,7 @@ The whole stack is consolidated into one `compose.yml`. After cloning, prepare a
 ├── backend/                    # Go backend (includes Dockerfile)
 ├── frontend/                   # Nuxt frontend (includes Dockerfile)
 ├── config/
-│   ├── backend_config.yml      # Backend config template (${VAR} placeholders)
+│   ├── backend_config.toml     # Backend config template (${VAR} placeholders)
 │   └── nginx.conf              # Historical reference Nginx config
 └── deploy/
     ├── remote-deploy.sh        # Server-side CI deploy script; shares port and config-generation logic with deploy.sh

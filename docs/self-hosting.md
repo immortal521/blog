@@ -15,9 +15,9 @@ The script builds and packages the artifacts; it does not run any service and do
 `blog-selfhost-<date>.tar.gz` contains:
 
 - `backend/bin/blog-server`, `backend/bin/migration` — backend binaries (static build with `CGO_ENABLED=0`)
-- `backend/bin/config.yaml` — backend config already generated from the local `.env` (same level as the binary)
+- `backend/bin/config.toml` — backend config already generated from the local `.env` (same level as the binary)
 - `frontend/` — Nuxt SSR artifacts
-- `config/backend_config.yml` — backend config template
+- `config/backend_config.toml` — backend config template
 - `deploy/nginx/*.template` — Nginx config templates
 - `.env.example` — variable documentation
 
@@ -38,7 +38,7 @@ If you choose to build on the target server, you need:
 
 - **Go** `1.27` (see `backend/go.mod`; `deploy.sh self` uses `CGO_ENABLED=0 go build`, no C toolchain needed)
 - **Node.js** `24` (see `frontend/Dockerfile`: `node:24`) and **pnpm** `11.15.1` (see `package.json`'s `packageManager`)
-- **envsubst** (provided by `gettext`; used on the server side to generate `config/backend_config.yml` from `.env`)
+- **envsubst** (provided by `gettext`; used on the server side to generate `config/backend_config.toml` from `.env`)
 - **git** (to clone the repo)
 - Disk and time: the first `pnpm install` + `pnpm build` and `go build` pull dependencies and compile, so reserve enough space and a few minutes.
 
@@ -58,12 +58,12 @@ Below are only the steps, not executed for you. How each module runs is your dec
 
 ### 1. Place the artifacts
 
-Extract the package to some directory on the target machine (e.g. `/srv/blog`). The backend points to `backend/bin/config.yaml` via the `CONFIG_FILE` environment variable (same level as `blog-server`; or generate it yourself from `config/backend_config.yml`).
+Extract the package to some directory on the target machine (e.g. `/srv/blog`). The backend points to `backend/bin/config.toml` via the `CONFIG_FILE` environment variable (same level as `blog-server`; or generate it yourself from `config/backend_config.toml`).
 
 ### 2. Backend
 
 First `./backend/bin/migration`, then
-  `CONFIG_FILE=/srv/blog/backend/bin/config.yaml ./backend/bin/blog-server`
+  `CONFIG_FILE=/srv/blog/backend/bin/config.toml ./backend/bin/blog-server`
 
 ### 3. Frontend
 
@@ -73,7 +73,7 @@ Nuxt SSR runs with `node`; the target machine needs Node.js installed (same vers
 
 ### 4. Database / cache / object storage
 
-- Use existing instances: fill `DB_HOST`, `REDIS_HOST`, `RUSTFS_ENDPOINT` directly in `config.yaml` / `.env`.
+- Use existing instances: fill `DB_HOST`, `REDIS_HOST`, `RUSTFS_ENDPOINT` directly in `config.toml` / `.env`.
 - Use containers: spin up separate postgres / redis / rustfs containers; the backend connects via service name or `127.0.0.1`.
 
 ### 5. Nginx reverse proxy + TLS

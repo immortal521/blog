@@ -26,7 +26,7 @@
 ├── backend/                    # Go 后端（含 Dockerfile）
 ├── frontend/                   # Nuxt 前端（含 Dockerfile）
 ├── config/
-│   ├── backend_config.yml      # 后端配置模板（${VAR} 占位符）
+│   ├── backend_config.toml     # 后端配置模板（${VAR} 占位符）
 │   └── nginx.conf              # 历史参考用的 Nginx 配置
 └── deploy/
     ├── remote-deploy.sh        # CI 服务器侧部署脚本，与 deploy.sh 共享端口与配置生成逻辑
