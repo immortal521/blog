@@ -70,7 +70,7 @@ func (e *AppError) StackString() string {
 
 	for {
 		f, more := frames.Next()
-		out.WriteString(fmt.Sprintf("%s\n\t%s:%d\n", f.Function, f.File, f.Line))
+		fmt.Fprintf(&out, "%s\n\t%s:%d\n", f.Function, f.File, f.Line)
 		if !more {
 			break
 		}
