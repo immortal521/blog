@@ -1,9 +1,11 @@
+// Package errx
 package errx
 
 import (
 	"errors"
 	"fmt"
 	"runtime"
+	"strings"
 )
 
 // AppError is a low-level application error wrapper.
@@ -27,8 +29,7 @@ func New(code int, err error) *AppError {
 	}
 
 	// avoid double wrapping
-	var ae *AppError
-	if errors.As(err, &ae) {
+	if ae, ok := errors.AsType[*AppError](err); ok {
 		return ae
 	}
 
@@ -65,17 +66,17 @@ func (e *AppError) StackString() string {
 	}
 
 	frames := runtime.CallersFrames(e.stack)
-	var out string
+	var out strings.Builder
 
 	for {
 		f, more := frames.Next()
-		out += fmt.Sprintf("%s\n\t%s:%d\n", f.Function, f.File, f.Line)
+		out.WriteString(fmt.Sprintf("%s\n\t%s:%d\n", f.Function, f.File, f.Line))
 		if !more {
 			break
 		}
 	}
 
-	return out
+	return out.String()
 }
 
 // captureStack records current goroutine stack trace.
@@ -91,8 +92,7 @@ func ToAppError(err error) *AppError {
 		return nil
 	}
 
-	var ae *AppError
-	if errors.As(err, &ae) {
+	if ae, ok := errors.AsType[*AppError](err); ok {
 		return ae
 	}
 
