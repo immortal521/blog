@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - "backend/**"
-      - "config/backend_config.yml"
+      - "config/backend_config.toml"
       - ".github/workflows/deploy_backend.yml"
 
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
             deploy/nginx/https.conf.template \
             deploy/nginx/rustfs.http.conf.template \
             deploy/nginx/rustfs.https.conf.template \
-            config/backend_config.yml \
+            config/backend_config.toml \
             .env.example
 
       - name: Upload image + config to server

@@ -65,7 +65,7 @@ services:
       # 配置模板里 redis.host 写死为 localhost，用环境变量覆盖为服务名
       APP_REDIS_HOST: redis
     volumes:
-      - ./deploy/runtime/backend/config.yaml:/app/config.yml:ro
+      - ./deploy/runtime/backend/config.toml:/app/config.toml:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -85,7 +85,7 @@ services:
       # 配置模板里 redis.host 写死为 localhost，用环境变量覆盖为服务名
       APP_REDIS_HOST: redis
     volumes:
-      - ./deploy/runtime/backend/config.yaml:/app/config.yml:ro
+      - ./deploy/runtime/backend/config.toml:/app/config.toml:ro
     depends_on:
       postgres:
         condition: service_healthy

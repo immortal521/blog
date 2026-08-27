@@ -42,7 +42,7 @@ func Any(key string, value any) Field {
 	return Field{Key: key, Value: value}
 }
 
-// Error creates a structured field for an error value using the standard key "error".
+// Err creates a structured field for an error value using the standard key "error".
 func Err(err error) Field {
 	return Field{Key: "error", Value: err}
 }

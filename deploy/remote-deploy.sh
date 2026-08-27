@@ -174,8 +174,8 @@ fi
 mkdir -p deploy/runtime/backend deploy/runtime/nginx
 # shellcheck disable=SC2016
 BACKEND_VARS='$APP_NAME $APP_DOMAIN $DB_HOST $DB_PORT $DB_USER $DB_PASSWORD $JWT_SECRET $EMAIL_HOST $EMAIL_PORT $EMAIL_USERNAME $EMAIL_PASSWORD $EMAIL_FROM $MODEL_API_KEY $RUSTFS_ACCESS_KEY_ID $RUSTFS_SECRET_ACCESS_KEY $RUSTFS_ENDPOINT'
-echo "渲染后端配置 → deploy/runtime/backend/config.yaml"
-envsubst "$BACKEND_VARS" < config/backend_config.yml > deploy/runtime/backend/config.yaml
+echo "渲染后端配置 → deploy/runtime/backend/config.toml"
+envsubst "$BACKEND_VARS" < config/backend_config.toml > deploy/runtime/backend/config.toml
 
 # 签发/续期单个证书；首个参数为证书主域名，其后为额外 SAN 域名。
 ensure_cert() {

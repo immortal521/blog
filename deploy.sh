@@ -48,19 +48,19 @@ deploy_self() {
   mkdir -p backend/bin
   # shellcheck disable=SC2016
   local BACKEND_VARS='$APP_NAME $APP_DOMAIN $DB_HOST $DB_PORT $DB_USER $DB_PASSWORD $JWT_SECRET $EMAIL_HOST $EMAIL_PORT $EMAIL_USERNAME $EMAIL_PASSWORD $EMAIL_FROM $MODEL_API_KEY $RUSTFS_ACCESS_KEY_ID $RUSTFS_SECRET_ACCESS_KEY $RUSTFS_ENDPOINT'
-  envsubst "$BACKEND_VARS" <config/backend_config.yml >backend/bin/config.yaml
-  echo "[3/4] 生成后端配置：backend/bin/config.yaml（已按 .env 变量填充）"
+  envsubst "$BACKEND_VARS" <config/backend_config.toml >backend/bin/config.toml
+  echo "[3/4] 生成后端配置：backend/bin/config.toml（已按 .env 变量填充）"
 
   # 4. 打包
   local BUNDLE
   BUNDLE="blog-selfhost-$(date +%Y%m%d).tar.gz"
   echo "[4/4] 打包产物 → $BUNDLE"
-  echo "      包含：backend/bin/{blog-server,migration,config.yaml}、config/backend_config.yml、deploy/nginx/*.template、.env.example、frontend/"
+  echo "      包含：backend/bin/{blog-server,migration,config.toml}、config/backend_config.toml、deploy/nginx/*.template、.env.example、frontend/"
   tar -czf "$BUNDLE" \
     --transform 's,^\./,frontend/,' \
     backend/bin/blog-server backend/bin/migration \
-    backend/bin/config.yaml \
-    config/backend_config.yml \
+    backend/bin/config.toml \
+    config/backend_config.toml \
     deploy/nginx .env.example \
     -C frontend/.output . 2>/dev/null &&
     echo "      ✓ 已打包：$BUNDLE（$(du -h "$BUNDLE" | cut -f1)）"
@@ -206,8 +206,8 @@ fi
 mkdir -p deploy/runtime/backend deploy/runtime/nginx
 # shellcheck disable=SC2016
 BACKEND_VARS='$APP_NAME $APP_DOMAIN $DB_HOST $DB_PORT $DB_USER $DB_PASSWORD $JWT_SECRET $EMAIL_HOST $EMAIL_PORT $EMAIL_USERNAME $EMAIL_PASSWORD $EMAIL_FROM $MODEL_API_KEY $RUSTFS_ACCESS_KEY_ID $RUSTFS_SECRET_ACCESS_KEY $RUSTFS_ENDPOINT'
-envsubst "$BACKEND_VARS" <config/backend_config.yml >deploy/runtime/backend/config.yaml
-echo "已生成后端配置：deploy/runtime/backend/config.yaml"
+envsubst "$BACKEND_VARS" <config/backend_config.toml >deploy/runtime/backend/config.toml
+echo "已生成后端配置：deploy/runtime/backend/config.toml"
 
 # RustFS 证书缺失时跳过其反代块，保证 blog 站点仍可启动。
 gen_nginx_conf() {

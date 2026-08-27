@@ -1,4 +1,5 @@
 .idea
 config.yml
 config.yaml
+config.toml
 main.exe

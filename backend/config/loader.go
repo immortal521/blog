@@ -71,15 +71,7 @@ func Get() *Config {
 func load(opt Options) (*Config, error) {
 	v := viper.New()
 
-	// Configure file-based settings.
-	if opt.ConfigFile != "" {
-		v.SetConfigFile(opt.ConfigFile)
-	} else {
-		v.SetConfigName("config")
-		v.SetConfigType(opt.ConfigType)
-		v.AddConfigPath(".")
-		v.AddConfigPath("./config")
-	}
+	v.SetConfigFile(opt.ConfigFile)
 
 	// Configure environment variable support with prefix and key mapping.
 	v.SetEnvPrefix(opt.EnvPrefix)
@@ -143,8 +135,8 @@ func decode(v *viper.Viper) (*Config, error) {
 // Environment variable CONFIG_FILE can override the default config file path.
 func mergeOptions(opts ...Options) Options {
 	opt := Options{
-		ConfigFile: "config.yml",
-		ConfigType: "yaml",
+		ConfigFile: "config.toml",
+		ConfigType: "toml",
 		EnvPrefix:  "APP",
 	}
 	if len(opts) == 0 {
