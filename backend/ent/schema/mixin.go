@@ -14,10 +14,6 @@ type TimeMixin struct {
 	mixin.Schema
 }
 
-func boolPtr(b bool) *bool {
-	return &b
-}
-
 func (TimeMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint("id").
@@ -25,7 +21,7 @@ func (TimeMixin) Fields() []ent.Field {
 			Immutable().
 			Annotations(
 				entsql.Annotation{
-					Incremental: boolPtr(true),
+					Incremental: new(true),
 				}),
 		field.
 			Time("created_at").
