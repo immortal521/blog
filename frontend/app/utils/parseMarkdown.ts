@@ -1,9 +1,8 @@
-import MarkdownIt from "markdown-it";
+import MarkdownIt, { type Token } from "markdown-it";
 import { mark } from "@mdit/plugin-mark";
 import { sub } from "@mdit/plugin-sub";
 import { sup } from "@mdit/plugin-sup";
-import type { VNodeChild } from "vue";
-import type Token from "markdown-it/lib/token.mjs";
+import type { Component, VNodeChild } from "vue";
 import { CodeWrapper, NuxtImg } from "#components";
 import type { BundledLanguage, SpecialLanguage } from "shiki";
 import { tasklist } from "@mdit/plugin-tasklist";
@@ -66,7 +65,7 @@ function createTokensParser(toc: boolean) {
     interface Stack {
       tag: string;
       children: VNodeChild[];
-      attrs: { [key: string]: string };
+      attrs: { [key: string]: string | number };
       key: string;
     }
     const stack: Stack[] = [];
@@ -114,17 +113,13 @@ function createTokensParser(toc: boolean) {
         const key = getNextKey("img");
         const attrs = Object.fromEntries(token.attrs);
         pushToParent(
-          h(
-            NuxtImg,
-            {
-              ...attrs,
-              key,
-              src: attrs.src ?? "",
-              class: "img",
-              loading: "lazy",
-            },
-            { default: () => null },
-          ),
+          h(NuxtImg as Component, {
+            ...attrs,
+            key,
+            src: attrs.src ?? "",
+            class: "img",
+            loading: "lazy",
+          }),
         );
       },
       fence: (token) => {
