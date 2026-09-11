@@ -13,6 +13,7 @@ import (
 	"blog-server/handler"
 	"blog-server/logger"
 	"blog-server/middleware"
+	"blog-server/migration"
 	"blog-server/pkg/validatorx"
 	"blog-server/repository"
 	"blog-server/scheduler"
@@ -25,8 +26,8 @@ import (
 // main initializes the application using Uber Fx and starts the dependency
 // injection container.
 //
-// It registers configuration, logging, datastore, HTTP server, and lifecycle
-// hooks required to run the service.
+// It registers configuration, logging, datastore, migration, HTTP server,
+// and other application modules required to run the service.
 func main() {
 	app := fx.New(
 		fx.Options(
@@ -46,9 +47,11 @@ func main() {
 			providerEchoApp,
 		),
 		fx.Invoke(
+			runMigrationLifecycle,
 			runServerLifecycle,
 		),
 	)
+
 	app.Run()
 }
 
@@ -57,10 +60,23 @@ func providerEchoApp(cfg *config.Config, log logger.Logger) *echo.Echo {
 		HTTPErrorHandler: handler.ErrorHandler(cfg, log),
 		IPExtractor:      echo.ExtractIPFromXFFHeader(),
 	}
+
 	app := echo.NewWithConfig(echoCfg)
 	app.Use(middleware.RequestLogger(cfg, log))
 	app.Use(middleware.BodyLimit(10 * 1024 * 1024))
+
 	return app
+}
+
+func runMigrationLifecycle(
+	lc fx.Lifecycle,
+	ds *datastore.DataStore,
+) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return migration.Up(ctx, ds.DB())
+		},
+	})
 }
 
 // runServerLifecycle registers Echo server startup and graceful shutdown
@@ -72,7 +88,12 @@ func providerEchoApp(cfg *config.Config, log logger.Logger) *echo.Echo {
 // OnStop:
 //   - Performs graceful shutdown using configured timeout
 //   - Ensures in-flight requests are completed before exit
-func runServerLifecycle(lc fx.Lifecycle, app *echo.Echo, cfg *config.Config, log logger.Logger) {
+func runServerLifecycle(
+	lc fx.Lifecycle,
+	app *echo.Echo,
+	cfg *config.Config,
+	log logger.Logger,
+) {
 	srv := &http.Server{
 		Addr:    cfg.Server.Addr(),
 		Handler: app,
@@ -82,25 +103,35 @@ func runServerLifecycle(lc fx.Lifecycle, app *echo.Echo, cfg *config.Config, log
 		OnStart: func(ctx context.Context) error {
 			go func() {
 				log.Info("Server is starting")
-				if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+
+				if err := srv.ListenAndServe(); err != nil &&
+					!errors.Is(err, http.ErrServerClosed) {
 					log.Error("Server startup failed", logger.Err(err))
 				}
 			}()
+
 			return nil
 		},
+
 		OnStop: func(ctx context.Context) error {
 			timeout := cfg.Server.GracefulShutdown
 			if timeout <= 0 {
 				timeout = 5 * time.Second
 			}
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
+
+			shutdownCtx, cancel := context.WithTimeout(
+				context.Background(),
+				timeout,
+			)
 			defer cancel()
 
 			log.Info("Server is shutting down")
+
 			if err := srv.Shutdown(shutdownCtx); err != nil {
 				log.Error("Server shutdown failed", logger.Err(err))
 				return err
 			}
+
 			log.Info("Server has been shut down successfully")
 			return nil
 		},

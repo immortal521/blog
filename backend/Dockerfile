@@ -23,12 +23,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     -o /out/blog-server \
     ./cmd/server
 
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -trimpath \
-    -ldflags="-s -w" \
-    -o /out/migration \
-    ./cmd/migration
-
 FROM alpine:3.20
 
 WORKDIR /app
@@ -38,7 +32,6 @@ ENV http_proxy=${HTTPS_PROXY} https_proxy=${HTTPS_PROXY} HTTP_PROXY=${HTTPS_PROX
 RUN apk add --no-cache ca-certificates tzdata
 
 COPY --from=builder /out/blog-server /app/blog-server
-COPY --from=builder /out/migration /app/migration
 
 EXPOSE 8000
 

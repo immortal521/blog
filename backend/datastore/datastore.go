@@ -2,12 +2,15 @@ package datastore
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"blog-server/config"
 	"blog-server/ent"
 	"blog-server/logger"
 	"blog-server/pkg/txmgr"
+
+	entsql "entgo.io/ent/dialect/sql"
 
 	_ "github.com/lib/pq"
 )
@@ -23,6 +26,7 @@ var _ txmgr.TxManager = (*DataStore)(nil)
 // NewDataStore. DataStore is not safe for concurrent mutation when a
 // transaction is in progress.
 type DataStore struct {
+	db     *sql.DB
 	client *ent.Client
 }
 
@@ -61,12 +65,19 @@ func NewDataStore(cfg *config.Config, log logger.Logger) (*DataStore, error) {
 		)
 	}
 
-	client, err := ent.Open("postgres", dsn, opts...)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
+	drv := entsql.OpenDB("postgres", db)
+
+	opts = append(opts, ent.Driver(drv))
+
+	client := ent.NewClient(opts...)
+
 	return &DataStore{
+		db:     db,
 		client: client,
 	}, nil
 }
@@ -96,6 +107,10 @@ func (ds *DataStore) WithTx(ctx context.Context, fn func(ctx context.Context) er
 	return tx.Commit()
 }
 
+func (ds *DataStore) DB() *sql.DB {
+	return ds.db
+}
+
 // Client returns the active ent client.
 //
 // If a transaction is in progress, it returns the transaction-scoped
@@ -114,5 +129,5 @@ func (ds *DataStore) Client(ctx context.Context) *ent.Client {
 // Calling Close on an already closed or nil client results in the
 // underlying driver's behavior.
 func (ds *DataStore) Close() error {
-	return ds.client.Close()
+	return ds.db.Close()
 }

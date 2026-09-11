@@ -26,9 +26,8 @@ deploy_self() {
   echo "目标：NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-<未设置>}，RUSTFS_ENDPOINT=${RUSTFS_ENDPOINT:-<未设置>}"
 
   # 构建后端二进制
-  echo "[1/4] 构建后端二进制（CGO_ENABLED=0 go build）→ backend/bin/blog-server, backend/bin/migration"
-  (cd backend && CGO_ENABLED=0 go build -o bin/blog-server ./cmd/server &&
-    CGO_ENABLED=0 go build -o bin/migration ./cmd/migration) ||
+  echo "[1/4] 构建后端二进制（CGO_ENABLED=0 go build）→ backend/bin/blog-server"
+  (cd backend && CGO_ENABLED=0 go build -o bin/blog-server ./cmd/server) ||
     {
       echo "ERROR: 后端构建失败" >&2
       exit 1
@@ -55,10 +54,10 @@ deploy_self() {
   local BUNDLE
   BUNDLE="blog-selfhost-$(date +%Y%m%d).tar.gz"
   echo "[4/4] 打包产物 → $BUNDLE"
-  echo "      包含：backend/bin/{blog-server,migration,config.toml}、config/backend_config.toml、deploy/nginx/*.template、.env.example、frontend/"
+  echo "      包含：backend/bin/{blog-server,config.toml}、config/backend_config.toml、deploy/nginx/*.template、.env.example、frontend/"
   tar -czf "$BUNDLE" \
     --transform 's,^\./,frontend/,' \
-    backend/bin/blog-server backend/bin/migration \
+    backend/bin/blog-server \
     backend/bin/config.toml \
     config/backend_config.toml \
     deploy/nginx .env.example \
@@ -391,7 +390,6 @@ if [ "$NGINX_TLS" = "https" ]; then
 fi
 
 # podman-compose 1.0.6 对 depends_on 条件（service_healthy / service_completed_successfully）处理不可靠：
-# 单条 `up -d --build` 可能让 migration 在 PG 未就绪时退出、或把 backend 留在 Created 不启动，
 # 并打印大量 “no container / invalid dependency” 噪声。故显式按依赖顺序拉起并轮询就绪，与 remote-deploy.sh 一致。
 ENGINE="${COMPOSE[0]}"
 
@@ -446,38 +444,14 @@ wait_postgres() {
   return 1
 }
 
-wait_migration() {
-  for _ in $(seq 1 90); do
-    local st code
-    st=$("$ENGINE" inspect -f '{{.State.Status}}' blog_migration 2>/dev/null || true)
-    code=$("$ENGINE" inspect -f '{{.State.ExitCode}}' blog_migration 2>/dev/null || true)
-    if [ "$st" = "exited" ] && [ "$code" = "0" ]; then
-      echo "migration 完成（退出码 0）"
-      return 0
-    fi
-    if [ "$st" = "exited" ] && [ "$code" != "0" ]; then
-      echo "ERROR: migration 退出码 $code，停止部署" >&2
-      dump_container_logs blog_migration
-      return 1
-    fi
-    sleep 2
-  done
-  echo "ERROR: 等待 migration 超时（90×2s），停止部署" >&2
-  dump_container_logs blog_migration
-  return 1
-}
-
 # 先删应用层容器，规避 podman-compose 重建时 name already in use / 残留 Created 容器。
-"$ENGINE" rm -f blog_nginx blog_frontend blog_backend blog_migration >/dev/null 2>&1 || true
+"$ENGINE" rm -f blog_nginx blog_frontend blog_backend >/dev/null 2>&1 || true
 
 echo "构建镜像..."
 pod_compose build || true
 echo "启动 postgres / redis"
 pod_compose up -d postgres redis || true
 wait_postgres || exit 1
-echo "运行数据库迁移（等待退出码 0）"
-pod_compose up -d migration || true
-wait_migration || exit 1
 echo "启动 backend / frontend"
 pod_compose up -d backend frontend || true
 echo "启动 nginx"

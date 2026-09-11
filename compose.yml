@@ -52,28 +52,6 @@ services:
     networks:
       - blog_net
 
-  migration:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-      network: host
-    container_name: blog_migration
-    restart: "no"
-    # 复用后端镜像，仅替换启动命令跑迁移
-    command: ["/app/migration"]
-    environment:
-      # 配置模板里 redis.host 写死为 localhost，用环境变量覆盖为服务名
-      APP_REDIS_HOST: redis
-    volumes:
-      - ./deploy/runtime/backend/config.toml:/app/config.toml:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    networks:
-      - blog_net
-
   backend:
     build:
       context: ./backend
@@ -93,8 +71,6 @@ services:
         condition: service_started
       rustfs:
         condition: service_started
-      migration:
-        condition: service_completed_successfully
     networks:
       - blog_net
 

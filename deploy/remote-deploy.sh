@@ -26,7 +26,6 @@ set -a
 source <(sed 's/\r$//' .env)
 set +a
 
-# SERVER_ENV 缺 DB_PORT / EMAIL_PORT 时 envsubst 写出空值，后端 strconv 解析失败致 migration 退出。
 if [ -z "${DB_PORT:-}" ]; then
   echo "WARN: .env 缺少 DB_PORT，使用默认 5432（请补全 SERVER_ENV 后重新生成 .env）" >&2
   DB_PORT=5432
@@ -73,7 +72,7 @@ export HTTP_PORT HTTPS_PORT
 # 端口覆盖文件写字面量端口并用 -f 挂上，因为 podman-compose 会优先读项目目录 .env 覆盖 shell 里 export 的回退值，
 # 只有 -f 覆盖文件里的字面量才生效。
 mkdir -p deploy/runtime
-cat > deploy/runtime/compose.ports.yml <<EOF
+cat >deploy/runtime/compose.ports.yml <<EOF
 services:
   nginx:
     ports:
@@ -118,21 +117,21 @@ pod_compose_out_filter() {
 pod_compose() {
   podman compose "${COMPOSE_FILES[@]}" "$@" \
     > >(pod_compose_out_filter) \
-   2> >(pod_compose_filter >&2)
+    2> >(pod_compose_filter >&2)
 }
 
 # RustFS 证书缺失时跳过其反代块，保证 blog 站点仍可启动。
 render_nginx_conf() {
   local mode="$1"
-  envsubst "\${NGINX_SERVER_NAME} \${NGINX_RESOLVER}" < "deploy/nginx/${mode}.conf.template" > deploy/runtime/nginx/default.conf
+  envsubst "\${NGINX_SERVER_NAME} \${NGINX_RESOLVER}" <"deploy/nginx/${mode}.conf.template" >deploy/runtime/nginx/default.conf
   if [ -n "${RUSTFS_ENABLED:-}" ]; then
-    if [ "$mode" = "https" ] \
-      && { [ ! -f "deploy/letsencrypt/etc/live/${RUSTFS_SERVER_NAME}/fullchain.pem" ] \
-        || [ ! -f "deploy/letsencrypt/etc/live/${RUSTFS_SERVER_NAME}/privkey.pem" ]; }; then
+    if [ "$mode" = "https" ] &&
+      { [ ! -f "deploy/letsencrypt/etc/live/${RUSTFS_SERVER_NAME}/fullchain.pem" ] ||
+        [ ! -f "deploy/letsencrypt/etc/live/${RUSTFS_SERVER_NAME}/privkey.pem" ]; }; then
       echo "WARN: RustFS 证书 deploy/letsencrypt/etc/live/${RUSTFS_SERVER_NAME}/ 缺失，跳过 RustFS 反代配置（请先签发证书）。" >&2
     else
       envsubst "\${RUSTFS_SERVER_NAME} \${RUSTFS_ADMIN_SERVER_NAME} \${NGINX_RESOLVER}" \
-        < "deploy/nginx/rustfs.${mode}.conf.template" >> deploy/runtime/nginx/default.conf
+        <"deploy/nginx/rustfs.${mode}.conf.template" >>deploy/runtime/nginx/default.conf
     fi
   fi
 }
@@ -175,26 +174,27 @@ mkdir -p deploy/runtime/backend deploy/runtime/nginx
 # shellcheck disable=SC2016
 BACKEND_VARS='$APP_NAME $APP_DOMAIN $DB_HOST $DB_PORT $DB_USER $DB_PASSWORD $JWT_SECRET $EMAIL_HOST $EMAIL_PORT $EMAIL_USERNAME $EMAIL_PASSWORD $EMAIL_FROM $MODEL_API_KEY $RUSTFS_ACCESS_KEY_ID $RUSTFS_SECRET_ACCESS_KEY $RUSTFS_ENDPOINT'
 echo "渲染后端配置 → deploy/runtime/backend/config.toml"
-envsubst "$BACKEND_VARS" < config/backend_config.toml > deploy/runtime/backend/config.toml
+envsubst "$BACKEND_VARS" <config/backend_config.toml >deploy/runtime/backend/config.toml
 
 # 签发/续期单个证书；首个参数为证书主域名，其后为额外 SAN 域名。
 ensure_cert() {
-  local domain="$1"; shift
+  local domain="$1"
+  shift
   local live="deploy/letsencrypt/etc/live/$domain"
   local san_args=()
   local s
-  for s in "$@"; do san_args+=( -d "$s" ); done
+  for s in "$@"; do san_args+=(-d "$s"); done
   if [ -f "$live/fullchain.pem" ]; then
     echo "证书已存在，尝试续期（未到窗口则跳过）：./deploy/certbot.sh renew"
     ./deploy/certbot.sh renew || echo "WARN: 证书续期未执行（可能未到窗口或失败），详见上方输出" >&2
   else
     echo "未找到证书，自动签发 $domain ${san_args[*]:-}：./deploy/certbot.sh certonly ..."
     if [ ${#san_args[@]} -gt 0 ]; then
-      ./deploy/certbot.sh certonly -d "$domain" "${san_args[@]}" \
-        || echo "WARN: 自动签发失败，站点暂以 HTTP 提供（请检查 80 端口公网可达性与 certbot 安装）。" >&2
+      ./deploy/certbot.sh certonly -d "$domain" "${san_args[@]}" ||
+        echo "WARN: 自动签发失败，站点暂以 HTTP 提供（请检查 80 端口公网可达性与 certbot 安装）。" >&2
     else
-      ./deploy/certbot.sh certonly -d "$domain" \
-        || echo "WARN: 自动签发失败，站点暂以 HTTP 提供（请检查 80 端口公网可达性与 certbot 安装）。" >&2
+      ./deploy/certbot.sh certonly -d "$domain" ||
+        echo "WARN: 自动签发失败，站点暂以 HTTP 提供（请检查 80 端口公网可达性与 certbot 安装）。" >&2
     fi
   fi
 }
@@ -220,13 +220,22 @@ RENEW_DAYS="${RENEW_DAYS:-30}"
 cert_days_left_for() {
   local domain="$1"
   local cert="deploy/letsencrypt/etc/live/${domain}/fullchain.pem"
-  [ -f "$cert" ] || { echo -1; return; }
+  [ -f "$cert" ] || {
+    echo -1
+    return
+  }
   local enddate
-  enddate=$(openssl x509 -in "$cert" -noout -enddate 2>/dev/null | cut -d= -f2) || { echo -1; return; }
+  enddate=$(openssl x509 -in "$cert" -noout -enddate 2>/dev/null | cut -d= -f2) || {
+    echo -1
+    return
+  }
   local end_ts now_ts
-  end_ts=$(date -d "$enddate" +%s 2>/dev/null) || { echo -1; return; }
+  end_ts=$(date -d "$enddate" +%s 2>/dev/null) || {
+    echo -1
+    return
+  }
   now_ts=$(date +%s)
-  echo $(( (end_ts - now_ts) / 86400 ))
+  echo $(((end_ts - now_ts) / 86400))
 }
 
 # 证书自动签发/续期先于正式部署：blog 与 RustFS 各自独立判断。
@@ -262,9 +271,9 @@ if [ "$NGINX_TLS_REQ" = "https" ] && [ "$NGINX_TLS_AUTO" = "on" ]; then
       for d in $issue_list; do
         # 签发前清掉残留的 live/archive/renewal，否则 certbot 认为证书已存在而拒绝签发或自增编号重复签发。
         rm -rf "deploy/letsencrypt/etc/live/$d" \
-               "deploy/letsencrypt/etc/archive/$d" 2>/dev/null || true
+          "deploy/letsencrypt/etc/archive/$d" 2>/dev/null || true
         rm -f "deploy/letsencrypt/etc/renewal/$d.conf" \
-              "deploy/letsencrypt/etc/renewal/$d-"*.conf 2>/dev/null || true
+          "deploy/letsencrypt/etc/renewal/$d-"*.conf 2>/dev/null || true
         if [ "$d" = "$NGINX_SERVER_NAME" ]; then
           ensure_cert "$NGINX_SERVER_NAME"
         else
@@ -314,30 +323,6 @@ else
   echo "已生成 HTTP nginx 配置"
 fi
 
-# 等 migration 成功退出，超时则部署失败
-wait_migration() {
-  for _ in $(seq 1 90); do
-    local st code
-    st=$(podman inspect -f '{{.State.Status}}' blog_migration 2>/dev/null || true)
-    code=$(podman inspect -f '{{.State.ExitCode}}' blog_migration 2>/dev/null || true)
-    if [ "$st" = "exited" ] && [ "$code" = "0" ]; then
-      echo "migration 完成（退出码 0）"
-      return 0
-    fi
-    if [ "$st" = "exited" ] && [ "$code" != "0" ]; then
-      echo "ERROR: migration 退出码 $code，停止部署" >&2
-      dump_container_logs blog_migration
-      return 1
-    fi
-    sleep 2
-  done
-  echo "ERROR: 等待 migration 超时（90×2s），停止部署" >&2
-  dump_container_logs blog_migration
-  return 1
-}
-
-# podman-compose 1.0.6 对 service_healthy 等待不可靠，migration 可能在 Postgres 未就绪时启动并退出，
-# 拉起 migration 前先轮询 pg_isready 规避该竞态。
 wait_postgres() {
   for _ in $(seq 1 60); do
     if podman exec blog_postgres pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" >/dev/null 2>&1; then
@@ -352,56 +337,47 @@ wait_postgres() {
 
 # 显式删容器再 up，规避 podman-compose --force-recreate 在依赖容器存在时 rm 失败、旧容器残留、run 报 name already in use。
 case "$TARGET" in
-  backend)
-    # 旧版 frontend 可能仍依赖 backend 而阻塞其删除，一并删 frontend 自愈一次
-    RF=0
-    if ! podman rm -f blog_backend >/dev/null 2>&1; then
-      podman rm -f blog_frontend >/dev/null 2>&1 || true
-      podman rm -f blog_backend >/dev/null 2>&1 || true
-      RF=1
-    fi
-    podman rm -f blog_migration blog_nginx >/dev/null 2>&1 || true
-    # 先起基础设施并跑迁移，规避 podman-compose 1.0.6 的 healthy 竞态
-    echo "启动 postgres / redis"
-    pod_compose up -d postgres redis
-    wait_postgres || exit 1
-    echo "运行数据库迁移（等待退出码 0）"
-    pod_compose up -d migration
-    wait_migration || exit 1
-    # 迁移完成后再起 backend，podman-compose 1.0.6 会把 backend 留在 Created 不启动
-    echo "启动 backend"
-    pod_compose up -d backend
-    [ "$RF" = "1" ] && { echo "启动 frontend（依赖自愈）"; pod_compose up -d frontend; } || true
-    ;;
-  frontend)
-    podman rm -f blog_nginx blog_frontend >/dev/null 2>&1 || true
-    echo "启动 backend / frontend"
-    pod_compose up -d backend || true
+backend)
+  # 旧版 frontend 可能仍依赖 backend 而阻塞其删除，一并删 frontend 自愈一次
+  RF=0
+  if ! podman rm -f blog_backend >/dev/null 2>&1; then
+    podman rm -f blog_frontend >/dev/null 2>&1 || true
+    podman rm -f blog_backend >/dev/null 2>&1 || true
+    RF=1
+  fi
+  podman rm -f blog_nginx >/dev/null 2>&1 || true
+  # 先起基础设施并跑迁移，规避 podman-compose 1.0.6 的 healthy 竞态
+  echo "启动 postgres / redis"
+  pod_compose up -d postgres redis
+  wait_postgres || exit 1
+  # 迁移完成后再起 backend，podman-compose 1.0.6 会把 backend 留在 Created 不启动
+  echo "启动 backend"
+  pod_compose up -d backend
+  [ "$RF" = "1" ] && {
+    echo "启动 frontend（依赖自愈）"
     pod_compose up -d frontend
-    ;;
-  all)
-    podman rm -f blog_nginx blog_frontend blog_backend blog_migration >/dev/null 2>&1 || true
-    echo "启动 postgres / redis"
-    pod_compose up -d postgres redis
-    wait_postgres || exit 1
-    echo "运行数据库迁移（等待退出码 0）"
-    pod_compose up -d migration
-    wait_migration || exit 1
-    echo "启动 migration / backend / frontend"
-    pod_compose up -d migration backend frontend
-    ;;
+  } || true
+  ;;
+frontend)
+  podman rm -f blog_nginx blog_frontend >/dev/null 2>&1 || true
+  echo "启动 backend / frontend"
+  pod_compose up -d backend || true
+  pod_compose up -d frontend
+  ;;
+all)
+  podman rm -f blog_nginx blog_frontend blog_backend >/dev/null 2>&1 || true
+  echo "启动 postgres / redis"
+  pod_compose up -d postgres redis
+  wait_postgres || exit 1
+  echo "启动 backend / frontend"
+  pod_compose up -d ackend frontend
+  ;;
 esac
 
 # 启动任何停在 Created 的容器作为兜底
-for c in blog_migration blog_backend blog_frontend blog_nginx; do
+for c in blog_backend blog_frontend blog_nginx; do
   st=$(podman inspect -f '{{.State.Status}}' "$c" 2>/dev/null || true)
   if [ "$st" = "created" ]; then
-    # backend 须等 migration 退出码 0 再启动
-    if [ "$c" = "blog_backend" ]; then
-      mst=$(podman inspect -f '{{.State.Status}}' blog_migration 2>/dev/null || true)
-      mcode=$(podman inspect -f '{{.State.ExitCode}}' blog_migration 2>/dev/null || true)
-      [ "$mst" = "exited" ] && [ "$mcode" = "0" ] || continue
-    fi
     podman start "$c" >/dev/null 2>&1 || true
   fi
 done
