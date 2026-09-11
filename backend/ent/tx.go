@@ -28,6 +28,10 @@ type Tx struct {
 	PostTag *PostTagClient
 	// PostTagRelation is the client for interacting with the PostTagRelation builders.
 	PostTagRelation *PostTagRelationClient
+	// Site is the client for interacting with the Site builders.
+	Site *SiteClient
+	// System is the client for interacting with the System builders.
+	System *SystemClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -169,6 +173,8 @@ func (tx *Tx) init() {
 	tx.PostCategoryRelation = NewPostCategoryRelationClient(tx.config)
 	tx.PostTag = NewPostTagClient(tx.config)
 	tx.PostTagRelation = NewPostTagRelationClient(tx.config)
+	tx.Site = NewSiteClient(tx.config)
+	tx.System = NewSystemClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

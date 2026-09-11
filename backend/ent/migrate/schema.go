@@ -176,6 +176,36 @@ var (
 			},
 		},
 	}
+	// SitesColumns holds the columns for the "sites" table.
+	SitesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "logo", Type: field.TypeString, Nullable: true},
+		{Name: "greeting", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// SitesTable holds the schema information for the "sites" table.
+	SitesTable = &schema.Table{
+		Name:       "sites",
+		Columns:    SitesColumns,
+		PrimaryKey: []*schema.Column{SitesColumns[0]},
+	}
+	// SystemsColumns holds the columns for the "systems" table.
+	SystemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "initialized", Type: field.TypeBool, Default: false},
+		{Name: "initialized_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// SystemsTable holds the schema information for the "systems" table.
+	SystemsTable = &schema.Table{
+		Name:       "systems",
+		Columns:    SystemsColumns,
+		PrimaryKey: []*schema.Column{SystemsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint, Increment: true},
@@ -205,6 +235,8 @@ var (
 		PostCategoryRelationsTable,
 		PostTagsTable,
 		PostTagRelationsTable,
+		SitesTable,
+		SystemsTable,
 		UsersTable,
 	}
 )

@@ -19,6 +19,8 @@ import (
 	"blog-server/ent/postcategoryrelation"
 	"blog-server/ent/posttag"
 	"blog-server/ent/posttagrelation"
+	"blog-server/ent/site"
+	"blog-server/ent/system"
 	"blog-server/ent/user"
 
 	"entgo.io/ent"
@@ -48,6 +50,10 @@ type Client struct {
 	PostTag *PostTagClient
 	// PostTagRelation is the client for interacting with the PostTagRelation builders.
 	PostTagRelation *PostTagRelationClient
+	// Site is the client for interacting with the Site builders.
+	Site *SiteClient
+	// System is the client for interacting with the System builders.
+	System *SystemClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -69,6 +75,8 @@ func (c *Client) init() {
 	c.PostCategoryRelation = NewPostCategoryRelationClient(c.config)
 	c.PostTag = NewPostTagClient(c.config)
 	c.PostTagRelation = NewPostTagRelationClient(c.config)
+	c.Site = NewSiteClient(c.config)
+	c.System = NewSystemClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -170,6 +178,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PostCategoryRelation: NewPostCategoryRelationClient(cfg),
 		PostTag:              NewPostTagClient(cfg),
 		PostTagRelation:      NewPostTagRelationClient(cfg),
+		Site:                 NewSiteClient(cfg),
+		System:               NewSystemClient(cfg),
 		User:                 NewUserClient(cfg),
 	}, nil
 }
@@ -198,6 +208,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PostCategoryRelation: NewPostCategoryRelationClient(cfg),
 		PostTag:              NewPostTagClient(cfg),
 		PostTagRelation:      NewPostTagRelationClient(cfg),
+		Site:                 NewSiteClient(cfg),
+		System:               NewSystemClient(cfg),
 		User:                 NewUserClient(cfg),
 	}, nil
 }
@@ -229,7 +241,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Comment, c.Link, c.LinkCategory, c.Post, c.PostCategory,
-		c.PostCategoryRelation, c.PostTag, c.PostTagRelation, c.User,
+		c.PostCategoryRelation, c.PostTag, c.PostTagRelation, c.Site, c.System, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -240,7 +252,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Comment, c.Link, c.LinkCategory, c.Post, c.PostCategory,
-		c.PostCategoryRelation, c.PostTag, c.PostTagRelation, c.User,
+		c.PostCategoryRelation, c.PostTag, c.PostTagRelation, c.Site, c.System, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -265,6 +277,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PostTag.mutate(ctx, m)
 	case *PostTagRelationMutation:
 		return c.PostTagRelation.mutate(ctx, m)
+	case *SiteMutation:
+		return c.Site.mutate(ctx, m)
+	case *SystemMutation:
+		return c.System.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -1478,6 +1494,272 @@ func (c *PostTagRelationClient) mutate(ctx context.Context, m *PostTagRelationMu
 	}
 }
 
+// SiteClient is a client for the Site schema.
+type SiteClient struct {
+	config
+}
+
+// NewSiteClient returns a client for the Site from the given config.
+func NewSiteClient(c config) *SiteClient {
+	return &SiteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `site.Hooks(f(g(h())))`.
+func (c *SiteClient) Use(hooks ...Hook) {
+	c.hooks.Site = append(c.hooks.Site, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `site.Intercept(f(g(h())))`.
+func (c *SiteClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Site = append(c.inters.Site, interceptors...)
+}
+
+// Create returns a builder for creating a Site entity.
+func (c *SiteClient) Create() *SiteCreate {
+	mutation := newSiteMutation(c.config, OpCreate)
+	return &SiteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Site entities.
+func (c *SiteClient) CreateBulk(builders ...*SiteCreate) *SiteCreateBulk {
+	return &SiteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SiteClient) MapCreateBulk(slice any, setFunc func(*SiteCreate, int)) *SiteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SiteCreateBulk{err: fmt.Errorf("calling to SiteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SiteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SiteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Site.
+func (c *SiteClient) Update() *SiteUpdate {
+	mutation := newSiteMutation(c.config, OpUpdate)
+	return &SiteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SiteClient) UpdateOne(_m *Site) *SiteUpdateOne {
+	mutation := newSiteMutation(c.config, OpUpdateOne, withSite(_m))
+	return &SiteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SiteClient) UpdateOneID(id int) *SiteUpdateOne {
+	mutation := newSiteMutation(c.config, OpUpdateOne, withSiteID(id))
+	return &SiteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Site.
+func (c *SiteClient) Delete() *SiteDelete {
+	mutation := newSiteMutation(c.config, OpDelete)
+	return &SiteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SiteClient) DeleteOne(_m *Site) *SiteDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SiteClient) DeleteOneID(id int) *SiteDeleteOne {
+	builder := c.Delete().Where(site.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SiteDeleteOne{builder}
+}
+
+// Query returns a query builder for Site.
+func (c *SiteClient) Query() *SiteQuery {
+	return &SiteQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSite},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Site entity by its id.
+func (c *SiteClient) Get(ctx context.Context, id int) (*Site, error) {
+	return c.Query().Where(site.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SiteClient) GetX(ctx context.Context, id int) *Site {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SiteClient) Hooks() []Hook {
+	return c.hooks.Site
+}
+
+// Interceptors returns the client interceptors.
+func (c *SiteClient) Interceptors() []Interceptor {
+	return c.inters.Site
+}
+
+func (c *SiteClient) mutate(ctx context.Context, m *SiteMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SiteCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SiteUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SiteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SiteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Site mutation op: %q", m.Op())
+	}
+}
+
+// SystemClient is a client for the System schema.
+type SystemClient struct {
+	config
+}
+
+// NewSystemClient returns a client for the System from the given config.
+func NewSystemClient(c config) *SystemClient {
+	return &SystemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `system.Hooks(f(g(h())))`.
+func (c *SystemClient) Use(hooks ...Hook) {
+	c.hooks.System = append(c.hooks.System, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `system.Intercept(f(g(h())))`.
+func (c *SystemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.System = append(c.inters.System, interceptors...)
+}
+
+// Create returns a builder for creating a System entity.
+func (c *SystemClient) Create() *SystemCreate {
+	mutation := newSystemMutation(c.config, OpCreate)
+	return &SystemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of System entities.
+func (c *SystemClient) CreateBulk(builders ...*SystemCreate) *SystemCreateBulk {
+	return &SystemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemClient) MapCreateBulk(slice any, setFunc func(*SystemCreate, int)) *SystemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemCreateBulk{err: fmt.Errorf("calling to SystemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for System.
+func (c *SystemClient) Update() *SystemUpdate {
+	mutation := newSystemMutation(c.config, OpUpdate)
+	return &SystemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemClient) UpdateOne(_m *System) *SystemUpdateOne {
+	mutation := newSystemMutation(c.config, OpUpdateOne, withSystem(_m))
+	return &SystemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemClient) UpdateOneID(id int) *SystemUpdateOne {
+	mutation := newSystemMutation(c.config, OpUpdateOne, withSystemID(id))
+	return &SystemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for System.
+func (c *SystemClient) Delete() *SystemDelete {
+	mutation := newSystemMutation(c.config, OpDelete)
+	return &SystemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemClient) DeleteOne(_m *System) *SystemDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemClient) DeleteOneID(id int) *SystemDeleteOne {
+	builder := c.Delete().Where(system.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemDeleteOne{builder}
+}
+
+// Query returns a query builder for System.
+func (c *SystemClient) Query() *SystemQuery {
+	return &SystemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a System entity by its id.
+func (c *SystemClient) Get(ctx context.Context, id int) (*System, error) {
+	return c.Query().Where(system.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemClient) GetX(ctx context.Context, id int) *System {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SystemClient) Hooks() []Hook {
+	return c.hooks.System
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemClient) Interceptors() []Interceptor {
+	return c.inters.System
+}
+
+func (c *SystemClient) mutate(ctx context.Context, m *SystemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown System mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -1631,10 +1913,10 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 type (
 	hooks struct {
 		Comment, Link, LinkCategory, Post, PostCategory, PostCategoryRelation, PostTag,
-		PostTagRelation, User []ent.Hook
+		PostTagRelation, Site, System, User []ent.Hook
 	}
 	inters struct {
 		Comment, Link, LinkCategory, Post, PostCategory, PostCategoryRelation, PostTag,
-		PostTagRelation, User []ent.Interceptor
+		PostTagRelation, Site, System, User []ent.Interceptor
 	}
 )

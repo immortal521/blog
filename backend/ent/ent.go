@@ -11,6 +11,8 @@ import (
 	"blog-server/ent/postcategoryrelation"
 	"blog-server/ent/posttag"
 	"blog-server/ent/posttagrelation"
+	"blog-server/ent/site"
+	"blog-server/ent/system"
 	"blog-server/ent/user"
 	"context"
 	"errors"
@@ -89,6 +91,8 @@ func checkColumn(t, c string) error {
 			postcategoryrelation.Table: postcategoryrelation.ValidColumn,
 			posttag.Table:              posttag.ValidColumn,
 			posttagrelation.Table:      posttagrelation.ValidColumn,
+			site.Table:                 site.ValidColumn,
+			system.Table:               system.ValidColumn,
 			user.Table:                 user.ValidColumn,
 		})
 	})

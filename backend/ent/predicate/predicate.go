@@ -30,5 +30,11 @@ type PostTag func(*sql.Selector)
 // PostTagRelation is the predicate function for posttagrelation builders.
 type PostTagRelation func(*sql.Selector)
 
+// Site is the predicate function for site builders.
+type Site func(*sql.Selector)
+
+// System is the predicate function for system builders.
+type System func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

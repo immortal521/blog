@@ -10,6 +10,8 @@ import (
 	"blog-server/ent/postcategory"
 	"blog-server/ent/posttag"
 	"blog-server/ent/schema"
+	"blog-server/ent/site"
+	"blog-server/ent/system"
 	"blog-server/ent/user"
 	"time"
 
@@ -162,6 +164,38 @@ func init() {
 	posttagDescSlug := posttagFields[1].Descriptor()
 	// posttag.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
 	posttag.SlugValidator = posttagDescSlug.Validators[0].(func(string) error)
+	siteFields := schema.Site{}.Fields()
+	_ = siteFields
+	// siteDescCreatedAt is the schema descriptor for created_at field.
+	siteDescCreatedAt := siteFields[5].Descriptor()
+	// site.DefaultCreatedAt holds the default value on creation for the created_at field.
+	site.DefaultCreatedAt = siteDescCreatedAt.Default.(func() time.Time)
+	// siteDescUpdatedAt is the schema descriptor for updated_at field.
+	siteDescUpdatedAt := siteFields[6].Descriptor()
+	// site.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	site.DefaultUpdatedAt = siteDescUpdatedAt.Default.(func() time.Time)
+	// siteDescID is the schema descriptor for id field.
+	siteDescID := siteFields[0].Descriptor()
+	// site.DefaultID holds the default value on creation for the id field.
+	site.DefaultID = siteDescID.Default.(int)
+	systemFields := schema.System{}.Fields()
+	_ = systemFields
+	// systemDescInitialized is the schema descriptor for initialized field.
+	systemDescInitialized := systemFields[1].Descriptor()
+	// system.DefaultInitialized holds the default value on creation for the initialized field.
+	system.DefaultInitialized = systemDescInitialized.Default.(bool)
+	// systemDescCreatedAt is the schema descriptor for created_at field.
+	systemDescCreatedAt := systemFields[3].Descriptor()
+	// system.DefaultCreatedAt holds the default value on creation for the created_at field.
+	system.DefaultCreatedAt = systemDescCreatedAt.Default.(func() time.Time)
+	// systemDescUpdatedAt is the schema descriptor for updated_at field.
+	systemDescUpdatedAt := systemFields[4].Descriptor()
+	// system.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	system.DefaultUpdatedAt = systemDescUpdatedAt.Default.(func() time.Time)
+	// systemDescID is the schema descriptor for id field.
+	systemDescID := systemFields[0].Descriptor()
+	// system.DefaultID holds the default value on creation for the id field.
+	system.DefaultID = systemDescID.Default.(int)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
