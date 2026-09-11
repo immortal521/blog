@@ -35,6 +35,7 @@ func main() {
 			logger.Module(),
 			cache.Module(),
 			datastore.Module(),
+			migration.Module(),
 			repository.Module(),
 			authz.Module(),
 			service.Module(),
@@ -47,7 +48,6 @@ func main() {
 			providerEchoApp,
 		),
 		fx.Invoke(
-			runMigrationLifecycle,
 			runServerLifecycle,
 		),
 	)
@@ -66,17 +66,6 @@ func providerEchoApp(cfg *config.Config, log logger.Logger) *echo.Echo {
 	app.Use(middleware.BodyLimit(10 * 1024 * 1024))
 
 	return app
-}
-
-func runMigrationLifecycle(
-	lc fx.Lifecycle,
-	ds *datastore.DataStore,
-) {
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			return migration.Up(ctx, ds.DB())
-		},
-	})
 }
 
 // runServerLifecycle registers Echo server startup and graceful shutdown
