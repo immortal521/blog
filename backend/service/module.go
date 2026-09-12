@@ -7,6 +7,8 @@ func Module() fx.Option {
 	return fx.Module(
 		"service",
 		fx.Provide(
+			NewSetupService,
+			NewUserService,
 			NewPostService,
 			NewRssService,
 			NewLinkService,

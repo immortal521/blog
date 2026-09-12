@@ -14,6 +14,7 @@ func Module() fx.Option {
 			NewUserRepo,
 			NewLinkRepo,
 			NewPostRepo,
+			NewSystemRepo,
 		),
 	)
 }

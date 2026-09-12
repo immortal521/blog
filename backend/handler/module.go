@@ -16,6 +16,7 @@ type Handlers struct {
 	Auth  AuthHandler
 	Link  LinkHandler
 	Model ModelHandler
+	Setup SetupHandler
 }
 
 type Middlewares struct {
@@ -31,6 +32,7 @@ func RegisterRoutes(
 ) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
+	RegisterSetupRouter(v1, h.Setup)
 	RegisterAuthRoutes(v1, h.Auth)
 	RegisterPostRoutes(v1, h.Post, m.Auth)
 	RegisterRssRoutes(v1, h.Rss)
@@ -42,6 +44,7 @@ func Module() fx.Option {
 	return fx.Module(
 		"handler",
 		fx.Provide(
+			NewSetupHandler,
 			NewPostHandler,
 			NewRssHandler,
 			NewAuthHandler,
