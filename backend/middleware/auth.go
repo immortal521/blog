@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"blog-server/authz"
 	"blog-server/config"
 	"blog-server/contextx"
 	"blog-server/pkg/errx"
@@ -52,7 +51,7 @@ func (m *AuthMiddleware) Handler() echo.MiddlewareFunc {
 
 			user := contextx.User{
 				ID:   claims.ID,
-				Role: authz.FromEntityRole(claims.Role),
+				Role: claims.Role,
 			}
 
 			ctx := contextx.SetUser(c.Request().Context(), user)

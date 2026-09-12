@@ -1,7 +1,13 @@
 package authz
 
-var rolePermissions = map[Role][]Permission{
-	RoleAdmin: {
+import (
+	"blog-server/entity"
+)
+
+// RolePermissions maps user roles to their permissions.
+// Keys are entity.UserRole values: entity.UserRoleAdmin, entity.UserRoleReader
+var rolePermissions = map[entity.UserRole][]Permission{
+	entity.UserRoleAdmin: {
 		{ResourcePost, ActionCreate},
 		{ResourcePost, ActionRead},
 		{ResourcePost, ActionUpdate},
@@ -12,7 +18,7 @@ var rolePermissions = map[Role][]Permission{
 		{ResourceLink, ActionDelete},
 	},
 
-	RoleReader: {
+	entity.UserRoleReader: {
 		{ResourcePost, ActionRead},
 	},
 }

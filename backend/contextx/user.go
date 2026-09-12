@@ -3,12 +3,12 @@ package contextx
 import (
 	"context"
 
-	"blog-server/authz"
+	"blog-server/entity"
 )
 
 type User struct {
 	ID   uint
-	Role authz.Role
+	Role entity.UserRole
 }
 
 type contextKey string

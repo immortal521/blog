@@ -1,18 +1,8 @@
 package authz
 
-type Role string
-
-const (
-	RoleAdmin  Role = "admin"
-	RoleReader Role = "reader"
-)
-
-func (Role) Values() []string {
-	return []string{
-		string(RoleReader),
-		string(RoleAdmin),
-	}
-}
+// Role type is now alias to entity.UserRole
+// Use entity.UserRole.Values() for ["reader", "admin"]
+// RoleAdmin = entity.UserRoleAdmin, RoleReader = entity.UserRoleReader
 
 type Resource string
 

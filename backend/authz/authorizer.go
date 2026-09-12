@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"blog-server/entity"
 	"blog-server/pkg/errx"
 	"blog-server/repository"
 )
@@ -28,7 +29,7 @@ func NewAuthorizer(
 	}
 }
 
-func can(role Role, resource Resource, action Action) bool {
+func can(role entity.UserRole, resource Resource, action Action) bool {
 	perms, ok := rolePermissions[role]
 	if !ok {
 		return false
@@ -49,7 +50,7 @@ func ErrForbidden() error {
 func (a *Authorizer) Authorize(
 	ctx context.Context,
 	userID uint,
-	role Role,
+	role entity.UserRole,
 	resource Resource,
 	action Action,
 	resourceID *uint,
@@ -61,7 +62,7 @@ func (a *Authorizer) Authorize(
 
 	if action == ActionUpdate || action == ActionDelete {
 
-		if role == RoleAdmin {
+		if role == entity.UserRoleAdmin {
 			return nil
 		}
 
@@ -87,14 +88,14 @@ func (a *Authorizer) Authorize(
 	return nil
 }
 
-func (a *Authorizer) CanCreatePost(ctx context.Context, userID uint, role Role) error {
+func (a *Authorizer) CanCreatePost(ctx context.Context, userID uint, role entity.UserRole) error {
 	return a.Authorize(ctx, userID, role, ResourcePost, ActionCreate, nil)
 }
 
-func (a *Authorizer) CanUpdatePost(ctx context.Context, userID uint, role Role, postID uint) error {
+func (a *Authorizer) CanUpdatePost(ctx context.Context, userID uint, role entity.UserRole, postID uint) error {
 	return a.Authorize(ctx, userID, role, ResourcePost, ActionUpdate, &postID)
 }
 
-func (a *Authorizer) CanDeletePost(ctx context.Context, userID uint, role Role, postID uint) error {
+func (a *Authorizer) CanDeletePost(ctx context.Context, userID uint, role entity.UserRole, postID uint) error {
 	return a.Authorize(ctx, userID, role, ResourcePost, ActionDelete, &postID)
 }
