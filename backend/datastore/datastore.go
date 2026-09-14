@@ -35,13 +35,18 @@ type DataStore struct {
 // It assumes all required fields are present; missing or invalid values
 // will surface as connection errors at open time rather than here.
 func NewDSN(cfg *config.Config) string {
+	sslMode := cfg.Database.SSLMode
+	if sslMode == "" {
+		sslMode = "disable"
+	}
 	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Database.Host,
 		cfg.Database.Port,
 		cfg.Database.User,
 		cfg.Database.Password,
 		cfg.Database.Name,
+		sslMode,
 	)
 }
 
@@ -68,6 +73,19 @@ func NewDataStore(cfg *config.Config, log logger.Logger) (*DataStore, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	if cfg.Database.MaxOpenConns > 0 {
+		db.SetMaxOpenConns(cfg.Database.MaxOpenConns)
+	}
+	if cfg.Database.MaxIdleConns > 0 {
+		db.SetMaxIdleConns(cfg.Database.MaxIdleConns)
+	}
+	if cfg.Database.ConnMaxLifetime > 0 {
+		db.SetConnMaxLifetime(cfg.Database.ConnMaxLifetime)
+	}
+	if cfg.Database.ConnMaxIdleTime > 0 {
+		db.SetConnMaxIdleTime(cfg.Database.ConnMaxIdleTime)
 	}
 
 	drv := entsql.OpenDB("postgres", db)
