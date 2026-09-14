@@ -81,7 +81,7 @@ func (r *postRepo) publishedQuery(ctx context.Context) *ent.PostQuery {
 
 // deletedQuery returns a query filtered to soft-deleted posts only.
 func (r *postRepo) deletedQuery(ctx context.Context) *ent.PostQuery {
-	return r.query(ctx).
+	return r.ds.Client(ctx).Post.Query().
 		Where(
 			post.DeletedAtNotNil(),
 		)
