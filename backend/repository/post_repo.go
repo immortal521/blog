@@ -288,7 +288,7 @@ func (r *postRepo) ListAll(ctx context.Context, status *entity.PostStatus, keywo
 		query = query.Where(post.StatusEQ(*status))
 	}
 
-	if keyword != nil {
+	if keyword != nil && *keyword != "" {
 		query = query.Where(post.TitleContainsFold(*keyword))
 	}
 
@@ -363,7 +363,7 @@ func (r *postRepo) CountAll(ctx context.Context, status *entity.PostStatus, keyw
 	}
 
 	if keyword != nil && *keyword != "" {
-		query = query.Where(post.TitleContains(*keyword))
+		query = query.Where(post.TitleContainsFold(*keyword))
 	}
 
 	return query.Count(ctx)
