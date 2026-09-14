@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"blog-server/entity"
 	"blog-server/pkg/errx"
 	"blog-server/pkg/txmgr"
 	"blog-server/repository"
@@ -26,18 +27,19 @@ type SetupService interface {
 }
 
 type setupService struct {
-	tx txmgr.TxManager
-	// sr   repository.SiteRepo
+	tx   txmgr.TxManager
+	sr   repository.SiteRepo
 	sysr repository.SystemRepo
 	us   UserService
 }
 
 func NewSetupService(
 	tx txmgr.TxManager,
+	sr repository.SiteRepo,
 	sysr repository.SystemRepo,
 	us UserService,
 ) SetupService {
-	return &setupService{tx, sysr, us}
+	return &setupService{tx, sr, sysr, us}
 }
 
 func (s *setupService) Status(ctx context.Context) (bool, error) {
@@ -59,6 +61,15 @@ func (s *setupService) Initialize(ctx context.Context, input *InitializeInput) e
 			Username: input.Username,
 			Password: input.Password,
 			Email:    input.Email,
+		}); err != nil {
+			return err
+		}
+
+		if err = s.sr.Create(ctx, &entity.Site{
+			Name:        input.SiteName,
+			Logo:        &input.Logo,
+			Greeting:    &input.Greeting,
+			Description: &input.Description,
 		}); err != nil {
 			return err
 		}
