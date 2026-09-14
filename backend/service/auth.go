@@ -194,14 +194,6 @@ func (s *authService) Login(ctx context.Context, input *LoginInput) (*AuthResult
 
 // SendCaptchaMail generates a captcha, stores it in Redis, and sends an email.
 func (s *authService) SendCaptchaMail(ctx context.Context, to string, captchaType CaptchaType) error {
-	exists, err := s.userRepo.ExistsByEmail(ctx, to)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return errx.New(errx.CodeConflict, fmt.Errorf("sent captcha failed to %s: user exists", to))
-	}
-
 	if captchaType == "" {
 		captchaType = Register
 	}
@@ -209,6 +201,18 @@ func (s *authService) SendCaptchaMail(ctx context.Context, to string, captchaTyp
 	mailData, err := getCaptchaEmailMeta(captchaType)
 	if err != nil {
 		return err
+	}
+
+	exists, err := s.userRepo.ExistsByEmail(ctx, to)
+	if err != nil {
+		return err
+	}
+
+	// Do not reveal whether the address is registered (user enumeration).
+	// Reject mismatched states with the same generic error in both directions.
+	shouldSend := (captchaType == Register && !exists) || (captchaType != Register && exists)
+	if !shouldSend {
+		return errx.New(errx.CodeInvalidParam, fmt.Errorf("captcha request rejected"))
 	}
 
 	captcha := generateCaptcha()
