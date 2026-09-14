@@ -93,7 +93,6 @@ func (s linkService) CheckLinkStatus(ctx context.Context) error {
 			// Update status if changed
 			if status != currentStatus {
 				mu.Lock()
-				link.Status = status
 				updates[l.ID] = status
 				mu.Unlock()
 			}
