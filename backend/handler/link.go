@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"blog-server/entity"
 	"blog-server/pkg/errx"
 	"blog-server/pkg/validatorx"
@@ -52,8 +50,8 @@ func (h *linkHandler) ApplyForALinks(c *echo.Context) error {
 		return errx.New(errx.CodeInvalidParam, err)
 	}
 
-	if (len(req.URL) == 0) || (len(req.Name) == 0) {
-		return errx.New(errx.CodeInvalidParam, fmt.Errorf("URL or name cannot be empty"))
+	if err := h.validate.Struct(req); err != nil {
+		return errx.New(errx.CodeValidationFailed, err)
 	}
 
 	input := &service.CreateLinkInput{
@@ -62,10 +60,6 @@ func (h *linkHandler) ApplyForALinks(c *echo.Context) error {
 		Avatar:      &req.Avatar,
 		URL:         req.URL,
 	}
-	if err := h.validate.Struct(input); err != nil {
-		return err
-	}
-
 	err := h.svc.CreateLink(
 		c.Request().Context(),
 		input,
