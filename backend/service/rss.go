@@ -163,12 +163,24 @@ func (s *rssService) convertPostsToItems(posts []*entity.Post) []entity.RssItem 
 	items := make([]entity.RssItem, len(posts))
 	for i, post := range posts {
 		link := s.cfg.Domain + "/blog/" + strconv.Itoa(int(post.ID))
+
+		summary := ""
+		if post.Summary != nil {
+			summary = *post.Summary
+		}
+
+		pubDate := post.PublishedAt
+		if pubDate == nil {
+			// CreatedAt is not selected by ListPublishedForMeta; UpdatedAt is.
+			pubDate = &post.UpdatedAt
+		}
+
 		items[i] = entity.RssItem{
 			Title:       post.Title,
 			Link:        link,
 			GUID:        entity.RssGUID{Value: link, IsPermaLink: true},
-			PubDate:     post.PublishedAt.Format(time.RFC1123Z),
-			Description: entity.RssItemDescription{Value: *post.Summary},
+			PubDate:     pubDate.Format(time.RFC1123Z),
+			Description: entity.RssItemDescription{Value: summary},
 		}
 	}
 	return items
