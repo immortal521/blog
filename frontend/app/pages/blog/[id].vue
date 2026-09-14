@@ -58,7 +58,14 @@ const { onBeforeEnter, onEnter, onAfterEnter, onBeforeLeave, onLeave, onAfterLea
         <MarkdownRenderer :content="content" />
       </main>
       <div class="toc-container">
-        <h4 @click="tocShow = !tocShow">目录</h4>
+        <div class="title-container" @click="tocShow = !tocShow">
+          <span class="title">目录</span>
+          <Icon
+            class="icon"
+            :name="`${tocShow ? 'mingcute:up-line' : 'mingcute:down-line'}`"
+            size="24"
+          />
+        </div>
         <Transition
           name="toc-collapse"
           @before-enter="onBeforeEnter"
@@ -124,8 +131,17 @@ const { onBeforeEnter, onEnter, onAfterEnter, onBeforeLeave, onLeave, onAfterLea
     transform: translateY(-2px);
   }
 
-  div {
-    transition: height 0.3s ease;
+  .title-container {
+    display: flex;
+    cursor: pointer;
+
+    .title {
+      font-size: 2rem;
+    }
+
+    .icon {
+      margin-left: auto;
+    }
   }
 }
 
