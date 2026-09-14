@@ -43,6 +43,11 @@ const rendered = computed(() => {
 const content = computed(() => rendered.value.content);
 const toc = computed(() => rendered.value.toc ?? []);
 const { activeId } = useActiveToc(toc);
+
+const tocShow = ref(true);
+
+const { onBeforeEnter, onEnter, onAfterEnter, onBeforeLeave, onLeave, onAfterLeave } =
+  useCollapseTransition();
 </script>
 
 <template>
@@ -53,7 +58,20 @@ const { activeId } = useActiveToc(toc);
         <MarkdownRenderer :content="content" />
       </main>
       <div class="toc-container">
-        <ArticleToc :toc="toc" :active-id="activeId" />
+        <h4 @click="tocShow = !tocShow">目录</h4>
+        <Transition
+          name="toc-collapse"
+          @before-enter="onBeforeEnter"
+          @enter="onEnter"
+          @after-enter="onAfterEnter"
+          @before-leave="onBeforeLeave"
+          @leave="onLeave"
+          @after-leave="onAfterLeave"
+        >
+          <div v-if="toc.length !== 0 && tocShow">
+            <ArticleToc :toc="toc" :active-id="activeId" />
+          </div>
+        </Transition>
       </div>
     </article>
   </ContentPanel>
@@ -96,6 +114,7 @@ const { activeId } = useActiveToc(toc);
   margin-top: 8px;
   border: 1px solid var(--border-color-card);
   border-radius: 12px;
+  animation: article-show 1s ease-in-out;
   transition:
     box-shadow 0.3s ease,
     transform 0.3s ease;
@@ -104,6 +123,28 @@ const { activeId } = useActiveToc(toc);
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
+
+  div {
+    transition: height 0.3s ease;
+  }
+}
+
+.toc-collapse-enter-active,
+.toc-collapse-leave-active {
+  overflow: hidden;
+  transition:
+    height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.toc-collapse-enter-from,
+.toc-collapse-leave-to {
+  opacity: 0;
+}
+
+.toc-collapse-enter-to,
+.toc-collapse-leave-from {
+  opacity: 1;
 }
 
 @media (width <= 1200px) {
