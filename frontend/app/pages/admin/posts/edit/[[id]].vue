@@ -41,7 +41,7 @@ const lineCount = computed(() => {
         </div>
       </template>
       <div class="editor-body">
-        <ArticleEdit v-model:content="content" class="editor" />
+        <Tiptap v-model:content="content" />
       </div>
       <div class="editor-footer">
         <div class="detail">
@@ -63,6 +63,10 @@ const lineCount = computed(() => {
   height: calc(100% - 60px);
   min-height: 0;
   min-width: 0;
+  background-color: var(--bg-card-base);
+  border-radius: var(--radius-card);
+  overflow-y: auto;
+  padding: 20px;
 }
 
 .editor {
