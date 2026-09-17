@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (!to.path.includes("/admin")) return;
+  if (!to.path.startsWith("/admin")) return;
 
   const auth = useAuthStore();
 
